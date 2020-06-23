@@ -1,0 +1,11 @@
+
+public enum AimType{
+	EXPLORE,//TILE=NULL oppure start tile
+	LOCALIZECLUSTERS,//TILE=NULL oppure start tile
+	GATHERFOOD,//REQUIRES TILE
+	ATTACKHILL,//REQUIRES TILE
+	
+	
+	//DEFENCE,//REINFORCEMENT
+	//SENTINEL,
+}
