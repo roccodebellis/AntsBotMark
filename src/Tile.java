@@ -24,12 +24,12 @@ public class Tile {
 	/**
 	 * 
 	 */
-	private int row;
-	
+	private Integer row;
+
 	/**
 	 * 
 	 */
-	private int col;
+	private Integer col;
 
 	/**
 	 * 
@@ -56,7 +56,7 @@ public class Tile {
 	 * tile altrimenti se false e TYPE e' una HILL indica il proprietario dell'HILL
 	 */
 	private Integer idOwner;// vale sia per il proprietario dell'hill o il proprietario della formica
-							// stazionante
+	// stazionante
 
 	/**
 	 * se occupied ha valore true e id owner = 0 available indica se e' possibile
@@ -248,7 +248,7 @@ public class Tile {
 	 * 
 	 * @return
 	 */
-	public Map<Directions, Tile> getNeighbourNodes() {
+	public Map<Directions, Tile> getNeighbour() {
 		return neighbourTiles;
 	}
 
@@ -280,6 +280,41 @@ public class Tile {
 	 */
 	public int getColDelta(Tile t2) {
 		return Math.abs(getCol() - t2.getCol());
+	}
+
+
+
+	public boolean isSuitable() {
+		return (occupiedByAnt || (type.equals(TileTypes.HILL) && idOwner==0 )) ? false : true;
+		//FIXME se è una formica nemica ????????
+		//viene utilizzata da BFS
+	}
+	
+	@Override
+	public int hashCode(){
+		return row * 50000 + col ;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Tile other = (Tile) obj;
+		if (col == null) {
+			if (other.col != null)
+				return false;
+		} else if (!col.equals(other.col))
+			return false;
+		if (row == null) {
+			if (other.row != null)
+				return false;
+		} else if (!row.equals(other.row))
+			return false;
+		return true;
 	}
 
 }

@@ -42,24 +42,4 @@ class Offset {
 	public int getCol() {
 		return col;
 	}
-	
-	//TODO
-	
-	/**
-	 * Imposta al valore {@code row} la {@link #row riga} dell'{@link Offset} corrente.
-	 * @param row {@link #row riga} dell'{@link Offset} corrente
-	 */
-	private void setRow(int row) {//TODO secondo me da rimuovere perche'
-		//facciamo gia' nel costruttore; al momento impostato private
-		this.row = row;
-	}
-	
-	/**
-	 * Imposta al valore {@code col} la {@link #col colonna} dell'{@link Offset} corrente.
-	 * @param col {@link #col colonna} dell'{@link Offset} corrente
-	 */
-	private void setCol(int col) {//TODO secondo me da rimuovere perche'
-		//facciamo gia' nel costruttore; al momento impostato private
-		this.col = col;
-	}
 }

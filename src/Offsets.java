@@ -51,7 +51,7 @@ public class Offsets extends TreeSet<Offset> {
 	 * Calcola l'insieme di {@link Offset} con raggio {@code radius}.
 	 * @param radius raggio di cui si desidera ottenere il corrispondente {@link Offset}
 	 */
-	static private void computeOffset(int radius) {
+	private static void computeOffset(int radius) {
 		Set<Offset> visionOffsets = new TreeSet<Offset>();
 		//int mx = (int) Math.sqrt(viewRadius2); TODO
 		for (int row = -radius; row <= radius; ++row) {

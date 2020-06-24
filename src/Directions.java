@@ -15,6 +15,7 @@ public enum Directions {
 		public Directions opponent() {
 			return Directions.SOUTH;
 		}
+		
 		/**
 		 * <p>Restituisce "N" ossia NORTH.</p>
 		 * {@inheritDoc}
@@ -69,6 +70,7 @@ public enum Directions {
 		public Directions opponent() {
 			return Directions.EAST;
 		}
+		
 		/**
 		 * <p>Restituisce "W" ossia WEST.</p>
 		 * {@inheritDoc}
@@ -78,10 +80,12 @@ public enum Directions {
 			return "W";
 		}
 	};
+	
 	/**
 	 * @return la direzione opposta a quella corrente
 	 */
 	public abstract Directions opponent();
+	
 	/**
 	 * @return la stringa contenente la lettera
 	 * corrispondente alla direzione corrente

@@ -306,7 +306,7 @@ public class Game {
 	 * 
 	 * @return location with <code>offset</code> from <cod>tile</code>
 	 */
-	private Tile getTile(Tile tile, Offset offset) {
+	static Tile getTile(Tile tile, Offset offset) {
 		int row = (tile.getRow() + offset.getRow()) % rows;
 		if (row < 0) {
 			row += rows;
@@ -325,12 +325,29 @@ public class Game {
 	}
 
 	/**
+	 * EQUALS TO STATIC SEARCH
 	 * Calculates visible information
 	 */
 	public void setVision(boolean visibile) {
 		Set<Tile> inVision = new TreeSet<Tile>();
 		ants.parallelStream().forEachOrdered(ant -> inVision.addAll(getTiles(ant,visionOffsets)));
 		inVision.forEach(tile -> tile.setVisible(visibile));
+	}
+	
+	/**
+	 * Issues an order by sending it to the system output.
+	 * 
+	 * @param myAnt     map tile with my ant
+	 * @param direction direction in which to move my ant
+	 */
+	public void issueOrder(Tile myAnt, Directions direction) {
+		Order order = new Order(myAnt, direction);
+		orders.add(order);
+		//System.out.println(order); TODO
+	}
+	
+	public static int getDistance(Tile t1, Tile t2) {
+		return t1.getRowDelta(t2)%rows + t1.getColDelta(t2)%cols;
 	}
 
 
@@ -479,17 +496,4 @@ public class Game {
 	public TileTypes getTileType(Tile tile) {
 		return tile.getType();
 	}
-	
-	/**
-	 * Issues an order by sending it to the system output.
-	 * 
-	 * @param myAnt     map tile with my ant
-	 * @param direction direction in which to move my ant
-	 */
-	public void issueOrder(Tile myAnt, Directions direction) {
-		Order order = new Order(myAnt, direction);
-		orders.add(order);
-		System.out.println(order);
-	}
-
 }
