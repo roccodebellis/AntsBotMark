@@ -121,13 +121,13 @@ public class Game {
 
 		while (UP_cols_It.hasNext()) {
 			Tile curTile = UP_cols_It.next();
-			prevTile.addAdjacent(Directions.EAST, curTile);
-			curTile.addAdjacent(Directions.WEST, prevTile);
+			prevTile.addNeighbour(Directions.EAST, curTile);
+			curTile.addNeighbour(Directions.WEST, prevTile);
 			prevTile = curTile;
 		}
 
-		prevTile.addAdjacent(Directions.EAST, firstColTile);
-		firstColTile.addAdjacent(Directions.WEST, prevTile);
+		prevTile.addNeighbour(Directions.EAST, firstColTile);
+		firstColTile.addNeighbour(Directions.WEST, prevTile);
 
 		while (rows_It.hasNext()) {
 			UP_cols_It = UP_Row.iterator();
@@ -141,30 +141,30 @@ public class Game {
 
 			firstColTile = DOWN_prev_Tile;
 
-			DOWN_prev_Tile.addAdjacent(Directions.NORTH, UP_prev_Tile);
-			UP_prev_Tile.addAdjacent(Directions.SOUTH, DOWN_prev_Tile);
+			DOWN_prev_Tile.addNeighbour(Directions.NORTH, UP_prev_Tile);
+			UP_prev_Tile.addNeighbour(Directions.SOUTH, DOWN_prev_Tile);
 
 			while (DOWN_cols_It.hasNext() && UP_cols_It.hasNext()) {
 
 				Tile DOWN_cur_Tile = DOWN_cols_It.next();
 				Tile UP_cur_Tile = UP_cols_It.next();
 
-				DOWN_cur_Tile.addAdjacent(Directions.NORTH, UP_cur_Tile);
-				UP_cur_Tile.addAdjacent(Directions.SOUTH, DOWN_cur_Tile);
+				DOWN_cur_Tile.addNeighbour(Directions.NORTH, UP_cur_Tile);
+				UP_cur_Tile.addNeighbour(Directions.SOUTH, DOWN_cur_Tile);
 
-				DOWN_prev_Tile.addAdjacent(Directions.EAST, DOWN_cur_Tile);
-				DOWN_cur_Tile.addAdjacent(Directions.WEST, DOWN_prev_Tile);
+				DOWN_prev_Tile.addNeighbour(Directions.EAST, DOWN_cur_Tile);
+				DOWN_cur_Tile.addNeighbour(Directions.WEST, DOWN_prev_Tile);
 
 				DOWN_prev_Tile = DOWN_cur_Tile;
 				UP_prev_Tile = UP_cur_Tile;
 			}
 
-			DOWN_prev_Tile.addAdjacent(Directions.EAST, firstColTile);
-			firstColTile.addAdjacent(Directions.WEST, DOWN_prev_Tile);
+			DOWN_prev_Tile.addNeighbour(Directions.EAST, firstColTile);
+			firstColTile.addNeighbour(Directions.WEST, DOWN_prev_Tile);
 
 		}
 
-		// ADD "EXTERNAL" NEIBOUR
+		// ADD "EXTERNAL" NEIGHBOUR
 		// Iterator<Tile> firstRowIt = output.getFirst().iterator();
 		// Iterator<Tile> lastRowIt = output.getLast().iterator();
 		Iterator<Tile> firstRowIt = output.get(0).iterator();
@@ -174,8 +174,8 @@ public class Game {
 			Tile DOWN = lastRowIt.next();
 			Tile UP = firstRowIt.next();
 
-			UP.addAdjacent(Directions.NORTH, DOWN);
-			DOWN.addAdjacent(Directions.SOUTH, UP);
+			UP.addNeighbour(Directions.NORTH, DOWN);
+			DOWN.addNeighbour(Directions.SOUTH, UP);
 		}
 
 		return output;
@@ -478,6 +478,18 @@ public class Game {
 
 	public TileTypes getTileType(Tile tile) {
 		return tile.getType();
+	}
+	
+	/**
+	 * Issues an order by sending it to the system output.
+	 * 
+	 * @param myAnt     map tile with my ant
+	 * @param direction direction in which to move my ant
+	 */
+	public void issueOrder(Tile myAnt, Directions direction) {
+		Order order = new Order(myAnt, direction);
+		orders.add(order);
+		System.out.println(order);
 	}
 
 }

@@ -1,96 +1,91 @@
-import java.util.HashMap;
-import java.util.Map;
-
+/**
+ * Classe enumerativa che indica le possibili direzioni di percorrimento
+ * a partire da/per raggiungere una {@link Tile}.
+ *
+ * @author Debellis, Lorusso
+ *
+ */
 public enum Directions {
 	NORTH {
+		/**
+		 * Restituisce la direzione opposta a quella corrente ossia "SOUTH".
+		 * {@inheritDoc}
+		 */
 		@Override
 		public Directions opponent() {
 			return Directions.SOUTH;
 		}
-		
+		/**
+		 * <p>Restituisce "N" ossia NORTH.</p>
+		 * {@inheritDoc}
+		 */
 		@Override
 		public String toString() {
 			return "N";
 		}
 	},
-	EAST(0, 1, 'e'){
+	EAST{
+		/**
+		 * Restituisce la direzione opposta a quella corrente ossia "WEST".
+		 * {@inheritDoc}
+		 */
 		@Override
 		public Directions opponent() {
 			return Directions.WEST;
 		}
+		/**
+		 * <p>Restituisce "E" ossia EAST.</p>
+		 * {@inheritDoc}
+		 */
+		@Override
+		public String toString() {
+			return "E";
+		}
 	},
-	SOUTH(1, 0, 's'){
+	SOUTH{
+		/**
+		 * Restituisce la direzione opposta a quella corrente ossia "NORTH".
+		 * {@inheritDoc}
+		 */
 		@Override
 		public Directions opponent() {
 			return Directions.NORTH;
 		}
+		/**
+		 * <p>Restituisce "S" ossia SOUTH.</p>
+		 * {@inheritDoc}
+		 */
+		@Override
+		public String toString() {
+			return "S";
+		}
 	},
-	WEST(0, -1, 'w'){
+	WEST{
+		/**
+		 * Restituisce la direzione opposta a quella corrente ossia "EAST".
+		 * {@inheritDoc}
+		 */
 		@Override
 		public Directions opponent() {
 			return Directions.EAST;
 		}
+		/**
+		 * <p>Restituisce "W" ossia WEST.</p>
+		 * {@inheritDoc}
+		 */
+		@Override
+		public String toString() {
+			return "W";
+		}
 	};
-	
+	/**
+	 * @return la direzione opposta a quella corrente
+	 */
 	public abstract Directions opponent();
+	/**
+	 * @return la stringa contenente la lettera
+	 * corrispondente alla direzione corrente
+	 */
 	public abstract String toString();
-	
-private static final Map<Character, Directions> symbolLookup = new HashMap<Character, Directions>();
     
-    static {
-        symbolLookup.put('n', NORTH);
-        symbolLookup.put('e', EAST);
-        symbolLookup.put('s', SOUTH);
-        symbolLookup.put('w', WEST);
-    }
-    
-    private final int rowDelta;
-    
-    private final int colDelta;
-    
-    private final char symbol;
-    
-    Directions(int rowDelta, int colDelta, char symbol) {
-        this.rowDelta = rowDelta;
-        this.colDelta = colDelta;
-        this.symbol = symbol;
-    }
-    
-    /**
-     * Returns rows delta.
-     * 
-     * @return rows delta.
-     */
-    public int getRowDelta() {
-        return rowDelta;
-    }
-    
-    /**
-     * Returns columns delta.
-     * 
-     * @return columns delta.
-     */
-    public int getColDelta() {
-        return colDelta;
-    }
-    
-    /**
-     * Returns symbol associated with this direction.
-     * 
-     * @return symbol associated with this direction.
-     */
-    public char getSymbol() {
-        return symbol;
-    }
-    
-    /**
-     * Returns direction associated with specified symbol.
-     * 
-     * @param symbol <code>n</code>, <code>e</code>, <code>s</code> or <code>w</code> character
-     * 
-     * @return direction associated with specified symbol
-     */
-    public static Directions fromSymbol(char symbol) {
-        return symbolLookup.get(symbol);
-    }
 }
