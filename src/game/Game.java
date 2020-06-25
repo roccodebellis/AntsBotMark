@@ -29,9 +29,9 @@ public class Game {
 
 	private final Offsets visionOffsets;
 
-	private Set<Tile> hills;
+	private static Set<Tile> myHills;
 
-	private Set<Tile> enemyHills;
+	private static Set<Tile> enemyHills;
 
 	private static Set<Tile> myAnts; 
 
@@ -77,7 +77,7 @@ public class Game {
 		Game.attackRadius2 = attackRadius2;
 		this.spawnRadius2 = spawnRadius2;
 
-		hills = new TreeSet<Tile>();
+		myHills = new TreeSet<Tile>();
 		enemyHills = new TreeSet<Tile>();
 		myAnts = new TreeSet<Tile>();
 		enemyAnts = new TreeSet<Tile>();
@@ -198,6 +198,15 @@ public class Game {
 		return enemyAnts;
 	}
 	
+	public static Set<Tile> getEnemyHills() {
+		return enemyHills;
+	}
+	
+	public static Set<Tile> getMyHills() {
+		return myHills;
+	}
+	
+	
 	public static int getAttackRadius() {
 		return attackRadius2;
 	}
@@ -232,8 +241,8 @@ public class Game {
 	 * Clears game state information about my hills locations.
 	 */
 	private void clearMyHills() {
-		hills.parallelStream().forEachOrdered(hill -> hill.setTypeLand());
-		hills.clear();
+		myHills.parallelStream().forEachOrdered(hill -> hill.setTypeLand());
+		myHills.clear();
 	}
 
 	/**
@@ -309,7 +318,7 @@ public class Game {
 		curTile.setTypeHill(owner);
 
 		if (owner == 0)
-			hills.add(curTile);
+			myHills.add(curTile);
 		else {
 			enemyHills.add(curTile);
 		}

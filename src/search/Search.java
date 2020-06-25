@@ -120,7 +120,7 @@ public class Search {
 		//Game.setOrder() //ricordati di rimuovere la formica dalla lista delle formiche disponibili
 		
 	}
-
+	
 	/**
 	 * <p>
 	 * Utilizza un set di coordinate <i>offsets</i> per un dato raggio di ricerca e
@@ -196,7 +196,7 @@ public class Search {
 				TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost());
 				
 
-				if(neighbourTile.isSuitable() || expandedTile.contains(neighbourTile))//FIXME see isSuitable
+				if(expandedTile.contains(neighbourTile))
 					continue;
 				if( !pathSources.containsKey(neighbourTile) || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())) {//FIXME
 					//TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost()); //FIXME altrimenti curTileSource.getTarget()
@@ -247,8 +247,7 @@ public class Search {
 						Tile neighbourTile = neighbourEntry.getValue();
 						Directions neighbourDirection = neighbourEntry.getKey();
 
-						//TODO guarda Tile.isSuitable()
-						if(neighbourTile.isSuitable() && !pathSources.containsKey(neighbourTile)) {
+						if(!pathSources.containsKey(neighbourTile)) {
 
 							pathSources.put(neighbourTile,curTileSource);
 

@@ -116,24 +116,31 @@ public class CombatSimulation {
 	 * </ul>
 	 * </p>
 	 */
-	private void moveGenerator(Set<Tile> myAnts, Set<Tile> enemyAnts){
-		Map<MovesModels, State> assignments = new TreeMap<>();
-		//per ogni moveModel
+	private List<Order> moveGenerator(State s) {
+		List<Order> output = new List<Order>();
+		
+		switch(move) {
+		case ATTACK:
+			attack();
+			break;
+		}
+		
+		return output;
 	}
 	
-	private State attack(Set<Tile> myAnts, Set<Tile> enemyAnts) {
-		State s;
-		Search sMy = new Search(myAnts, enemyAnts, null, false, false);//search_from_one_source ???
-		Search sEn = new Search(enemyAnts, myAnts, null, false, false);
-		Map<Tile,Directions> moves;
+	Map<MovesModels, State> assignments = new TreeMap<>();
+	//per ogni moveModel
+	
+	private List<Order> attack(State s) {
+		Set<Tile> target = new HashSet();
+			target.addAll(s.getEnemyAnts());
+			target.addAll(s.getEnemyHills());
 		
+		Search search = new Search(s.getMyAnts(), target, null, false, false);
 		
-		sMy.adaptiveSearch();
-		sEn.adaptiveSearch();
-		moves = qualcosa.getSourcesPlusMoves();
+		search.adaptiveSearch();
 		
-		
-		return s;//TODO
+		return ;
 	}
 	
 	
