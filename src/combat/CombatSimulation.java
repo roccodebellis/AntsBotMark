@@ -2,8 +2,11 @@ package combat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
+import game.Directions;
 import game.Game;
 import game.Tile;
 import search.Search;
@@ -113,10 +116,29 @@ public class CombatSimulation {
 	 * </ul>
 	 * </p>
 	 */
-	private void moveGenerator(Set<Tile> diQualcuno, MoveModels ){
-
-
+	private void moveGenerator(Set<Tile> myAnts, Set<Tile> enemyAnts){
+		Map<MovesModels, State> assignments = new TreeMap<>();
+		//per ogni moveModel
 	}
+	
+	private State attack(Set<Tile> myAnts, Set<Tile> enemyAnts) {
+		State s;
+		Search sMy = new Search(myAnts, enemyAnts, null, false, false);//search_from_one_source ???
+		Search sEn = new Search(enemyAnts, myAnts, null, false, false);
+		Map<Tile,Directions> moves;
+		
+		
+		sMy.adaptiveSearch();
+		sEn.adaptiveSearch();
+		moves = qualcosa.getSourcesPlusMoves();
+		
+		
+		return s;//TODO
+	}
+	
+	
+	
+	
 
 	/**
 	 * 
