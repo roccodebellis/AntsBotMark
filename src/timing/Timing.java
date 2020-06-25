@@ -1,21 +1,64 @@
-import moa.core.TimingUtils;
+package timing;
 
 public class Timing {
 	
-	/**
-	 *  //TODO preso da game
-	 */
-	private final int loadTime;
+	private final static long loadTime;
+	private final static int maxTurns;
+	private final static long turnTime;
 	
+	public static void setLoadTime(long loadTime2) {
+		Timing.loadTime = loadTime2;
+	}
+
 	/**
-	 *  //TODO preso da game
-	 */
-	private final int turnTime;
-	
-	
-	/**
+	 * Returns timeout for initializing and setting up the bot on turn 0.
 	 * 
+	 * @return timeout for initializing and setting up the bot on turn 0
 	 */
+	public long getLoadTime() {
+		return loadTime;
+	}
+	
+	public static void setMaxTurns(int turns) {
+		Timing.maxTurns = turns;
+	}
+	
+	public static int getTurnLeft(int currentTurn) {
+		return maxTurns - currentTurn;
+	}
+	
+	public static void setTurnTime(long turnTime) {
+		Timing.turnTime = turnTime;
+	}
+	
+	/**
+	 * Returns timeout for a single game turn, starting with turn 1.
+	 * 
+	 * @return timeout for a single game turn, starting with turn 1
+	 */
+	public long getTurnTime() {
+		return turnTime;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/////////////////////////////
+	
+	
 	private static long turnStartTime;
 	
 	//MODULI Combattimento
@@ -53,22 +96,6 @@ public class Timing {
 		return turnTime - (int) (System.currentTimeMillis() - turnStartTime);
 	}
 	
-	/**
-	 * Returns timeout for initializing and setting up the bot on turn 0.
-	 * 
-	 * @return timeout for initializing and setting up the bot on turn 0
-	 */
-	public int getLoadTime() {
-		return loadTime;
-	}
 
-	/**
-	 * Returns timeout for a single game turn, starting with turn 1.
-	 * 
-	 * @return timeout for a single game turn, starting with turn 1
-	 */
-	public int getTurnTime() {
-		return turnTime;
-	}
-
+	
 }

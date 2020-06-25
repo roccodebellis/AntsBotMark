@@ -1,14 +1,23 @@
+package search;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import vision.Offsets;
+import vision.Offset;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import game.Directions;
+import game.Game;
+import game.Tile;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -57,7 +66,7 @@ public class Search {
 	 */
 	private Boolean search_from_one_source;
 
-	Search(Set<Tile> sources, Set<Tile> targets, Integer radius, Boolean heuristic, Boolean search_from_one_source) {
+	public Search(Set<Tile> sources, Set<Tile> targets, Integer radius, Boolean heuristic, Boolean search_from_one_source) {
 		this.sources = sources;
 		this.targets = targets;
 		this.radius = radius;
@@ -82,10 +91,15 @@ public class Search {
 	public Set<Tile> adaptiveSearch() {
 		if (!radius.equals(null))
 			return staticSearch();
-		else if (heuristic)//se i targhet sono tutti di un certo tipo 
+		else if (heuristic) {//se i targhet sono tutti di un certo tipo 
+			
 			return extendedAStar();
-		else
+			
+		} else {
+			
 			return extendedBFS();
+			
+		}
 	}
 
 	/**
@@ -103,7 +117,7 @@ public class Search {
 	 */
 	private void callback(Tile result, Tile target, Directions cardinal, Directions opposite) {
 		// TODO
-		Game.setOrder() //ricordati di rimuovere la formica dalla lista delle formiche disponibili
+		//Game.setOrder() //ricordati di rimuovere la formica dalla lista delle formiche disponibili
 		
 	}
 
@@ -167,13 +181,13 @@ public class Search {
 
 			expandedTile.add(curTile);//FIXME
 
-			if(!(completedSources.contains(curTileSource.getTile()) && search_from_one_source))//FIXME
+			if(search_from_one_source && completedSources.contains(curTileSource.getTile()))//FIXME
 				continue;//continue while
 
 			if(targets.contains(curTile.getTile())) {
 				results.add(curTile.getTile());
 				if(search_from_one_source)//FIXME
-					completedSources.add(curTile.getTile());
+					completedSources.add(curTileSource.getTile());
 			}
 
 			for(Entry<Directions, Tile> neighbourEntry : curTile.getTile().getNeighbour().entrySet()) {
@@ -182,9 +196,9 @@ public class Search {
 				TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost());
 				
 
-				if(neighbourTile.isSuitable() || expandedTile.contains(neighbourTile))//FIXME
+				if(neighbourTile.isSuitable() || expandedTile.contains(neighbourTile))//FIXME see isSuitable
 					continue;
-				if( !pathSources.containsKey(neighbourTile) || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())) {//TODO +1
+				if( !pathSources.containsKey(neighbourTile) || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())) {//FIXME
 					//TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost()); //FIXME altrimenti curTileSource.getTarget()
 					
 					pathSources.put(neighbour,curTileSource);
@@ -198,7 +212,7 @@ public class Search {
 				}
 			}
 		}
-		result Results, PathSources, DirectionFromSource, DirectionFromTarghet;
+		//result Results, PathSources, DirectionFromSource, DirectionFromTarghet;
 	}
 
 	private Set<Tile> extendedBFS() {
@@ -257,7 +271,7 @@ public class Search {
 						}
 					});
 		}
-		return result, pathSources, directionFromSource, directionFromTarget; //TODO
+		//return result, pathSources, directionFromSource, directionFromTarget; //TODO
 	}
 }
 

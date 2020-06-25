@@ -1,3 +1,4 @@
+package game;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -7,6 +8,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import timing.Timing;
+import vision.Offset;
+import vision.Offsets;
 
 public class Game {
 
@@ -18,7 +23,7 @@ public class Game {
 
 	private final int viewRadius2;
 
-	private final int attackRadius2;
+	private final static int attackRadius2;
 
 	private final int spawnRadius2;
 
@@ -28,9 +33,9 @@ public class Game {
 
 	private Set<Tile> enemyHills;
 
-	private Set<Tile> ants; 
+	private static Set<Tile> myAnts; 
 
-	private Set<Tile> enemyAnts;
+	private static Set<Tile> enemyAnts;
 
 	private Set<Tile> foods;
 
@@ -62,19 +67,19 @@ public class Game {
 	 * @param attackRadius2 squared attack radius of each ant
 	 * @param spawnRadius2  squared spawn radius of each ant
 	 */
-	public Game(int loadTime, int turnTime, int rows, int cols, int turns, int viewRadius2, int attackRadius2, int spawnRadius2) {
-		this.loadTime = loadTime;
-		this.turnTime = turnTime;
+	public Game(long loadTime, long turnTime, int rows, int cols, int turns, int viewRadius2, int attackRadius2, int spawnRadius2) {
+		Timing.setLoadTime(loadTime);//
+		Timing.setTurnTime(turnTime);
 		setRows(rows);
 		setCols(cols);
-		this.turns = turns;
+		Timing.setMaxTurns(turns);
 		this.viewRadius2 = viewRadius2;
-		this.attackRadius2 = attackRadius2;
+		Game.attackRadius2 = attackRadius2;
 		this.spawnRadius2 = spawnRadius2;
 
 		hills = new TreeSet<Tile>();
 		enemyHills = new TreeSet<Tile>();
-		ants = new TreeSet<Tile>();
+		myAnts = new TreeSet<Tile>();
 		enemyAnts = new TreeSet<Tile>();
 		foods = new TreeSet<Tile>();
 		orders = new TreeSet<Order>();
@@ -184,6 +189,18 @@ public class Game {
 	private static Tile getTile(int row, int col) {
 		return map.get(row).get(col);
 	}
+	
+	public static Set<Tile> getMyAnts() {
+		return myAnts;
+	}
+	
+	public static Set<Tile> getEnemyAnts() {
+		return enemyAnts;
+	}
+	
+	public static int getAttackRadius() {
+		return attackRadius2;
+	}
 
 	public void clear() {
 		clearMyAnts();
@@ -199,8 +216,8 @@ public class Game {
 	 * Clears game state information about my ants locations.
 	 */
 	private void clearMyAnts() {
-		ants.parallelStream().forEachOrdered(ant -> ant.removeAnt());
-		ants.clear();
+		myAnts.parallelStream().forEachOrdered(ant -> ant.removeAnt());
+		myAnts.clear();
 	}
 
 	/**
@@ -258,7 +275,7 @@ public class Game {
 		unexplored.remove(curTile);
 
 		if(owner == 0) {
-			ants.add(curTile);
+			myAnts.add(curTile);
 			//setVision(curTile); richiamato da Bot.afterUpdate() con setVision()
 		} else
 			enemyAnts.add(curTile);
@@ -282,7 +299,7 @@ public class Game {
 		curTile.removeAnt();
 
 		if(owner == 0)
-			ants.remove(curTile);
+			myAnts.remove(curTile);
 		else
 			enemyAnts.remove(curTile);
 	}
@@ -306,7 +323,7 @@ public class Game {
 	 * 
 	 * @return location with <code>offset</code> from <cod>tile</code>
 	 */
-	static Tile getTile(Tile tile, Offset offset) {
+	public static Tile getTile(Tile tile, Offset offset) {
 		int row = (tile.getRow() + offset.getRow()) % rows;
 		if (row < 0) {
 			row += rows;
@@ -330,7 +347,7 @@ public class Game {
 	 */
 	public void setVision(boolean visibile) {
 		Set<Tile> inVision = new TreeSet<Tile>();
-		ants.parallelStream().forEachOrdered(ant -> inVision.addAll(getTiles(ant,visionOffsets)));
+		myAnts.parallelStream().forEachOrdered(ant -> inVision.addAll(getTiles(ant,visionOffsets)));
 		inVision.forEach(tile -> tile.setVisible(visibile));
 	}
 	
@@ -350,150 +367,6 @@ public class Game {
 		return t1.getRowDelta(t2)%rows + t1.getColDelta(t2)%cols;
 	}
 
+	
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	public ArrayList<ArrayList<Tile>> getMap() {
-		return map;
-	}
-
-	private void setMap(ArrayList<ArrayList<Tile>> map) {
-		this.map = map;
-	}
-
-
-
-	private Set<Tile> getMyAnts() {
-		return ants;
-	}
-
-	// NON ABBIAMO PIU' AVAILABLE e OCCUPIED//TODO
-	private void addMyAnt(Tile t) {
-		if (ants.isEmpty())
-			ants = new TreeSet<Tile>();
-		ants.add(t);
-	}
-
-	private Map<Integer, Set<Tile>> getEnemyAnts() {
-		return enemyAnts;
-	}
-
-	private void addEnemyAnts(int owner, Tile t) {
-		enemyAnts.get(owner).add(t);
-	}
-
-	private Set<Tile> getMyHills() {
-		return hills;
-	}
-
-	private void addMyHills(Tile t) {
-		hills.add(t);
-	}
-
-	private Set<Tile> getEnemyHills() {
-		return enemyHills;
-	}
-
-	private void addEnemyHills(List<Set<Tile>> enemyHills, Integer idPlayer, Tile tile) {
-		enemyHills.get(idPlayer).add(tile);
-	}
-
-	private Set<Tile> getFoodTiles() {
-		return foods;
-	}
-
-	/**
-	 * Returns game map height.
-	 * 
-	 * @return game map height
-	 */
-	public int getRows() {
-		return rows;
-	}
-
-	/**
-	 * Returns game map width.
-	 * 
-	 * @return game map width
-	 */
-	public int getCols() {
-		return cols;
-	}
-
-	/**
-	 * Returns maximum number of turns the game will be played.
-	 * 
-	 * @return maximum number of turns the game will be played
-	 */
-	public int getTurns() {
-		return turns;
-	}
-
-	/**
-	 * Returns squared view radius of each ant.
-	 * 
-	 * @return squared view radius of each ant
-	 */
-	public int getViewRadius2() {
-		return viewRadius2;
-	}
-
-	/**
-	 * Returns squared attack radius of each ant.
-	 * 
-	 * @return squared attack radius of each ant
-	 */
-	public int getAttackRadius2() {
-		return attackRadius2;
-	}
-
-	/**
-	 * Returns squared spawn radius of each ant.
-	 * 
-	 * @return squared spawn radius of each ant
-	 */
-	public int getSpawnRadius2() {
-		return spawnRadius2;
-	}
-
-	public TileTypes getTileType(Tile tile) {
-		return tile.getType();
-	}
 }

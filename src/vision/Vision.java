@@ -1,3 +1,4 @@
+package vision;
 
 /**
  * Vision module is the very first module to be run at a beginning of the agent’s

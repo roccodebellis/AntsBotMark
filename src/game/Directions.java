@@ -1,3 +1,4 @@
+package game;
 /**
  * Classe enumerativa che indica le possibili direzioni di percorrimento
  * a partire da/per raggiungere una {@link Tile}.
@@ -9,7 +10,7 @@ public enum Directions {
 	/**
 	 * Corrisponde al {@code NORD}.
 	 */
-	NORTH {
+	NORTH{
 		/**
 		 * Restituisce la direzione opposta a quella corrente ossia "SOUTH".
 		 * {@inheritDoc}

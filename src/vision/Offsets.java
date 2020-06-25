@@ -1,8 +1,11 @@
+package vision;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import game.Tile;
 /**
  * <p>Gestisce e computa gli insiemi di {@link Offset offset} per poter determinare
  * le {@link Tile} che ne circondano una di partenza in base ad un determinato raggio,

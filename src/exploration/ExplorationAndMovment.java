@@ -1,3 +1,6 @@
+package exploration;
+import search.Search;
+import vision.Vision;
 
 public class ExplorationAndMovment {
 

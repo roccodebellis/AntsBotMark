@@ -1,3 +1,4 @@
+package gathering;
 
 public class FoodCollection {
 	

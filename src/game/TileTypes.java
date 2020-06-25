@@ -1,3 +1,4 @@
+package game;
 /**
  * Classe enumerativa che elenca le varie tipologie che ogni {@link Tile tile}
  * puo' assumere.

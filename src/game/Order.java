@@ -1,9 +1,12 @@
+package game;
 /**
  * <p>Rappresenta un ordine da assegnare ad una formica posizionata su di una {@link Tile}
  * {@code t} verso una determinata {@link Directions direzione}, {@link #direction}.</p>
  * {@code t} e' caratterizzata da una {@link #row riga} e da una {@link #col colonna}.
  */
 public class Order {
+	
+	private final Tile tile;
 	/**
 	 * Riga della tile su cui si trova la formica che deve effettuare lo spostamento.
 	 */
@@ -24,8 +27,9 @@ public class Order {
      * @param direction {@link Directions direzione}e verso cui muovere la mia formica
      */
     public Order(Tile t, Directions direction) {
-    	row = t.getRow();
-        col = t.getCol();
+    	this.setTile(t);
+    	this.row = t.getRow();
+        this.col = t.getCol();
         this.direction = direction;
     }
     
@@ -39,4 +43,8 @@ public class Order {
     public String toString() {
         return "o " + row + " " + col + " " + direction;
     }
+
+	public Tile getTile() {
+		return tile;
+	}
 }

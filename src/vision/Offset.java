@@ -1,3 +1,6 @@
+package vision;
+import game.Tile;
+
 /**
  * Determina di quante {@link #deltaRow righe} e di quante {@link #deltaCol colonne}
  * ci si debba spostare, partendo da una {@link Tile}, per ottenerne un'altra
@@ -8,7 +11,7 @@
  * @author Debellis, Lorusso
  *
  */
-class Offset {
+public class Offset {
 	/**
 	 * Riga dell'{@link Offset} corrente.<br>E' il numero di righe da aggiungere
 	 * alla riga della {@link Tile tile} di partenza per poter ottenere

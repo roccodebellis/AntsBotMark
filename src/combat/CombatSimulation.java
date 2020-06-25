@@ -1,7 +1,12 @@
+package combat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import game.Game;
+import game.Tile;
+import search.Search;
 
 /**
  * <p>Questo modulo processa tutte le situazioni in cui le formiche degli agenti incontrano formiche nemiche
@@ -52,19 +57,33 @@ public class CombatSimulation {
 	 * </li>
 	 * </ul>
 	 */
-	public void situationRecognition(Tile myAnt, Tile enemy){
+	public void situationRecognition(Tile myAnt, Tile enemy){ 
 		//TROVARE UN MODO PER SAPERE SE LA FORMICA POSIZIONATA SUL TILE è disponibile 
 		// no, claudia isOccupied dice solo se quella tile è occupata da una formica!
 		myAntSet.add(myAnt);
 		enemyAntSet.add(enemy);
 
-		int attackRadius = getAttackRadius()*3;
+		int attackRadius = Game.getAttackRadius() * 3;
 
-		finche non ci sono piu formiche da aggiungere{
-			** = new Search(myAntSet, enemyAntSet, attackRadius, true, false);
-			//search.adaptiveSearch(myAntSet, enemyAntSet);
-			** = new Search(enemyAntSet, myAntSet, attackRadius, true, false);
-			//search.adaptiveSearch(enemyAntSet, myAntSet);
+		//FIXME ciclare solo sulle formiche aggiunte, prendere la diffrenza tra l'intersezione e l'insisme nuovo
+		//e considerare quelle formiche per la successiva iterata aggiungendole cmq alla lista delle myAntsSet
+
+		boolean addedAnts = false;
+		while(addedAnts){
+			addedAnts = false;
+			Search forEnemyAnts = new Search(myAntSet, Game.getEnemyAnts(), attackRadius, false, false);
+			Set<Tile> newEnemyFound = forEnemyAnts.adaptiveSearch();
+			if(newEnemyFound.size()> enemyAntSet.size()) {
+				addedAnts = true;
+				enemyAntSet = newEnemyFound;
+			}
+
+			Search forMyAnts = new Search(enemyAntSet, Game.getMyAnts(), attackRadius, false, false);
+			Set<Tile> newMyAntsFound = forMyAnts.adaptiveSearch();
+			if(newMyAntsFound.size()> myAntSet.size()) {
+				addedAnts = true;
+				myAntSet = newMyAntsFound;
+			}
 		}
 	}
 
@@ -94,48 +113,51 @@ public class CombatSimulation {
 	 * </ul>
 	 * </p>
 	 */
-	private void moveGenerator(){
+	private void moveGenerator(Set<Tile> diQualcuno, MoveModels ){
+
 
 	}
 
 	/**
 	 * 
-	 * aggiungere quando veine effettuata la traduzione che un punteggio di 1 eè assegnato se un nido
+	 * FIXME aggiungere quando veine effettuata la traduzione che un punteggio di 1 eè assegnato se un nido
 	 * nemico viene distruto
 	 */
-	Double private Evaluate( state) {
+	private double Evaluate(State s) {
 		Double MyLossMultiplier = 1.1D;
 		Double EnemyLossMultuplier = 1.0D;
 
+		double value;
+		
 		//TODO impostare mass radio in base al numero di formiche
-		if (state.getMyAntsNumber() > MassRatioThreshold) {
-			MassRatio = Math.max(1,Math.pow((state.getMyAntsNumber()+1)/(state.getEnemyAntsNumber()+1),2));
-			EnemyLossMultuplier * = MassRatio; 
+		if (s.getMyAntsNumber() > MassRatioThreshold) {
+			double massRatio = Math.max(1,Math.pow((s.getMyAntsNumber()+1)/(s.getEnemyAntsNumber()+1),2));
+			EnemyLossMultuplier *= massRatio; 
 		}
 
 		//TODO crescita logaritmica col passare dei turni a partire da una certa soglia
-		if(state.getTurnLeft()<50) 
-			EnemyLossMultuplier *=1,5D;
+		if(s.getTurnsLeft()<50) 
+			EnemyLossMultuplier *= 1.5D;
 
-		value = EnemyLossMultuplier * state.getEnemyLossesNumber() - MyLossMultiplier * state.getMyLossesNumber();
+		value = EnemyLossMultuplier * s.getEnemyLossesNumber() - MyLossMultiplier * s.getMyLossesNumber();
 
-		if(state.getMyLossesNumber() == state.getMyAntsNumber())
+		if(s.getMyLossesNumber() == s.getMyAntsNumber())
 			value -= 0.5;
-		else if (state.getEnemyLossesNumber() == state.getEnemyAntsNumber())
+		else if (s.getEnemyLossesNumber() == s.getEnemyAntsNumber())
 			value += 0.4;
 
-			//TODO RISCRIVERE FUNZIONE 
-			//considerando un pareggio 
-			//considerando in caso di pareggio se il numero di formiche uccise da me è maggiore 
-			//del numero di formiche perse
+		//TODO RISCRIVERE FUNZIONE 
+		//considerando un pareggio 
+		//considerando in caso di pareggio se il numero di formiche uccise da me è maggiore 
+		//del numero di formiche perse
 
-		value += state.getEnemyHillDestroyedNumber();
-		value -= state.getMyHillDestroyedNumber() * 5;
-		
-		value += state.getFoodCollectedFromMyants() /2;
-		value -= state.getFoodCollectedFromEnemy();
-		
-		
+		value += s.getEnemyHillDestroyedNumber();
+		value -= s.getMyHillDestroyedNumber() * 5;
+
+		value += s.getFoodCollectedFromMyAnts() /2;
+		value -= s.getFoodCollectedFromEnemy();
+
+
 		return value;
 	}
 
@@ -144,20 +166,20 @@ public class CombatSimulation {
 	MinMax(state, deadLine, deepth = 0) {
 		if(!AllowExtension(deadLine, depht))
 			return evaluate(state);
-		
+
 		Moves = generateMoves(state);
 		foreach(Move move: Moves){
 			childState = performMove(state,move);
 			childDeadline = getCurTime() + (DeadLine-getCurrentTime)/(GetNumberOfMoves-GetMoveNumber(move));
-			
+
 			if(isEnemyMove(childState))
 				resolveCombatAndFoodCollection(childState);
-			
+
 			MinMax(ChildState, ChildDeadline, Depth+1);
-			
+
 			state.addChild(childState);
 		}
-		
+
 	}
 
 	boolean AllowExtension(dedline, depth){

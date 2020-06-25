@@ -1,3 +1,4 @@
+package defaultpackage;
 /**
  * Provides basic game state handling.
  */

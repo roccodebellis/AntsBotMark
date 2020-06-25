@@ -1,5 +1,8 @@
+package game;
 import java.util.HashMap;
 import java.util.Map;
+
+import search.Search;
 
 /**
  * <p>Rappresenta e gestisce una {@code Tile}.<br>
@@ -354,8 +357,15 @@ public class Tile {
 
 
 	public boolean isSuitable() {
-		return (occupiedByAnt || (type.equals(TileTypes.HILL) && idOwner==0 )) ? false : true;
+		return true;
+		//return (occupiedByAnt || (type.equals(TileTypes.HILL) && idOwner==0 )) ? false : true;
 		//FIXME se è una formica nemica ????????
+		
+		//FIXME stiamo considerando isSuitable se c'è una formica nostra sopra
+		//ma questo considera il turno corrente e non il turno successivo! 
+		
+		//dovrebbe controllare in game se ad una formica è stato asssegnato di andare in questa tile
+		
 		//viene utilizzata da BFS
 	}
 	

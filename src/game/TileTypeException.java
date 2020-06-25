@@ -1,3 +1,4 @@
+package game;
 
 public class TileTypeException extends Exception {
 
