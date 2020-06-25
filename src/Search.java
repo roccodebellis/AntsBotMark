@@ -12,7 +12,11 @@ import java.util.TreeSet;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-
+/**
+ * 
+ * @author Debellis, Lorusso
+ *
+ */
 public class Search {
 	/**
 	 * Una o piu' posizioni di partenza da cui far partire la ricerca

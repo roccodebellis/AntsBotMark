@@ -4,25 +4,22 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 /**
- * <p>Gestisce e computa gli insiemi di {@link Offset} per poter determinare
- * le {@link Tile} di espansione a partire da una {@link Tile tile} situata
- * nella mappa del gioco; l'espansione cambia in base al raggio che e' stato
- * impostato per la computazione degli {@link Offset offset}.</p>
- * <p>Il calcolo di ogni insieme di {@link Offset} viene eseguito una singola volta
+ * <p>Gestisce e computa gli insiemi di {@link Offset offset} per poter determinare
+ * le {@link Tile} che ne circondano una di partenza in base ad un determinato raggio,
+ * {@code radius}.</p>
+ * Il calcolo di ogni insieme di {@link Offset offset} viene eseguito una singola volta
  * per ogni raggio e ne viene memorizzato il risultato all'interno di un contenitore
- * {@link #computedOffsets}.<br>
+ * {@link #computedOffsets}.
  * 
  * @see Offset
  * @author Debellis, Lorusso
  *
  */
 public class Offsets extends TreeSet<Offset> {
-	
 	/**
 	 * Contenitore degli insiemi di {@link Offset} computati per diversi raggi.
 	 */
 	static private Map<Integer, Set<Offset>> computedOffsets = new TreeMap<>();
-	
 	/**
 	 * Costruisce un oggetto di {@link Offsets}.<br> Il primo insieme di
 	 * {@link Offset} che viene inserito in {@link #computedOffsets} e'
@@ -33,7 +30,6 @@ public class Offsets extends TreeSet<Offset> {
 	public Offsets(int radius){
 		super(get(radius));
 	}
-	
 	/**
 	 * Restituisce l'insieme di {@link Offset} con raggio {@code radius}.<br>
 	 * Se non e' stato ancora calcolato, si richiama
@@ -46,7 +42,6 @@ public class Offsets extends TreeSet<Offset> {
 			computeOffset(radius);
 		return computedOffsets.get(radius);
 	}
-
 	/**
 	 * Calcola l'insieme di {@link Offset} con raggio {@code radius}.
 	 * @param radius raggio di cui si desidera ottenere il corrispondente {@link Offset}

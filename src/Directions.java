@@ -6,6 +6,9 @@
  *
  */
 public enum Directions {
+	/**
+	 * Corrisponde al {@code NORD}.
+	 */
 	NORTH {
 		/**
 		 * Restituisce la direzione opposta a quella corrente ossia "SOUTH".
@@ -25,6 +28,9 @@ public enum Directions {
 			return "N";
 		}
 	},
+	/**
+	 * Corrisponde all'{@code EST}.
+	 */
 	EAST{
 		/**
 		 * Restituisce la direzione opposta a quella corrente ossia "WEST".
@@ -43,6 +49,9 @@ public enum Directions {
 			return "E";
 		}
 	},
+	/**
+	 * Corrisponde al {@code SUD}.
+	 */
 	SOUTH{
 		/**
 		 * Restituisce la direzione opposta a quella corrente ossia "NORTH".
@@ -61,6 +70,9 @@ public enum Directions {
 			return "S";
 		}
 	},
+	/**
+	 * Corrisponde a {@code OVEST}.
+	 */
 	WEST{
 		/**
 		 * Restituisce la direzione opposta a quella corrente ossia "EAST".
