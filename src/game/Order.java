@@ -6,7 +6,7 @@ package game;
  */
 public class Order {
 	
-	private final Tile tile;
+	private Tile tile;
 	/**
 	 * Riga della tile su cui si trova la formica che deve effettuare lo spostamento.
 	 */
@@ -33,7 +33,12 @@ public class Order {
         this.direction = direction;
     }
     
-    /**
+    private void setTile(Tile t) {
+		this.tile = t;
+		
+	}
+
+	/**
      * <p>Genera la stringa contenente l'ordine da mandare al System Output.<br>
      * La stringa avra' il seguente aspetto: "{@code o }{@link #row} {@link #col} {@link #direction}" 
      * </p>

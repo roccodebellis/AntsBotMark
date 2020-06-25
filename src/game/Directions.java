@@ -1,4 +1,7 @@
 package game;
+
+import vision.Offset;
+
 /**
  * Classe enumerativa che indica le possibili direzioni di percorrimento
  * a partire da/per raggiungere una {@link Tile}.
@@ -28,13 +31,22 @@ public enum Directions {
 		public String toString() {
 			return "N";
 		}
+		
+		/**
+		 * <p>Restituisce {@code [-1, 0]} ossia l'offset della direzione NORTH.<p>
+		 * {@inheritDoc}
+		 */
+		@Override
+		public Offset getOffset() {
+			return new Offset(-1,0);
+		}
 	},
 	/**
 	 * Corrisponde all'{@code EST}.
 	 */
 	EAST{
 		/**
-		 * Restituisce la direzione opposta a quella corrente ossia "WEST".
+		 * <p>Restituisce la direzione opposta a quella corrente ossia "WEST".</p>
 		 * {@inheritDoc}
 		 */
 		@Override
@@ -48,6 +60,15 @@ public enum Directions {
 		@Override
 		public String toString() {
 			return "E";
+		}
+		
+		/**
+		 * <p>Restituisce {@code [0, 1]} ossia l'offset della direzione EAST.</p>
+		 * {@inheritDoc}
+		 */
+		@Override
+		public Offset getOffset() {
+			return new Offset(0,1);
 		}
 	},
 	/**
@@ -70,13 +91,22 @@ public enum Directions {
 		public String toString() {
 			return "S";
 		}
+		
+		/**
+		 * Restituisce {@code [1, 0]} ossia l'offset della direzione SOUTH
+		 * {@inheritDoc}
+		 */
+		@Override
+		public Offset getOffset() {
+			return new Offset(1,0);
+		}
 	},
 	/**
 	 * Corrisponde a {@code OVEST}.
 	 */
 	WEST{
 		/**
-		 * Restituisce la direzione opposta a quella corrente ossia "EAST".
+		 * <p>Restituisce la direzione opposta a quella corrente ossia "EAST".</p>
 		 * {@inheritDoc}
 		 */
 		@Override
@@ -92,6 +122,46 @@ public enum Directions {
 		public String toString() {
 			return "W";
 		}
+		
+		/**
+		 * <p>Restituisce {@code [0, -1]} ossia l'offset della direzione WEST.</p>
+		 * {@inheritDoc}
+		 */
+		@Override
+		public Offset getOffset() {
+			return new Offset(0,-1);
+		}
+	},
+	/**
+	 * Indica che non c'e' nessuno spostamento: la formica deve rimanere ferma.
+	 */
+	STAYSTILL {
+		/**
+		 * <p>Restituisce la direzione opposta a quella corrente ossia se stessa.</p>
+		 * {@inheritDoc}
+		 */
+		@Override
+		public Directions opponent() {
+			return STAYSTILL;
+		}
+
+		/**
+		 * <p>Restituisce "Stay Still!" ossia STAYSTILL.</p>
+		 * {@inheritDoc}
+		 */
+		@Override
+		public String toString() {
+			return "Stay Still!";
+		}
+		
+		/**
+		 * <p>Restituisce {@code [0, 0]} ossia l'offset della direzione WEST.</p>
+		 * {@inheritDoc}
+		 */
+		@Override
+		public Offset getOffset() {
+			return new Offset(0,0);
+		}
 	};
 	
 	/**
@@ -105,4 +175,9 @@ public enum Directions {
 	 */
 	public abstract String toString();
     
+	/**
+	 * 
+	 * @return l'{@link Offset offset} della {@link Directions direzione} corrente.
+	 */
+	public abstract Offset getOffset();
 }

@@ -33,7 +33,7 @@ public class Offset {
 	 * @param row Riga dell'{@link Offset} corrente
 	 * @param col Colonna dell'{@link Offset} corrente
 	 */
-	Offset(int row, int col) {
+	public Offset(int row, int col) {
 		this.deltaRow = row;
 		this.deltaCol = col;
 	}
