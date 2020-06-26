@@ -1,11 +1,14 @@
 package combat;
 
-public enum MovesModels {
+public enum MovesModels implements comparator{
 	ATTACK,
 	HOLD,
 	IDLE,
 	NORTH,
 	SOUTH,
 	EAST,
-	WEST
+	WEST;
+
+	abstract int getMoveNumber();
+	
 }
