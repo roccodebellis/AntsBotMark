@@ -19,10 +19,12 @@ import game.Tile;
  *
  */
 public class Offsets extends TreeSet<Offset> {
+	
 	/**
 	 * Contenitore degli insiemi di {@link Offset} computati per diversi raggi.
 	 */
-	static private Map<Integer, Set<Offset>> computedOffsets = new TreeMap<>();
+	private static Map<Integer, Set<Offset>> computedOffsets = new TreeMap<>();
+	
 	/**
 	 * Costruisce un oggetto di {@link Offsets}.<br> Il primo insieme di
 	 * {@link Offset} che viene inserito in {@link #computedOffsets} e'
@@ -33,6 +35,7 @@ public class Offsets extends TreeSet<Offset> {
 	public Offsets(int radius){
 		super(get(radius));
 	}
+	
 	/**
 	 * Restituisce l'insieme di {@link Offset} con raggio {@code radius}.<br>
 	 * Se non e' stato ancora calcolato, si richiama
@@ -45,6 +48,7 @@ public class Offsets extends TreeSet<Offset> {
 			computeOffset(radius);
 		return computedOffsets.get(radius);
 	}
+	
 	/**
 	 * Calcola l'insieme di {@link Offset} con raggio {@code radius}.
 	 * @param radius raggio di cui si desidera ottenere il corrispondente {@link Offset}
