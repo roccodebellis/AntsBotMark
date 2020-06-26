@@ -92,8 +92,12 @@ public class Timing {
 	 * @return how much time the bot has still has to take its turn before timing
 	 *         out
 	 */
-	public int getTimeRemaining() {
+	public long getTimeRemaining() {
 		return turnTime - (int) (System.currentTimeMillis() - turnStartTime);
+	}
+
+	public static long getCurTime() {	
+		return System.currentTimeMillis();
 	}
 	
 
