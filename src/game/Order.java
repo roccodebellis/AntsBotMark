@@ -7,14 +7,7 @@ package game;
 public class Order {
 	
 	private Tile tile;
-	/**
-	 * Riga della tile su cui si trova la formica che deve effettuare lo spostamento.
-	 */
-    private final int row;
-    /**
-     * Colonna della tile su cui si trova la formica che deve effettuare lo spostamento.
-     */
-    private final int col;
+
     /**
      * Direzione verso cui la formica deve effettuare lo spostamento.
      */
@@ -28,8 +21,7 @@ public class Order {
      */
     public Order(Tile t, Directions direction) {
     	this.setTile(t);
-    	this.row = t.getRow();
-        this.col = t.getCol();
+
         this.direction = direction;
     }
     
@@ -46,10 +38,48 @@ public class Order {
      */
     @Override
     public String toString() {
-        return "o " + row + " " + col + " " + direction;
+        return "o " + getRow() + " " + getCol() + " " + direction;
     }
+
+	private int getCol() {
+		return tile.getCol();
+	}
+
+	private int getRow() {
+		return tile.getRow();
+	}
 
 	public Tile getTile() {
 		return tile;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((direction == null) ? 0 : direction.hashCode());
+		result = prime * result + ((tile == null) ? 0 : tile.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Order other = (Order) obj;
+		if (direction != other.direction)
+			return false;
+		if (tile == null) {
+			if (other.tile != null)
+				return false;
+		} else if (!tile.equals(other.tile))
+			return false;
+		return true;
+	}
+	
+	
 }
