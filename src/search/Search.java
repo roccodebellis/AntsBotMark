@@ -125,9 +125,9 @@ public class Search {
 	}
 	
 	//TODO controllare
-	private Order getOrder (Tile origin, Directions cardinal, Directions opposite) {
+	private Order getOrder (Tile origin, Tile target, Directions cardinal, Directions opposite) {
 		if(search_from_one_source)
-			return new Order(origin, opposite);
+			return new Order(target, opposite);
 		else return new Order(origin, cardinal);
 	}
 	
@@ -138,7 +138,10 @@ public class Search {
 		while(itRes.hasNext()) {
 			Tile res = itRes.next();
 			Tile seed = pathSources.get(res);
-			Order newOrder = getOrder(seed, directionFromSource.get(seed), directionFromTarget.get(seed));
+			Order newOrder;
+			if(search_from_one_source)
+				newOrder = getOrder(res, seed, directionFromSource.get(seed), directionFromTarget.get(seed));
+			else newOrder = getOrder(seed, res, directionFromSource.get(seed), directionFromTarget.get(seed));
 			orders.add(newOrder);
 		}
 		
