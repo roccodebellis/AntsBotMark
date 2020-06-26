@@ -19,13 +19,13 @@ public class Game {
 
 	private static int cols;
 
-	private final int turns;
+	private static int turns;
 
-	private final int viewRadius2;
+	private static int viewRadius2;
 
-	private final static int attackRadius2;
+	private static int attackRadius2;
 
-	private final int spawnRadius2;
+	private static int spawnRadius2;
 
 	private final Offsets visionOffsets;
 
@@ -74,7 +74,7 @@ public class Game {
 		setCols(cols);
 		Timing.setMaxTurns(turns);
 		this.viewRadius2 = viewRadius2;
-		Game.attackRadius2 = attackRadius2;
+		this.attackRadius2 = attackRadius2;
 		this.spawnRadius2 = spawnRadius2;
 
 		myHills = new TreeSet<Tile>();
@@ -207,8 +207,16 @@ public class Game {
 	}
 	
 	
-	public static int getAttackRadius() {
+	static int getAttackRadius() {
 		return attackRadius2;
+	}
+	
+	static int getViewRadius() {
+		return viewRadius2;
+	}
+	
+	static int getSpawnRadius() {
+		return spawnRadius2;
 	}
 
 	public void clear() {
@@ -372,10 +380,16 @@ public class Game {
 		//System.out.println(order); TODO
 	}
 	
+	/**
+	 * <p>Permette di calcolare la distanza tra due {@link Tile tile}
+	 * per mezzo di una Euristica che non sovrastima la loro reale distanza.</p>
+	 * <p>L'Euristica utilizzata e' una sorta di distanza di Manhattan modificata.</p>
+	 * 
+	 * @param t1 {@link Tile tile} di cui calcolare la distanza da {@code t2}
+	 * @param t2 {@link Tile tile} di cui calcolare la distanza da {@code t1}
+	 * @return distanza tra {@code t1} e {@code t2}
+	 */
 	public static int getDistance(Tile t1, Tile t2) {
 		return t1.getRowDelta(t2)%rows + t1.getColDelta(t2)%cols;
 	}
-
-	
-
 }

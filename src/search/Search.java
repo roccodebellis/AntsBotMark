@@ -218,8 +218,11 @@ public class Search {
 				if(search_from_one_source)//FIXME
 					completedSources.add(curTileSource.getTile());
 			}
-
-			for(Entry<Directions, Tile> neighbourEntry : curTile.getTile().getNeighbour().entrySet()) {
+			//TODO controlla
+			Iterator<Map.Entry<Directions, Tile>> itNeigh = curTile.getTile().getNeighbour().entrySet().iterator();
+			Entry<Directions, Tile> neighbourEntry;
+			while(it.hasNext()) {
+				neighbourEntry = itNeigh.next();
 				Tile neighbourTile = neighbourEntry.getValue();
 				Directions neighborDirection = neighbourEntry.getKey();
 				TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost());		
@@ -239,6 +242,28 @@ public class Search {
 					frontier.add(neighbour);
 				}
 			}
+			//Cosi' da errore
+			/*
+			for(Entry<Directions, Tile> neighbourEntry : curTile.getTile().getNeighbour().entrySet()) {
+				Tile neighbourTile = neighbourEntry.getValue();
+				Directions neighborDirection = neighbourEntry.getKey();
+				TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost());		
+
+				if(expandedTile.contains(neighbourTile))
+					continue;
+				if( !pathSources.containsKey(neighbourTile) || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())) {//FIXME
+					//TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost()); //FIXME altrimenti curTileSource.getTarget()
+					
+					pathSources.put(neighbour,curTileSource);
+
+					directionFromSource.put(neighbourTile, 
+							directionFromSource.containsKey(curTile) ? directionFromSource.get(curTile) : neighborDirection);
+
+					directionFromTarget.put(neighbourTile, neighborDirection.opponent());
+
+					frontier.add(neighbour);
+				}
+			}*/
 		}
 		Map<Tile,Tile> tileSources = new HashMap(pathSources.entrySet().parallelStream().collect(Collectors.toMap(e -> e.getKey().getTile(), e -> e.getValue().getTile())));
 		
@@ -300,7 +325,7 @@ public class Search {
 						}
 					});
 		}
-		//return result, pathSources, directionFromSource, directionFromTarget; //TODO
+		return result, pathSources, directionFromSource, directionFromTarget; //TODO
 	}
 }
 

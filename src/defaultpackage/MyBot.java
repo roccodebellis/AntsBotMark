@@ -5,6 +5,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import game.Game;
+import game.Tile;
+
 public class MyBot extends Bot {
 
 	/**

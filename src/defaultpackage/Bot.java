@@ -1,4 +1,8 @@
 package defaultpackage;
+
+import game.Game;
+import timing.Timing;
+
 /**
  * Provides basic game state handling.
  */
