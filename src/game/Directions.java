@@ -23,6 +23,11 @@ public enum Directions {
 			return Directions.SOUTH;
 		}
 		
+		@Override
+		public Directions next() {
+			return Directions.EAST;
+		}
+		
 		/**
 		 * <p>Restituisce "N" ossia NORTH.</p>
 		 * <center>----------------</center> {@inheritDoc}
@@ -53,6 +58,12 @@ public enum Directions {
 		public Directions opponent() {
 			return Directions.WEST;
 		}
+		
+		@Override
+		public Directions next() {
+			return Directions.SOUTH;
+		}
+		
 		/**
 		 * <p>Restituisce "E" ossia EAST.</p>
 		 * <center>----------------</center> {@inheritDoc}
@@ -83,6 +94,12 @@ public enum Directions {
 		public Directions opponent() {
 			return Directions.NORTH;
 		}
+		
+		@Override
+		public Directions next() {
+			return Directions.WEST;
+		}
+		
 		/**
 		 * <p>Restituisce "S" ossia SOUTH.</p>
 		 * <center>----------------</center> {@inheritDoc}
@@ -112,6 +129,11 @@ public enum Directions {
 		@Override
 		public Directions opponent() {
 			return Directions.EAST;
+		}
+		
+		@Override
+		public Directions next() {
+			return Directions.NORTH ;
 		}
 		
 		/**
@@ -168,6 +190,8 @@ public enum Directions {
 	 * @return la direzione opposta a quella corrente
 	 */
 	public abstract Directions opponent();
+	
+	public abstract Directions next();
 	
 	/**
 	 * @return la stringa contenente la lettera

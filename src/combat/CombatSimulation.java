@@ -1,11 +1,13 @@
 package combat;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import game.Directions;
 import game.Game;
@@ -121,34 +123,84 @@ public class CombatSimulation {
 	 */
 	private List<Order> moveGenerator(State s) {
 		List<Order> output = new LinkedList<Order>();
-		
 		switch(move) {
 		case ATTACK:
 			attack();
 			break;
 		}
-		
+
 		return output;
 	}
-	
+
 	Map<MovesModels, State> assignments = new TreeMap<>();
 	//per ogni moveModel
-	
-	private List<Order> attack(State s) {
-		Set<Tile> target = new HashSet();
-			target.addAll(s.getEnemyAnts());
-			target.addAll(s.getEnemyHills());
-		
-		Search search = new Search(s.getMyAnts(), target, null, false, false);
-		
-		search.adaptiveSearch();
-		
-		return ;
+
+	private Set<Order> attack(State s) {
+		Set<Tile> targets = new HashSet();
+		targets.addAll(s.getEnemyAnts());
+		targets.addAll(s.getEnemyHills());
+
+		Search search = new Search(s.getMyAnts(), targets, null, false, false);
+
+		return search.adaptiveSearch();
 	}
+
+
+	private Set<Order> hold(State s) {
+		double targetDistance = isEnemyMove(s) ? AttackRadius+1 : AttackRadius+2;
+		
+		
+		Iterator<Tile> targetsItr = targets.iterator();
+
+		if(targetsItr.hasNext()) {
+			Tile minTarget = targetsItr.next();
+			int minDist = Game.getDistance(minTarget,tile);
+
+			while (targetsItr.hasNext()) {
+				Tile next = targetsItr.next();
+				int nextDist = Game.getDistance(next,tile);
+				if (nextDist < minDist) {
+					minTarget = next;
+					minDist = nextDist;
+				}
+			}
+			heuristicValue = minDist;
+			target = minTarget;
+		}
+
+		Search search = new Search(s.getMyAnts(),s.getEnemyAnts(),null,false,false);
+		targhetTiles = search.adaptiveSearch();
+
+		search = new Search(s.getMyAnts(),targhetTiles,null,false,false);
+		return search.adaptiveSearch();
+	}
+
+	private Set<Order> idle(State s) {
+		return s.getMyAnts().parallelStream().map(ant -> new Order(ant,Directions.STAYSTILL)).collect(Collectors.toSet());
+	}
+
+	private Set<Order> directional(State s, Direction m) {
+		//m deve essere NORD SUD EST OVEST
+		Set<Order> orders = new HashSet();
+
+		s.getMyAnts().forEach(a -> {
+			Tile target = a.getNeighbour().get(m);
 	
-	
-	
-	
+			if(target.equals(null)) //acqua
+				if(orders.contains(a)) //order.getTile == a
+					dovecazzo ti mando ??;
+				else
+					orders.add(new Order(a,STAYSTILL));
+			else 
+				if(orders.contains(targhet))
+					if(orders.contains(a))
+						doveti mando;
+					else
+						orders.add(new Order(a,STAYSTILL));
+				else
+					orders.add(new Order(a,m));
+		});
+	}
 
 	/**
 	 * 
@@ -160,7 +212,7 @@ public class CombatSimulation {
 		Double EnemyLossMultuplier = 1.0D;
 
 		double value;
-		
+
 		//TODO impostare mass radio in base al numero di formiche
 		if (s.getMyAntsNumber() > MassRatioThreshold) {
 			double massRatio = Math.max(1,Math.pow((s.getMyAntsNumber()+1)/(s.getEnemyAntsNumber()+1),2));
