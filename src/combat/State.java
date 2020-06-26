@@ -4,87 +4,113 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
+import game.Directions;
+import game.Game;
 import game.Order;
 import game.Tile;
 import timing.Timing;
 
 public class State {
-	
-	
-	Set<Tile> myAnts;
-	Set<Tile> enemyAnts;
-	Set<Tile> enemyHills;
-	
 
+
+	Set<Tile> ants;
+	Set<Tile> opponentAnts;
 	
+	Set<Tile> antsHills;
+	Set<Tile> opponentHills;
 	
-	Set<Tile> myLosses;
-	Set<Tile> enemyLosses;
-	Set<Tile> myHillDestroyed;
-	Set<Tile> enemyHillDestroyed;
-	Set<Tile> myFoodCollected;
-	Set<Tile> enemyFoodCollected;
+	Set<Tile> antsHillsDestroyed;
+	Set<Tile> opponentHillsDestroyed;
+
+	Set<Tile> antsLosses;
+	Set<Tile> opponentLosses;
+
+	Set<Tile> antsFoodCollected;
+	Set<Tile> opponentFoodCollected;
+
 	int currentTurn;
+
+	boolean isEnemyMoves;
 	
-	
-	State(int turn, List<Order> myAntsOrders, List<Order> enemyAntsOrders) {
+	Set<State> child;
+
+
+	State(int turn, List<Order> myAntsOrders, List<Order> enemyAntsOrders, boolean enemyMoves) {
+		child = new TreeSet<State>();
+		isEnemyMoves = enemyMoves;
 		this.currentTurn = turn;
-
-	}
-	
-	public Set<Tile> getMyAnts() {
-		return myAnts;
-	}
-	
-	public Set<Tile> getEnemyAnts() {
-		return enemyAnts;
 	}
 
-	public Set<Tile> getEnemyHills() {
-		return enemyAnts;
+
+	public boolean isEnemyMove() {
+		return isEnemyMoves;
 	}
 	
-	
-	
-	
+	public Set<Tile> getAnts() {
+		return ants;
+	}
 
-	int getTurnsLeft(){
+	public int getAnts_number() {
+		return ants.size();
+	}
+
+	public Set<Tile> getOpponentAnts() {
+		return opponentAnts;
+	}
+	
+	public Set<Tile> getOpponentHills() {
+		return opponentHills;
+	}
+	
+	public int getOpponentAnts_number() {
+		return opponentAnts.size();
+	}
+
+	public int getTurnsLeft() {
 		return Timing.getTurnLeft(currentTurn);
 	}
 
-	public int getMyAntsNumber() {
-		return my;
+	public int getAntsLosses_number() {
+		return antsLosses.size();
 	}
 
-	public int getEnemyAntsNumber() {
-		return enemy;
+	public int getOpponentLosses_number() {
+		return opponentLosses.size();
 	}
 
-	public int getMyLosses() {
-		return myLosses;
+	public int getOpponentHillDestroyed_number() {
+		return opponentHillsDestroyed.size();
 	}
 
-	public int getEnemyLosses() {
-		return enemyLosses;
+	public int getAntsHillDestroyed_number() {
+		return antsHillsDestroyed.size();
 	}
 
-	public int getEnemyHillDestroyed() {
-
-		return enemyHillDestroyed;
+	public int getAntsFoodCollected_number() {
+		return antsFoodCollected.size();
 	}
-
-	public int getMyHillDestroyed() {
-		return myHillDestroyed;
-	}
-
-	public int getEnemyFoodCollected() {
-		return enemyFoodCollected;
-	}
-
-	public int getMyFoodCollected() {
-		return myFoodCollected;
-	}
-
 	
+	public int getOpponentFoodCollected_number() {
+		return opponentFoodCollected.size();
+	}
+
+
+	public State performMove(Set<Order> moves) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public void resolveCombatAndFoodCollection() {
+		// TODO Auto-generated method stub
+	}
+
+
+	public void addChild(State childState) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
