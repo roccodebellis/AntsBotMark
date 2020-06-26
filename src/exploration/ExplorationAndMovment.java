@@ -1,4 +1,8 @@
 package exploration;
+import java.util.Set;
+
+import game.Game;
+import game.Order;
 import search.Search;
 import vision.Vision;
 
@@ -11,15 +15,15 @@ public class ExplorationAndMovment {
 
 	inviare formiche in aree non esplorate
 
-	toUnexploredArea() {
-		Search s = new Search(availableAnts, targetOfAllUnexploratedArea, null =radius, true, false);
-		//BFS
-		adaptiveSearch();
+	private void toUnexploredArea() {
+		Search s = new Search(Game.getMyAnts(), Game.getUnexplored(), null, false, false);
+		Set<Order> orders = s.adaptiveSearch(); //FIXME
+		Game.issueOrders(orders);
 	}
 
-	toInvisibleArea() {
-		targhetInvisible = Vision.getTargets();
-		Search s = new Search(availableAnts, targhetInvisible, null =radius, true, false);
+	private void toInvisibleArea() {
+		targetInvisible = Vision.getTargets();
+		Search s = new Search(availableAnts, targetInvisible, null =radius, true, false);
 		//BFS ???
 		adaptiveSearch();
 	}
