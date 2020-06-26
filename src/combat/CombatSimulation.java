@@ -7,13 +7,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import defaultpackage.Configuration;
 import game.Directions;
 import game.Game;
 import game.Order;
 import game.Tile;
 import search.Search;
+import timing.Timing;
 import vision.Offset;
 
 /**
@@ -39,9 +42,25 @@ import vision.Offset;
  *
  */
 public class CombatSimulation {
+	
+	Set<Tile> myAntSet;
+	Set<Tile> enemyAntSet;
+	
+	State root;
+	
+	public CombatSimulation(Tile myAnt, Tile enemyAnt, long deadLine) {
+		situationRecognition(myAnt,enemyAnt);
+		
+		root = new State(0, myAntSet, enemyAntSet, false);
+		MinMax(root, deadLine, 0);	
+	}
+	
+	List<Order> getMoves(){
+		return root.getFirstChild();
+	}
 
-	private Set<Tile> myAntSet = new HashSet<>();
-	private Set<Tile> enemyAntSet = new HashSet<>();
+	
+
 	/**
 	 * Dopo aver incontrato una formica nemica nel range di visione di una delle formiche
 	 * dell'agente, {@link CombatSimulation} provera' per prima cosa a trovare tutte le formiche
@@ -65,11 +84,14 @@ public class CombatSimulation {
 	 * </li>
 	 * </ul>
 	 */
-	public void situationRecognition(Tile myAnt, Tile enemy){ 
+	public void situationRecognition(Tile myAnt, Tile enemyAnt){ 
 		//TROVARE UN MODO PER SAPERE SE LA FORMICA POSIZIONATA SUL TILE è disponibile 
 		// no, claudia isOccupied dice solo se quella tile è occupata da una formica!
+		Set<Tile> myAntSet = new HashSet<>();
+		Set<Tile> enemyAntSet = new HashSet<>();
+		
 		myAntSet.add(myAnt);
-		enemyAntSet.add(enemy);
+		enemyAntSet.add(enemyAnt);
 
 		int attackRadius = Game.getAttackRadius() * 3;
 
@@ -121,13 +143,16 @@ public class CombatSimulation {
 	 * </ul>
 	 * </p>
 	 */
-	private List<Order> moveGenerator(State s) {
-		List<Order> output = new LinkedList<Order>();
-		switch(move) {
-		case ATTACK:
-			attack();
-			break;
-		}
+	private Map<MovesModels,Set<Order>> movesGenerator(State s) {
+		Map<MovesModels,Set<Order>> output = new HashMap<MovesModels,Set<Order>>();
+
+		output.put(MovesModels.ATTACK, attack(s));
+		output.put(MovesModels.HOLD, hold(s));
+		output.put(MovesModels.IDLE,idle(s));
+		output.put(MovesModels.NORTH, directional(s,Directions.NORTH));
+		output.put(MovesModels.SOUTH, directional(s,Directions.SOUTH));
+		output.put(MovesModels.EAST, directional(s,Directions.EAST));
+		output.put(MovesModels.WEST, directional(s,Directions.WEST));
 
 		return output;
 	}
@@ -136,70 +161,69 @@ public class CombatSimulation {
 	//per ogni moveModel
 
 	private Set<Order> attack(State s) {
-		Set<Tile> targets = new HashSet();
-		targets.addAll(s.getEnemyAnts());
-		targets.addAll(s.getEnemyHills());
+		Set<Tile> targets = new HashSet<Tile>();
+		targets.addAll(s.getOpponentAnts());
+		targets.addAll(s.getOpponentHills());
 
-		Search search = new Search(s.getMyAnts(), targets, null, false, false);
+		Search search = new Search(s.getAnts(), targets, null, false, false);
 
-		return search.adaptiveSearch();
+		//return search.adaptiveSearch();
 	}
 
 
 	private Set<Order> hold(State s) {
-		double targetDistance = isEnemyMove(s) ? AttackRadius+1 : AttackRadius+2;
-		
-		
-		Iterator<Tile> targetsItr = targets.iterator();
+		double targetDistance = Game.getAttackRadius() + (s.isEnemyMove() ? 1 : 2);
+		Set<Order> ordersAssigned = new TreeSet<Order>();
 
-		if(targetsItr.hasNext()) {
-			Tile minTarget = targetsItr.next();
-			int minDist = Game.getDistance(minTarget,tile);
+		Iterator<Tile> antsItr = s.getAnts().iterator();
+		while(antsItr.hasNext()) {
 
-			while (targetsItr.hasNext()) {
-				Tile next = targetsItr.next();
-				int nextDist = Game.getDistance(next,tile);
-				if (nextDist < minDist) {
-					minTarget = next;
-					minDist = nextDist;
+			Tile ant = antsItr.next();
+
+			Iterator<Tile> targetsItr = s.getOpponentAnts().iterator();
+
+			if(targetsItr.hasNext()) {
+				Tile minTarget = targetsItr.next();
+				int minDist = Game.getDistance(ant,minTarget);
+
+				while (targetsItr.hasNext()) {
+					Tile next = targetsItr.next();
+					int nextDist = Game.getDistance(ant,next);
+					if (nextDist < minDist) {
+						minTarget = next;
+						minDist = nextDist;
+					}
 				}
+				ordersAssigned.add(moveBackOrForward(s, ordersAssigned, ant, minTarget, minDist, targetDistance));
 			}
-			heuristicValue = minDist;
-			target = minTarget;
 		}
-
-		Search search = new Search(s.getMyAnts(),s.getEnemyAnts(),null,false,false);
-		targhetTiles = search.adaptiveSearch();
-
-		search = new Search(s.getMyAnts(),targhetTiles,null,false,false);
-		return search.adaptiveSearch();
+		return ordersAssigned;
 	}
 
 	private Set<Order> idle(State s) {
-		return s.getMyAnts().parallelStream().map(ant -> new Order(ant,Directions.STAYSTILL)).collect(Collectors.toSet());
+		return s.getAnts().parallelStream().map(ant -> new Order(ant,Directions.STAYSTILL)).collect(Collectors.toSet());
 	}
 
-	private Set<Order> directional(State s, Direction m) {
+	private Set<Order> directional(State s, Directions m) {
+		
+		//FIXME assunzioni forte in questa classe! 
 		//m deve essere NORD SUD EST OVEST
-		Set<Order> orders = new HashSet();
+		Set<Order> orders = new HashSet<Order>();
 
-		s.getMyAnts().forEach(a -> {
+		s.getAnts().forEach(a -> {
 			Tile target = a.getNeighbour().get(m);
-	
+
 			if(target.equals(null)) //acqua
-				if(orders.contains(a)) //order.getTile == a
-					dovecazzo ti mando ??;
+				orders.add(new Order(a,Directions.STAYSTILL));
+			else {
+				Order o = new Order(a,m);
+				if(orders.contains(o))
+					orders.add(new Order(a,Directions.STAYSTILL));
 				else
-					orders.add(new Order(a,STAYSTILL));
-			else 
-				if(orders.contains(targhet))
-					if(orders.contains(a))
-						doveti mando;
-					else
-						orders.add(new Order(a,STAYSTILL));
-				else
-					orders.add(new Order(a,m));
+					orders.add(o);
+			}
 		});
+		return orders;
 	}
 
 	/**
@@ -207,27 +231,25 @@ public class CombatSimulation {
 	 * FIXME aggiungere quando veine effettuata la traduzione che un punteggio di 1 eè assegnato se un nido
 	 * nemico viene distruto
 	 */
-	private double Evaluate(State s) {
-		Double MyLossMultiplier = 1.1D;
-		Double EnemyLossMultuplier = 1.0D;
+	private double evaluate(State s) {
+		Double AntsMultiplier = 1.1D;
+		Double OpponentMultiplier = 1.0D;
 
 		double value;
 
 		//TODO impostare mass radio in base al numero di formiche
-		if (s.getMyAntsNumber() > MassRatioThreshold) {
-			double massRatio = Math.max(1,Math.pow((s.getMyAntsNumber()+1)/(s.getEnemyAntsNumber()+1),2));
-			EnemyLossMultuplier *= massRatio; 
-		}
+		if (s.getAnts_number() > MassRatioThreshold) 
+			OpponentMultiplier *= Math.max(1,Math.pow((s.getAnts_number()+1)/(s.getOpponentAnts_number()+1),2));
 
 		//TODO crescita logaritmica col passare dei turni a partire da una certa soglia
 		if(s.getTurnsLeft()<50) 
-			EnemyLossMultuplier *= 1.5D;
+			OpponentMultiplier *= 1.5D;
 
-		value = EnemyLossMultuplier * s.getEnemyLossesNumber() - MyLossMultiplier * s.getMyLossesNumber();
+		value = OpponentMultiplier * s.getOpponentLosses_number() - AntsMultiplier * s.getAntsLosses_number();
 
-		if(s.getMyLossesNumber() == s.getMyAntsNumber())
+		if(s.getAntsLosses_number() == s.getAnts_number())
 			value -= 0.5;
-		else if (s.getEnemyLossesNumber() == s.getEnemyAntsNumber())
+		else if (s.getOpponentLosses_number() == s.getOpponentAnts_number())
 			value += 0.4;
 
 		//TODO RISCRIVERE FUNZIONE 
@@ -235,11 +257,11 @@ public class CombatSimulation {
 		//considerando in caso di pareggio se il numero di formiche uccise da me è maggiore 
 		//del numero di formiche perse
 
-		value += s.getEnemyHillDestroyedNumber();
-		value -= s.getMyHillDestroyedNumber() * 5;
+		value += s.getOpponentHillDestroyed_number();
+		value -= s.getAntsHillDestroyed_number() * 5;
 
-		value += s.getFoodCollectedFromMyAnts() /2;
-		value -= s.getFoodCollectedFromEnemy();
+		value += s.getAntsFoodCollected_number() /2;
+		value -= s.getOpponentFoodCollected_number();
 
 
 		return value;
@@ -247,96 +269,51 @@ public class CombatSimulation {
 
 
 
-	MinMax(state, deadLine, deepth = 0) {
-		if(!AllowExtension(deadLine, depht))
-			return evaluate(state);
+	private double MinMax(State state, long deadLine, int depth) {
+		if(AllowExtension(deadLine, depth)) {
 
-		Moves = generateMoves(state);
-		foreach(Move move: Moves){
-			childState = performMove(state,move);
-			childDeadline = getCurTime() + (DeadLine-getCurrentTime)/(GetNumberOfMoves-GetMoveNumber(move));
+			Map<MovesModels,Set<Order>> movesSet = movesGenerator(state);
 
-			if(isEnemyMove(childState))
-				resolveCombatAndFoodCollection(childState);
+			movesSet.entrySet().parallelStream().forEachOrdered( movesEntry -> {
+				MovesModels moveType = movesEntry.getKey();
+				Set<Order> moves = movesEntry.getValue();
 
-			MinMax(ChildState, ChildDeadline, Depth+1);
+				State childState = state.performMove(moves);
+				long curTime = Timing.getCurTime();
+				long childDeadline = curTime + (deadLine-curTime)/(movesSet.size()-moveType.getMoveNumber());//FIXME getNumber of Moves forse è il numero di mosse in questo calcolo
 
-			state.addChild(childState);
-		}
+				if(childState.isEnemyMove())
+					childState.resolveCombatAndFoodCollection();
 
+				MinMax(childState, childDeadline, depth+1);
+
+				state.addChild(childState);
+			});}
+		return evaluate(state);
 	}
 
-	boolean AllowExtension(deadline, depth){
-		return (depth%2 == 0) || (depth < maximundepth && deadline > getCurrentTime+GetExtensikonEstimate); 
-	}
-	
-	//dir sara' verso nemico o retrocessione
-	//radius sara' attackRadius+2 se ant = myAnt, attackRadius+1 altrimenti
-	/*private List<Order> moveBackOrForward(Tile ant, Tile enemy, Directions dir, int radius){
-		List<Order> orders = new LinkedList<>();
-		int deltaRow = dir.getOffset().getRow();
-		int deltaCol = dir.getOffset().getCol();
-		int approach;
-		int distance = Game.getDistance(ant, enemy);
-		if(distance > radius) {
-			approach = Game.getDistance(ant, enemy) - radius;
-			for(int i=0; i < approach; i++) {
-				Tile succ = Game.getTile(ant, new Offset(deltaRow, deltaCol));
-				if(succ.isOccupiedByAnt()) {
-					for(Directions d : Directions.values()) {
-						if(d!=Directions.STAYSTILL && d!=dir && d!= dir.opponent()) {
-							succ = Game.getTile(ant, new Offset(d.getOffset().getRow(), d.getOffset().getRow()));
-							if(!succ.isOccupiedByAnt()) {
-								orders.add(new Order(succ, d));
-								break;
-							}
-						}
-					}
-				} else orders.add(new Order(succ, dir));
-			}
-		}else if (distance<radius) {
-			
-		} //else stay still
-		return orders;
-	}*/
-	
-	private List<Order> moveBackOrForward(Tile ant, Tile enemy, Directions dir, int radius){
-		List<Order> orders = new LinkedList<Order>();
-		int approach;
-		int distance = Game.getDistance(ant, enemy);
-		if(distance > radius) {
-			approach = Game.getDistance(ant, enemy) - radius;
-			orders = checkOrders(ant, approach, dir);
-		}else if (distance<radius) {
-			approach = Game.getDistance(ant, enemy) + radius;
-			orders = checkOrders(ant, approach, dir.opponent());
-		} else orders.add(new Order(ant, Directions.STAYSTILL));
-		return orders;
-	}
-	
-	private List<Order> checkOrders(Tile ant, int distance, Directions dir) {
-		List<Order> orders = new LinkedList<>();
-		int deltaRow = dir.getOffset().getRow();
-		int deltaCol = dir.getOffset().getCol();
-		for(int i=0; i < distance; i++) {
-			Tile succ = Game.getTile(ant, new Offset(deltaRow, deltaCol));
-			if(succ.isOccupiedByAnt()) {
-				for(Directions d : Directions.values()) {
-					if(d!=Directions.STAYSTILL && d!=dir && d!= dir.opponent()) {
-						succ = Game.getTile(ant, new Offset(d.getOffset().getRow(), d.getOffset().getRow()));
-						if(!succ.isOccupiedByAnt()) {
-							orders.add(new Order(succ, d));
-							break;
-						}
-					}
-				}
-			} else orders.add(new Order(succ, dir));
-		}
-		return orders;
+	boolean AllowExtension(long deadline, int depth){
+		return (depth%2 == 0) || (depth < Configuration.getCombatModuleMinMaxMaxDepth() && deadline > Timing.getCurTime()+GetExtensionEstimate); 
 	}
 
 
+	private Order moveBackOrForward(State s, Set<Order> ordersAssigned, Tile ant, Tile enemy, int distance, double radius) {
 
+		Directions dir = Game.getDirection(ant, enemy);
+		if(distance<radius)
+			dir = dir.opponent();
+		Order order;
 
+		if(distance != radius) {
+			order = new Order(ant, dir);
+			if(ordersAssigned.contains(order)|| s.qualcosa(order)) {
+				order = new Order(ant,dir.next());
+				if(ordersAssigned.contains(order)|| s.qualcosa(order))
+					order = new Order(ant,Directions.STAYSTILL);
+			} 
+
+		} else order = new Order(ant, Directions.STAYSTILL);
+		return order;
+	}
 
 }
