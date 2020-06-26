@@ -166,7 +166,7 @@ public class Tile {
 	 * {@code = false} la {@link Tile tile} potrebbe contenere cibo. In tal caso
 	 * {@code containsFood = true}.
 	 */
-	private boolean containsFood;
+	private boolean containsFood;//TODO da usare!
 
 	/**
 	 * <p>
@@ -242,7 +242,7 @@ public class Tile {
 	 * @return {@link #occupiedByAnt} ossia {@code true} se la {@link Tile tile} e'
 	 *         occupata da una formica; {@code false}, altrimenti
 	 */
-	private boolean isOccupiedByAnt() {// TODO non utilizzato?!
+	public boolean isOccupiedByAnt() {// TODO non utilizzato?!
 		return occupiedByAnt;
 	}
 
@@ -295,8 +295,10 @@ public class Tile {
 	}
 
 	/**
-	 * Imposta la {@link #type tipologia} della {@link Tile tile} a {@link TileTypes#HILL HILL}
-	 * settando il suo {@link #idOwner proprietario} ad {@code idOwner}.
+	 * Imposta la {@link #type tipologia} della {@link Tile tile} a
+	 * {@link TileTypes#HILL HILL} settando il suo {@link #idOwner proprietario} ad
+	 * {@code idOwner}.
+	 * 
 	 * @param idOwner identificativo del proprietario del {@code formicaio}
 	 */
 	void setTypeHill(Integer idOwner) {
@@ -309,7 +311,8 @@ public class Tile {
 	}
 
 	/**
-	 * Imposta la {@link #type tipologia} della {@link Tile tile} a {@link TileTypes#LAND LAND}.
+	 * Imposta la {@link #type tipologia} della {@link Tile tile} a
+	 * {@link TileTypes#LAND LAND}.
 	 */
 	void setTypeLand() {
 		type = TileTypes.LAND;
@@ -321,14 +324,18 @@ public class Tile {
 	}
 
 	/**
-	 * <p>Posiziona una formica sulla {@link Tile tile} e setta il suo {@link #idOwner proprietario}
-	 * a {@code newIdOwner}.</p>
-	 * <p>Se la {@link #type tipologia} della {@link Tile tile} e' {@link TileTypes#HILL HILL}
-	 * ed il {@link #idOwner proprietario} del {@code formicaio} e' uguale a {@code newIdOwner},
-	 * significa che una formica si e' posizionata su di un {@code formicaio} nemico
-	 * radendolo al suolo.<br>
-	 * Di conseguenza, la {@link #type tipologia} della {@link Tile tile} diventa immediatamente
-	 * {@link TileTypes#LAND LAND}.</p>
+	 * <p>
+	 * Posiziona una formica sulla {@link Tile tile} e setta il suo {@link #idOwner
+	 * proprietario} a {@code newIdOwner}.
+	 * </p>
+	 * <p>
+	 * Se la {@link #type tipologia} della {@link Tile tile} e'
+	 * {@link TileTypes#HILL HILL} ed il {@link #idOwner proprietario} del
+	 * {@code formicaio} e' uguale a {@code newIdOwner}, significa che una formica
+	 * si e' posizionata su di un {@code formicaio} nemico radendolo al suolo.<br>
+	 * Di conseguenza, la {@link #type tipologia} della {@link Tile tile} diventa
+	 * immediatamente {@link TileTypes#LAND LAND}.
+	 * </p>
 	 * 
 	 * @param newIdOwner identificativo del proprietario della {@code formica}
 	 */
@@ -344,42 +351,53 @@ public class Tile {
 	}
 
 	/**
-	 * 
+	 * Rimuove una {@code formica} da una {@link Tile tile} impostando
+	 * {@link #occupiedByAnt} {@code  = false}.
 	 */
 	void removeAnt() {
-		// visible = false; fatto da clea vision!
+		// visible = false; fatto da clearvision!
 		occupiedByAnt = false;
-
 		idOwner = null; // TODO non te ne frega nulla tanto perdi tutti gli hill
 		antIsAvailable = false;
 	}
 
 	/**
-	 * 
+	 * Posiziona il cibo sulla {@link Tile tile} impostando {@link #containsFood} a
+	 * {@code true}.
 	 */
 	void placeFood() {
 		containsFood = true;
 	}
 
 	/**
-	 * 
+	 * Rimuove il cibo dalla {@link Tile tile} impostando {@link #containsFood} a
+	 * {@code false}.
 	 */
 	void removeFood() {
 		containsFood = false;
 	}
 
 	/**
+	 * Aggiunge {@code tile} nell'{@link #neighbourTiles insieme delle tile vicine}
+	 * a quella corrente.<br>
+	 * Si memorizza, inoltre, anche la direzione per poter raggiungere {@code tile}
+	 * partendo dalla {@link Tile tile} corrente.
 	 * 
-	 * @param cardinal
-	 * @param tile
+	 * @param cardinal {@link Directions direzione} per poter raggiungere
+	 *                 {@code tile} partendo dalla {@link Tile tile} corrente
+	 * @param tile     vicina a quella corrente
 	 */
 	void addNeighbour(Directions cardinal, Tile tile) {
 		neighbourTiles.put(cardinal, tile);
 	}
 
 	/**
+	 * Rimuove il vicino della {@link Tile tile} corrente, raggiungibile da
+	 * quest'ultima proseguendo in {@link Directions direzione} {@code cardinal},
+	 * dall'{@link #neighbourTiles insieme delle tile vicine} a quella corrente.
 	 * 
-	 * @param cardinal
+	 * @param cardinal {@link Directions direzione} per poter raggiungere
+	 *                 {@code tile} partendo dalla {@link Tile tile} corrente
 	 */
 	private void removeNeighbour(Directions cardinal) {
 		neighbourTiles.remove(cardinal);

@@ -1,48 +1,101 @@
 package game;
+
 import java.util.Iterator;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
-
 import timing.Timing;
 import vision.Offset;
 import vision.Offsets;
 
+/**
+ * TODO EHHH IL MONDO
+ * 
+ * @author Debellis, Lorusso
+ *
+ */
 public class Game {
 
+	/**
+	 * Numero di righe della mappa del gioco.
+	 */
 	private static int rows;
 
+	/**
+	 * Numero di colonne della mappa del gioco.
+	 */
 	private static int cols;
 
-	private static int turns;
+	/**
+	 * Numero di turni totali del gioco.
+	 */
+	private static int turns;// TODO non usata!
 
+	/**
+	 * Raggio di visione delle formiche al quadrato.
+	 */
 	private static int viewRadius2;
 
+	/**
+	 * Raggio di attacco delle formiche al quadrato.
+	 */
 	private static int attackRadius2;
 
+	/**
+	 * Raggio di visione delle formiche per la raccolta del cibo al quadrato. 
+	 */
 	private static int spawnRadius2;
 
+	/**
+	 * TODO vd 405 416
+	 * {@link Offsets} 
+	 * 
+	 */
 	private final Offsets visionOffsets;
 
+	/**
+	 * Insieme contenente le {@link Tile tile} su cui sono posizionati i
+	 * {@code formicai} dell'agente.
+	 */
 	private static Set<Tile> myHills;
 
+	/**
+	 * Insieme contenente le {@link Tile tile} su cui sono posizionati i
+	 * {@code formicai} dei nemici.
+	 */
 	private static Set<Tile> enemyHills;
 
-	private static Set<Tile> myAnts; 
+	/**
+	 * Insieme contentente le {@link Tile tile} su cui sono posizionate
+	 * le formiche dell'agente nel turno corrente.
+	 */
+	private static Set<Tile> myAnts;
 
+	/**
+	 * Insieme contentente le {@link Tile tile} su cui sono posizionate
+	 * le formiche nemiche viste dalle {@link #myAnts formiche dell'agente} nel turno corrente.
+	 */
 	private static Set<Tile> enemyAnts;
 
+	/**
+	 * Insieme contentente le {@link Tile tile} su cui e' posizionato il cibo nel turno corrente.
+	 */
 	private Set<Tile> foods;
 
+	/**
+	 * Insieme di {@link Orders ordini} assegnati ad una o piu' {@link #myAnts formiche} dell'agente.
+	 */
 	private Set<Order> orders;
 
+	/**
+	 * Insieme contentente le {@link Tile tile} inesplorate.
+	 */
 	private Set<Tile> unexplored;
 
+	/**
+	 * Mappa del gioco.
+	 */
 	private static List<List<Tile>> map;
 
 	/**
@@ -50,7 +103,7 @@ public class Game {
 	 * 
 	 * @return all orders sent so far
 	 */
-	public Set<Order> getOrders() {
+	private Set<Order> getOrders() {
 		return orders;
 	}
 
@@ -67,7 +120,8 @@ public class Game {
 	 * @param attackRadius2 squared attack radius of each ant
 	 * @param spawnRadius2  squared spawn radius of each ant
 	 */
-	public Game(long loadTime, long turnTime, int rows, int cols, int turns, int viewRadius2, int attackRadius2, int spawnRadius2) {
+	public Game(long loadTime, long turnTime, int rows, int cols, int turns, int viewRadius2, int attackRadius2,
+			int spawnRadius2) {
 		Timing.setLoadTime(loadTime);//
 		Timing.setTurnTime(turnTime);
 		setRows(rows);
@@ -189,32 +243,31 @@ public class Game {
 	private static Tile getTile(int row, int col) {
 		return map.get(row).get(col);
 	}
-	
+
 	public static Set<Tile> getMyAnts() {
 		return myAnts;
 	}
-	
+
 	public static Set<Tile> getEnemyAnts() {
 		return enemyAnts;
 	}
-	
+
 	public static Set<Tile> getEnemyHills() {
 		return enemyHills;
 	}
-	
+
 	public static Set<Tile> getMyHills() {
 		return myHills;
 	}
-	
-	
-	static int getAttackRadius() {
+
+	public static int getAttackRadius() {
 		return attackRadius2;
 	}
-	
+
 	static int getViewRadius() {
 		return viewRadius2;
 	}
-	
+
 	static int getSpawnRadius() {
 		return spawnRadius2;
 	}
@@ -225,7 +278,7 @@ public class Game {
 		clearMyHills();
 		clearEnemyHills();
 		clearFood();
-		//clearDeadAnts(); //???
+		// clearDeadAnts(); //???
 		orders.clear();
 	}
 
@@ -271,11 +324,12 @@ public class Game {
 
 	/**
 	 * Clears visible information
-
-	public void clearVision() {
-		map.parallelStream().forEachOrdered(row -> row.parallelStream().forEachOrdered(tile -> tile.setVisible(false)));
-
-	}*/
+	 * 
+	 * public void clearVision() { map.parallelStream().forEachOrdered(row ->
+	 * row.parallelStream().forEachOrdered(tile -> tile.setVisible(false)));
+	 * 
+	 * }
+	 */
 
 	public void setWater(int row, int col) {
 		Tile curTile = getTile(row, col);
@@ -291,15 +345,16 @@ public class Game {
 
 		unexplored.remove(curTile);
 
-		if(owner == 0) {
+		if (owner == 0) {
 			myAnts.add(curTile);
-			//setVision(curTile); richiamato da Bot.afterUpdate() con setVision()
+			// setVision(curTile); richiamato da Bot.afterUpdate() con setVision()
 		} else
 			enemyAnts.add(curTile);
 	}
 
 	/**
-	 *  Updates game state information about food locations.
+	 * Updates game state information about food locations.
+	 * 
 	 * @param row
 	 * @param col
 	 */
@@ -315,7 +370,7 @@ public class Game {
 		Tile curTile = getTile(row, col);
 		curTile.removeAnt();
 
-		if(owner == 0)
+		if (owner == 0)
 			myAnts.remove(curTile);
 		else
 			enemyAnts.remove(curTile);
@@ -352,22 +407,21 @@ public class Game {
 		return getTile(row, col);
 	}
 
-	private Set<Tile> getTiles(Tile tile, Offsets offsets) {
+	private Set<Tile> getTiles(Tile tile, Offsets offsets) {//TODO c'e' qualcosa che non va
 		Set<Tile> inVisionOfThisTile = new TreeSet<Tile>();
 		offsets.parallelStream().forEachOrdered(offset -> inVisionOfThisTile.add(getTile(tile, offset)));
 		return inVisionOfThisTile;
 	}
 
 	/**
-	 * EQUALS TO STATIC SEARCH
-	 * Calculates visible information
+	 * EQUALS TO STATIC SEARCH Calculates visible information
 	 */
 	public void setVision(boolean visibile) {
 		Set<Tile> inVision = new TreeSet<Tile>();
-		myAnts.parallelStream().forEachOrdered(ant -> inVision.addAll(getTiles(ant,visionOffsets)));
+		myAnts.parallelStream().forEachOrdered(ant -> inVision.addAll(getTiles(ant, visionOffsets)));//TODO c'e' qualcosa che non va
 		inVision.forEach(tile -> tile.setVisible(visibile));
 	}
-	
+
 	/**
 	 * Issues an order by sending it to the system output.
 	 * 
@@ -377,19 +431,23 @@ public class Game {
 	public void issueOrder(Tile myAnt, Directions direction) {
 		Order order = new Order(myAnt, direction);
 		orders.add(order);
-		//System.out.println(order); TODO
+		// System.out.println(order); TODO
 	}
-	
+
 	/**
-	 * <p>Permette di calcolare la distanza tra due {@link Tile tile}
-	 * per mezzo di una Euristica che non sovrastima la loro reale distanza.</p>
-	 * <p>L'Euristica utilizzata e' una sorta di distanza di Manhattan modificata.</p>
+	 * <p>
+	 * Permette di calcolare la distanza tra due {@link Tile tile} per mezzo di una
+	 * Euristica che non sovrastima la loro reale distanza.
+	 * </p>
+	 * <p>
+	 * L'Euristica utilizzata e' una sorta di distanza di Manhattan modificata.
+	 * </p>
 	 * 
 	 * @param t1 {@link Tile tile} di cui calcolare la distanza da {@code t2}
 	 * @param t2 {@link Tile tile} di cui calcolare la distanza da {@code t1}
 	 * @return distanza tra {@code t1} e {@code t2}
 	 */
 	public static int getDistance(Tile t1, Tile t2) {
-		return t1.getRowDelta(t2)%rows + t1.getColDelta(t2)%cols;
+		return t1.getRowDelta(t2) % rows + t1.getColDelta(t2) % cols;
 	}
 }

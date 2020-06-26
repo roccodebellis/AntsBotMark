@@ -1,6 +1,7 @@
 package combat;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -8,8 +9,10 @@ import java.util.TreeMap;
 
 import game.Directions;
 import game.Game;
+import game.Order;
 import game.Tile;
 import search.Search;
+import vision.Offset;
 
 /**
  * <p>Questo modulo processa tutte le situazioni in cui le formiche degli agenti incontrano formiche nemiche
@@ -117,7 +120,7 @@ public class CombatSimulation {
 	 * </p>
 	 */
 	private List<Order> moveGenerator(State s) {
-		List<Order> output = new List<Order>();
+		List<Order> output = new LinkedList<Order>();
 		
 		switch(move) {
 		case ATTACK:
@@ -211,10 +214,74 @@ public class CombatSimulation {
 
 	}
 
-	boolean AllowExtension(dedline, depth){
+	boolean AllowExtension(deadline, depth){
 		return (depth%2 == 0) || (depth < maximundepth && deadline > getCurrentTime+GetExtensikonEstimate); 
 	}
-
+	
+	//dir sara' verso nemico o retrocessione
+	//radius sara' attackRadius+2 se ant = myAnt, attackRadius+1 altrimenti
+	/*private List<Order> moveBackOrForward(Tile ant, Tile enemy, Directions dir, int radius){
+		List<Order> orders = new LinkedList<>();
+		int deltaRow = dir.getOffset().getRow();
+		int deltaCol = dir.getOffset().getCol();
+		int approach;
+		int distance = Game.getDistance(ant, enemy);
+		if(distance > radius) {
+			approach = Game.getDistance(ant, enemy) - radius;
+			for(int i=0; i < approach; i++) {
+				Tile succ = Game.getTile(ant, new Offset(deltaRow, deltaCol));
+				if(succ.isOccupiedByAnt()) {
+					for(Directions d : Directions.values()) {
+						if(d!=Directions.STAYSTILL && d!=dir && d!= dir.opponent()) {
+							succ = Game.getTile(ant, new Offset(d.getOffset().getRow(), d.getOffset().getRow()));
+							if(!succ.isOccupiedByAnt()) {
+								orders.add(new Order(succ, d));
+								break;
+							}
+						}
+					}
+				} else orders.add(new Order(succ, dir));
+			}
+		}else if (distance<radius) {
+			
+		} //else stay still
+		return orders;
+	}*/
+	
+	private List<Order> moveBackOrForward(Tile ant, Tile enemy, Directions dir, int radius){
+		List<Order> orders = new LinkedList<Order>();
+		int approach;
+		int distance = Game.getDistance(ant, enemy);
+		if(distance > radius) {
+			approach = Game.getDistance(ant, enemy) - radius;
+			orders = checkOrders(ant, approach, dir);
+		}else if (distance<radius) {
+			approach = Game.getDistance(ant, enemy) + radius;
+			orders = checkOrders(ant, approach, dir.opponent());
+		} else orders.add(new Order(ant, Directions.STAYSTILL));
+		return orders;
+	}
+	
+	private List<Order> checkOrders(Tile ant, int distance, Directions dir) {
+		List<Order> orders = new LinkedList<>();
+		int deltaRow = dir.getOffset().getRow();
+		int deltaCol = dir.getOffset().getCol();
+		for(int i=0; i < distance; i++) {
+			Tile succ = Game.getTile(ant, new Offset(deltaRow, deltaCol));
+			if(succ.isOccupiedByAnt()) {
+				for(Directions d : Directions.values()) {
+					if(d!=Directions.STAYSTILL && d!=dir && d!= dir.opponent()) {
+						succ = Game.getTile(ant, new Offset(d.getOffset().getRow(), d.getOffset().getRow()));
+						if(!succ.isOccupiedByAnt()) {
+							orders.add(new Order(succ, d));
+							break;
+						}
+					}
+				}
+			} else orders.add(new Order(succ, dir));
+		}
+		return orders;
+	}
 
 
 
