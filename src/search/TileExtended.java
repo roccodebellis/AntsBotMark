@@ -2,6 +2,7 @@ package search;
 import java.util.Iterator;
 import java.util.Set;
 
+import game.Game;
 import game.Tile;
 
 public class TileExtended implements Comparable<TileExtended>{

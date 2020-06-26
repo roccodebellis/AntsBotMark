@@ -16,7 +16,7 @@ public enum Directions {
 	NORTH{
 		/**
 		 * Restituisce la direzione opposta a quella corrente ossia "SOUTH".
-		 * {@inheritDoc}
+		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
 		public Directions opponent() {
@@ -30,7 +30,7 @@ public enum Directions {
 		
 		/**
 		 * <p>Restituisce "N" ossia NORTH.</p>
-		 * {@inheritDoc}
+		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
 		public String toString() {
@@ -39,7 +39,7 @@ public enum Directions {
 		
 		/**
 		 * <p>Restituisce {@code [-1, 0]} ossia l'offset della direzione NORTH.<p>
-		 * {@inheritDoc}
+		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
 		public Offset getOffset() {
@@ -52,7 +52,7 @@ public enum Directions {
 	EAST{
 		/**
 		 * <p>Restituisce la direzione opposta a quella corrente ossia "WEST".</p>
-		 * {@inheritDoc}
+		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
 		public Directions opponent() {
@@ -66,7 +66,7 @@ public enum Directions {
 		
 		/**
 		 * <p>Restituisce "E" ossia EAST.</p>
-		 * {@inheritDoc}
+		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
 		public String toString() {
@@ -75,7 +75,7 @@ public enum Directions {
 		
 		/**
 		 * <p>Restituisce {@code [0, 1]} ossia l'offset della direzione EAST.</p>
-		 * {@inheritDoc}
+		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
 		public Offset getOffset() {
@@ -88,7 +88,7 @@ public enum Directions {
 	SOUTH{
 		/**
 		 * Restituisce la direzione opposta a quella corrente ossia "NORTH".
-		 * {@inheritDoc}
+		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
 		public Directions opponent() {
@@ -102,7 +102,7 @@ public enum Directions {
 		
 		/**
 		 * <p>Restituisce "S" ossia SOUTH.</p>
-		 * {@inheritDoc}
+		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
 		public String toString() {
@@ -111,7 +111,7 @@ public enum Directions {
 		
 		/**
 		 * Restituisce {@code [1, 0]} ossia l'offset della direzione SOUTH
-		 * {@inheritDoc}
+		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
 		public Offset getOffset() {
@@ -124,7 +124,7 @@ public enum Directions {
 	WEST{
 		/**
 		 * <p>Restituisce la direzione opposta a quella corrente ossia "EAST".</p>
-		 * {@inheritDoc}
+		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
 		public Directions opponent() {
@@ -138,7 +138,7 @@ public enum Directions {
 		
 		/**
 		 * <p>Restituisce "W" ossia WEST.</p>
-		 * {@inheritDoc}
+		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
 		public String toString() {
@@ -147,7 +147,7 @@ public enum Directions {
 		
 		/**
 		 * <p>Restituisce {@code [0, -1]} ossia l'offset della direzione WEST.</p>
-		 * {@inheritDoc}
+		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
 		public Offset getOffset() {
@@ -160,7 +160,7 @@ public enum Directions {
 	STAYSTILL {
 		/**
 		 * <p>Restituisce la direzione opposta a quella corrente ossia se stessa.</p>
-		 * {@inheritDoc}
+		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
 		public Directions opponent() {
@@ -169,7 +169,7 @@ public enum Directions {
 
 		/**
 		 * <p>Restituisce "Stay Still!" ossia STAYSTILL.</p>
-		 * {@inheritDoc}
+		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
 		public String toString() {
@@ -178,7 +178,7 @@ public enum Directions {
 		
 		/**
 		 * <p>Restituisce {@code [0, 0]} ossia l'offset della direzione WEST.</p>
-		 * {@inheritDoc}
+		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
 		public Offset getOffset() {

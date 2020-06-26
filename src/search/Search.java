@@ -13,11 +13,14 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import game.Directions;
 import game.Game;
+import game.Order;
 import game.Tile;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -121,6 +124,32 @@ public class Search {
 		
 	}
 	
+	//TODO controllare
+	private Order getOrder (Tile origin, Tile target, Directions cardinal, Directions opposite) {
+		if(search_from_one_source)
+			return new Order(target, opposite);
+		else return new Order(origin, cardinal);
+	}
+	
+	//TODO controllare
+	private Set<Order> getOrders (Set<Tile> results, Map<Tile,Tile> pathSources, Map<Tile, Directions> directionFromSource,Map<Tile, Directions> directionFromTarget) {
+		Set<Order> orders = new TreeSet<>();
+		Iterator<Tile> itRes = results.iterator();
+		while(itRes.hasNext()) {
+			Tile res = itRes.next();
+			Tile seed = pathSources.get(res);
+			Order newOrder;
+			if(search_from_one_source)
+				newOrder = getOrder(res, seed, directionFromSource.get(seed), directionFromTarget.get(seed));
+			else newOrder = getOrder(seed, res, directionFromSource.get(seed), directionFromTarget.get(seed));
+			orders.add(newOrder);
+		}
+		
+		return orders;
+	}
+	
+	
+	
 	/**
 	 * <p>
 	 * Utilizza un set di coordinate <i>offsets</i> per un dato raggio di ricerca e
@@ -189,12 +218,14 @@ public class Search {
 				if(search_from_one_source)//FIXME
 					completedSources.add(curTileSource.getTile());
 			}
-
-			for(Entry<Directions, Tile> neighbourEntry : curTile.getTile().getNeighbour().entrySet()) {
+			//TODO controlla
+			Iterator<Map.Entry<Directions, Tile>> itNeigh = curTile.getTile().getNeighbour().entrySet().iterator();
+			Entry<Directions, Tile> neighbourEntry;
+			while(it.hasNext()) {
+				neighbourEntry = itNeigh.next();
 				Tile neighbourTile = neighbourEntry.getValue();
 				Directions neighborDirection = neighbourEntry.getKey();
-				TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost());
-				
+				TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost());		
 
 				if(expandedTile.contains(neighbourTile))
 					continue;
@@ -211,8 +242,32 @@ public class Search {
 					frontier.add(neighbour);
 				}
 			}
+			//Cosi' da errore
+			/*
+			for(Entry<Directions, Tile> neighbourEntry : curTile.getTile().getNeighbour().entrySet()) {
+				Tile neighbourTile = neighbourEntry.getValue();
+				Directions neighborDirection = neighbourEntry.getKey();
+				TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost());		
+
+				if(expandedTile.contains(neighbourTile))
+					continue;
+				if( !pathSources.containsKey(neighbourTile) || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())) {//FIXME
+					//TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost()); //FIXME altrimenti curTileSource.getTarget()
+					
+					pathSources.put(neighbour,curTileSource);
+
+					directionFromSource.put(neighbourTile, 
+							directionFromSource.containsKey(curTile) ? directionFromSource.get(curTile) : neighborDirection);
+
+					directionFromTarget.put(neighbourTile, neighborDirection.opponent());
+
+					frontier.add(neighbour);
+				}
+			}*/
 		}
-		//result Results, PathSources, DirectionFromSource, DirectionFromTarghet;
+		Map<Tile,Tile> tileSources = new HashMap(pathSources.entrySet().parallelStream().collect(Collectors.toMap(e -> e.getKey().getTile(), e -> e.getValue().getTile())));
+		
+		return results, tileSources, directionFromSource, directionFromTarget;
 	}
 
 	private Set<Tile> extendedBFS() {
@@ -270,7 +325,7 @@ public class Search {
 						}
 					});
 		}
-		//return result, pathSources, directionFromSource, directionFromTarget; //TODO
+		return result, pathSources, directionFromSource, directionFromTarget; //TODO
 	}
 }
 
