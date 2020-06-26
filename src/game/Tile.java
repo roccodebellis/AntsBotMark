@@ -55,13 +55,6 @@ import search.Search;
  * <li>se {@link #idOwner} e' diverso dallo {@code 0} signifca che quella
  * formica appartiene ad un avversario del nostro agente e si trattera' dunque
  * di una formica nemica;</li>
- * <li>se una formica si deposita su di una {@code tile} ti tipo
- * {@link TileTypes#LAND LAND} ed il suo {@link #idOwner} {@code = 0} allora se
- * le e' stato assegnato un ordine, {@link #antIsAvailable} avra' valore
- * {@code false}.<br>
- * Cio' significa che se {@link #antIsAvailable} {@code = true} la formica sara'
- * disponibile per l'assegnazione un compito da effettuare. Questo controllo
- * viene effettuato da {@link #isIdle()};</li>
  * <li>formiche morte e {@link TileTypes#HILL formicai} rasi al suolo saranno
  * settati automaticamente alla {@link TileTypes tipologia}
  * {@link TileTypes#LAND LAND};</li>
@@ -132,7 +125,7 @@ public class Tile {
 	 * Indica se la {@link Tile tile} e' visibile da una formica dell'agente nel
 	 * turno corrente.
 	 */
-	private boolean visible;
+	private int visible;
 
 	/**
 	 * Indica se la {@link Tile tile} corrente e' occupata da una formica o meno.
@@ -154,12 +147,6 @@ public class Tile {
 	 * 
 	 */
 	private Integer idOwner;
-
-	/**
-	 * Se {@link #occupiedByAnt} {@code = true} e {@link #idOwner} {@code = 0},
-	 * indica se e' possibile assegnare un ordine ad una formica.
-	 */
-	private boolean antIsAvailable;
 
 	/**
 	 * Se il {@link #type} {@code =} {@link TileTypes#LAND} e {@link #occupiedByAnt}
@@ -186,10 +173,9 @@ public class Tile {
 		this.col = col;
 		type = TileTypes.UNEXPLORED;
 		neighbourTiles = new HashMap<>();
-		visible = false;
+		visible = 0;
 		occupiedByAnt = false;
 		idOwner = null;
-		antIsAvailable = false;
 		containsFood = false;
 	}
 
@@ -218,6 +204,10 @@ public class Tile {
 	 * @return {@link #visible}
 	 */
 	private boolean isVisible() {// TODO non utilizzato?
+		return visible == 0;
+	}
+	
+	public int getVisible() {
 		return visible;
 	}
 
@@ -232,7 +222,7 @@ public class Tile {
 	 *                {@code false}, altrimenti
 	 */
 	void setVisible(boolean visible) {
-		this.visible = visible;
+		this.visible = visible ? 0 : this.visible + 1;
 	}
 
 	/**
@@ -244,23 +234,6 @@ public class Tile {
 	 */
 	public boolean isOccupiedByAnt() {// TODO non utilizzato?!
 		return occupiedByAnt;
-	}
-
-	/**
-	 * Controlla se su quella {@link Tile tile} c'e' una formica appartenente
-	 * all'agente. In tal caso, se alla formica non e' stato assegnato alcun compito
-	 * restituisce {@code true} altrimenti {@code false}.
-	 * 
-	 * @return {@link #antIsAvailable}
-	 * @throws TileTypeException sollevata nel caso in cui la Tile non e' occupata
-	 *                           da una formica e/o la formica su essa non
-	 *                           appartiene all'agente
-	 */
-	private boolean isIdle() throws TileTypeException {// TODO da gestire/Non utilizzato
-		if (occupiedByAnt && idOwner == 0)
-			return antIsAvailable;
-		else
-			throw new TileTypeException("Pensavi fosse un tua formica e/o pensavi che la Tile fosse occupata");
 	}
 
 	/**
@@ -287,10 +260,9 @@ public class Tile {
 		type = TileTypes.WATER;
 		neighbourTiles.forEach((dir, t) -> t.removeNeighbour(dir.opponent()));
 		neighbourTiles = null;
-		visible = true;
+		visible = 0;
 		occupiedByAnt = false;
 		idOwner = null;
-		antIsAvailable = false;
 		containsFood = false;
 	}
 
@@ -306,7 +278,6 @@ public class Tile {
 		// visible = true; fatto in set vision
 		occupiedByAnt = false;
 		this.idOwner = idOwner;
-		antIsAvailable = false;
 		containsFood = false;
 	}
 
@@ -319,7 +290,6 @@ public class Tile {
 		// visible = true; fatto in set vision
 		occupiedByAnt = false;
 		idOwner = null;
-		antIsAvailable = false;
 		containsFood = false;
 	}
 
@@ -347,7 +317,6 @@ public class Tile {
 		// visible = true; fatto da set vision!
 		occupiedByAnt = true;
 		idOwner = newIdOwner;
-		antIsAvailable = true;
 	}
 
 	/**
@@ -358,7 +327,6 @@ public class Tile {
 		// visible = false; fatto da clearvision!
 		occupiedByAnt = false;
 		idOwner = null; // TODO non te ne frega nulla tanto perdi tutti gli hill
-		antIsAvailable = false;
 	}
 
 	/**
@@ -447,7 +415,7 @@ public class Tile {
 	 *         {@link Tile tile} corrente e la {@code riga} della {@link Tile tile}
 	 *         {@code t2}
 	 */
-	int getRowDelta(Tile t2) {
+	public int getDeltaRow(Tile t2) {
 		return Math.abs(getRow() - t2.getRow());
 	}
 
@@ -467,7 +435,7 @@ public class Tile {
 	 *         {@link Tile tile} corrente e la {@code colonna} della {@link Tile
 	 *         tile} {@code t2}
 	 */
-	int getColDelta(Tile t2) {
+	public int getDeltaCol(Tile t2) {
 		return Math.abs(getCol() - t2.getCol());
 	}
 
