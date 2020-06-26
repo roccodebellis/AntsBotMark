@@ -218,7 +218,8 @@ public class Search {
 				if(search_from_one_source)//FIXME
 					completedSources.add(curTileSource.getTile());
 			}
-			//TODO controlla
+			
+			/*TODO 
 			Iterator<Map.Entry<Directions, Tile>> itNeigh = curTile.getTile().getNeighbour().entrySet().iterator();
 			Entry<Directions, Tile> neighbourEntry;
 			while(it.hasNext()) {
@@ -241,9 +242,8 @@ public class Search {
 
 					frontier.add(neighbour);
 				}
-			}
-			//Cosi' da errore
-			/*
+			}*/
+			
 			for(Entry<Directions, Tile> neighbourEntry : curTile.getTile().getNeighbour().entrySet()) {
 				Tile neighbourTile = neighbourEntry.getValue();
 				Directions neighborDirection = neighbourEntry.getKey();
@@ -263,11 +263,11 @@ public class Search {
 
 					frontier.add(neighbour);
 				}
-			}*/
+			}
 		}
 		Map<Tile,Tile> tileSources = new HashMap(pathSources.entrySet().parallelStream().collect(Collectors.toMap(e -> e.getKey().getTile(), e -> e.getValue().getTile())));
 		
-		return results, tileSources, directionFromSource, directionFromTarget;
+		//return results, tileSources, directionFromSource, directionFromTarget;
 	}
 
 	private Set<Tile> extendedBFS() {
@@ -322,7 +322,7 @@ public class Search {
 							}
 
 							frontier.add(neighbourTile);
-						}
+						}//continue for
 					});
 		}
 		return result, pathSources, directionFromSource, directionFromTarget; //TODO
