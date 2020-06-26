@@ -2,6 +2,7 @@ package game;
 
 import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -77,6 +78,8 @@ public class Game {
 	 * le formiche nemiche viste dalle {@link #myAnts formiche dell'agente} nel turno corrente.
 	 */
 	private static Set<Tile> enemyAnts;
+	
+	private static Set<Tile> orderlyAnts;
 
 	/**
 	 * Insieme contentente le {@link Tile tile} su cui e' posizionato il cibo nel turno corrente.
@@ -86,12 +89,15 @@ public class Game {
 	/**
 	 * Insieme di {@link Orders ordini} assegnati ad una o piu' {@link #myAnts formiche} dell'agente.
 	 */
-	private Set<Order> orders;
+	private static Set<Order> orders;
 
 	/**
 	 * Insieme contentente le {@link Tile tile} inesplorate.
 	 */
-	private Set<Tile> unexplored;
+	private static Set<Tile> unexplored;
+	
+	private static Set<Tile> water;
+	private static Set<Tile> outOfSight;
 
 	/**
 	 * Mappa del gioco.
@@ -135,13 +141,16 @@ public class Game {
 		enemyHills = new TreeSet<Tile>();
 		myAnts = new TreeSet<Tile>();
 		enemyAnts = new TreeSet<Tile>();
+		orderlyAnts = new TreeSet<Tile>();
 		foods = new TreeSet<Tile>();
 		orders = new TreeSet<Order>();
 		unexplored = new TreeSet<Tile>();
-
+		water = new TreeSet<Tile>();
+		outOfSight = new TreeSet<Tile>();
+		
 		map = initGameMap();
 
-		visionOffsets = new Offsets((int) Math.sqrt(viewRadius2));// TODO passare slo viewRadius2
+		visionOffsets = new Offsets((int) Math.sqrt(viewRadius2));// FIXME passare slo viewRadius2
 	}
 
 	private static void setRows(int rows) {
@@ -260,6 +269,10 @@ public class Game {
 		return myHills;
 	}
 
+	public static Set<Tile> getUnexplored() {
+		return unexplored;
+	}
+	
 	public static int getAttackRadius() {
 		return attackRadius2;
 	}
@@ -278,6 +291,7 @@ public class Game {
 		clearMyHills();
 		clearEnemyHills();
 		clearFood();
+		clearVision();
 		// clearDeadAnts(); //???
 		orders.clear();
 	}
@@ -335,6 +349,7 @@ public class Game {
 		Tile curTile = getTile(row, col);
 		curTile.setTypeWater();
 
+		water.add(curTile);
 		unexplored.remove(curTile);
 	}
 
@@ -364,6 +379,7 @@ public class Game {
 		curTile.placeFood();
 
 		foods.add(curTile);
+		unexplored.remove(curTile);
 	}
 
 	public void setDead(int row, int col, int owner) {
@@ -382,9 +398,10 @@ public class Game {
 
 		if (owner == 0)
 			myHills.add(curTile);
-		else {
+		else
 			enemyHills.add(curTile);
-		}
+			
+		unexplored.remove(curTile);
 	}
 
 	/**
@@ -407,7 +424,7 @@ public class Game {
 		return getTile(row, col);
 	}
 
-	private Set<Tile> getTiles(Tile tile, Offsets offsets) {//TODO c'e' qualcosa che non va
+	private Set<Tile> getTiles(Tile tile, Offsets offsets) {
 		Set<Tile> inVisionOfThisTile = new TreeSet<Tile>();
 		offsets.parallelStream().forEachOrdered(offset -> inVisionOfThisTile.add(getTile(tile, offset)));
 		return inVisionOfThisTile;
@@ -416,10 +433,20 @@ public class Game {
 	/**
 	 * EQUALS TO STATIC SEARCH Calculates visible information
 	 */
-	public void setVision(boolean visibile) {
+	public void setVision() {
 		Set<Tile> inVision = new TreeSet<Tile>();
-		myAnts.parallelStream().forEachOrdered(ant -> inVision.addAll(getTiles(ant, visionOffsets)));//TODO c'e' qualcosa che non va
-		inVision.forEach(tile -> tile.setVisible(visibile));
+		myAnts.parallelStream().forEachOrdered(ant -> inVision.addAll(getTiles(ant, visionOffsets)));
+		inVision.forEach(tile -> { tile.setVisible(true); unexplored.remove(tile);});
+		
+		Comparator<Tile> comp = (Tile o1, Tile o2) -> (Integer.compare(o1.getVisible(), o2.getVisible())); //CLAUDIA fai un metodo in Tile
+		
+		Set<Tile> allTile = new TreeSet<Tile>(comp.reversed());
+		map.forEach(row -> allTile.addAll(row));
+		allTile.removeAll(inVision);
+		allTile.removeAll(unexplored);
+		allTile.removeAll(water);
+		allTile.forEach(tile -> tile.setVisible(false));
+		this.outOfSight = allTile;
 	}
 
 	/**
@@ -428,10 +455,17 @@ public class Game {
 	 * @param myAnt     map tile with my ant
 	 * @param direction direction in which to move my ant
 	 */
-	public void issueOrder(Tile myAnt, Directions direction) {
-		Order order = new Order(myAnt, direction);
+	static public void issueOrder(Order order) {
+		Tile ant = order.getTile();
+		myAnts.remove(ant);
+		orderlyAnts.add(ant);
+		
 		orders.add(order);
-		// System.out.println(order); TODO
+		// System.out.println(order); FIXME
+	}
+	
+	static public void issueOrders(Set<Order> orders) {
+		orders.parallelStream().forEachOrdered(order -> issueOrder(order));
 	}
 
 	/**
@@ -448,6 +482,26 @@ public class Game {
 	 * @return distanza tra {@code t1} e {@code t2}
 	 */
 	public static int getDistance(Tile t1, Tile t2) {
-		return t1.getRowDelta(t2) % rows + t1.getColDelta(t2) % cols;
+		return t1.getDeltaRow(t2) % rows + t1.getDeltaCol(t2) % cols;
 	}
+
+	public static Directions getDirection(Tile t1, Tile t2) {
+		Directions output = Directions.STAYSTILL;
+		
+		int difRow = t1.getRow() - t2.getRow();
+		int difCol = t1.getCol() - t2.getCol();
+		int deltaRow = (difRow<0) ? Math.abs(difRow)-cols : difRow;
+		int deltaCol = (difCol<0) ? Math.abs(difCol)-cols : difCol;
+
+		if(deltaRow>0 && deltaCol<=deltaRow && (-deltaCol> deltaRow || deltaCol > -deltaRow))
+			output = Directions.NORTH;
+		else if(deltaRow<0 && deltaCol<=-deltaRow && (-deltaCol> deltaRow || deltaCol > -deltaRow))
+			output = Directions.SOUTH;
+		else if(deltaCol>0)
+			output = Directions.EAST;
+		else
+			output = Directions.WEST;
+		return output;
+	}
+
 }
