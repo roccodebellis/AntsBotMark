@@ -28,7 +28,7 @@ public class ExplorationAndMovment {
 		adaptiveSearch();
 	}
 
-	toPriorityTarghet() {
+	toPriorityTarget() {
 		while(aviableAnts is Empty || targhets is Empty || no path can be found) { //molto probabilmente
 															//no path indica che raggiunto un tempo limite 
 															//non si è prodotto nessun percorso/assegnamento (alla formica)
