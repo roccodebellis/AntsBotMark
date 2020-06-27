@@ -1,9 +1,11 @@
 package game;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import search.Search;
 
+//TODO rivedi tutti javadoc
 /**
  * <p>
  * Rappresenta e gestisce una {@code Tile}.<br>
@@ -153,8 +155,10 @@ public class Tile {
 	 * {@code = false} la {@link Tile tile} potrebbe contenere cibo. In tal caso
 	 * {@code containsFood = true}.
 	 */
-	private boolean containsFood;//TODO da usare!
+	private boolean containsFood;// TODO da usare!
 
+	private static final Comparator<Tile> visionComparator = (Tile o1, Tile o2) -> (Integer.compare(o1.getVisible(), o2.getVisible()));
+	
 	/**
 	 * <p>
 	 * Costruttore di un oggetto di {@link Tile}.
@@ -206,7 +210,7 @@ public class Tile {
 	private boolean isVisible() {// TODO non utilizzato?
 		return visible == 0;
 	}
-	
+
 	public int getVisible() {
 		return visible;
 	}
@@ -222,7 +226,7 @@ public class Tile {
 	 *                {@code false}, altrimenti
 	 */
 	void setVisible(boolean visible) {
-		this.visible = visible ? 0 : this.visible + 1;
+		this.visible = visible ? 0 : this.visible - 1;
 	}
 
 	/**
@@ -500,5 +504,9 @@ public class Tile {
 		// in questa tile
 
 		// viene utilizzata da BFS
+	}
+
+	public static final Comparator<Tile> visionComparator() {
+		return visionComparator;
 	}
 }
