@@ -23,6 +23,11 @@ public enum Directions {
 			return Directions.SOUTH;
 		}
 		
+		/**
+		 * <p>Restituisce la direzione successiva, in ordine orario, a quella corrente
+		 * ossia {@link Directions#EAST}.</p>
+		 * <center>----------------</center> {@inheritDoc}
+		 */
 		@Override
 		public Directions next() {
 			return Directions.EAST;
@@ -59,6 +64,11 @@ public enum Directions {
 			return Directions.WEST;
 		}
 		
+		/**
+		 * <p>Restituisce la direzione successiva, in ordine orario, a quella corrente
+		 * ossia {@link Directions#SOUTH}.</p>
+		 * <center>----------------</center> {@inheritDoc}
+		 */
 		@Override
 		public Directions next() {
 			return Directions.SOUTH;
@@ -95,6 +105,11 @@ public enum Directions {
 			return Directions.NORTH;
 		}
 		
+		/**
+		 * <p>Restituisce la direzione successiva, in ordine orario, a quella corrente
+		 * ossia {@link Directions#WEST}.</p>
+		 * <center>----------------</center> {@inheritDoc}
+		 */
 		@Override
 		public Directions next() {
 			return Directions.WEST;
@@ -131,6 +146,11 @@ public enum Directions {
 			return Directions.EAST;
 		}
 		
+		/**
+		 * <p>Restituisce la direzione successiva, in ordine orario, a quella corrente
+		 * ossia {@link Directions#NORTH}.</p>
+		 * <center>----------------</center> {@inheritDoc}
+		 */
 		@Override
 		public Directions next() {
 			return Directions.NORTH ;
@@ -184,6 +204,16 @@ public enum Directions {
 		public Offset getOffset() {
 			return new Offset(0,0);
 		}
+		
+		/**
+		 * <p>Restituisce la direzione successiva, in ordine orario, a quella corrente
+		 * ossia {@code STAYTILL}.</p>
+		 * <center>----------------</center> {@inheritDoc}
+		 */
+		@Override
+		public Directions next() {
+			return Directions.STAYSTILL;
+		}
 	};
 	
 	/**
@@ -191,6 +221,10 @@ public enum Directions {
 	 */
 	public abstract Directions opponent();
 	
+	/**
+	 * 
+	 * @return la direzione successiva a quella corrente.
+	 */
 	public abstract Directions next();
 	
 	/**
