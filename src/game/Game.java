@@ -79,6 +79,9 @@ public class Game {
 	 */
 	private static Set<Tile> enemyAnts;
 	
+	/**
+	 * Formiche a cui e' stato assegnato un ordine.
+	 */
 	private static Set<Tile> orderlyAnts;
 
 	/**
@@ -97,6 +100,10 @@ public class Game {
 	private static Set<Tile> unexplored;
 	
 	private static Set<Tile> water;
+	
+	/**
+	 * Tile che sono al di fuori della vista delle formiche.
+	 */
 	private static Set<Tile> outOfSight;
 
 	/**
@@ -284,6 +291,11 @@ public class Game {
 	static int getSpawnRadius() {
 		return spawnRadius2;
 	}
+	
+	public static Set<Tile> getOutOfSight() {
+		return outOfSight;
+	}
+
 
 	public void clear() {
 		clearMyAnts();
@@ -438,8 +450,6 @@ public class Game {
 		myAnts.parallelStream().forEachOrdered(ant -> inVision.addAll(getTiles(ant, visionOffsets)));
 		inVision.forEach(tile -> { tile.setVisible(true); unexplored.remove(tile);});
 		Set<Tile> allTile = new TreeSet<Tile>(Tile.visionComparator());
-		//oppure facciamo che gli elementi visti da meno tempo hanno un malus dunque non piu' +1 ma -1
-		//e possiamo togliere il reversed
 		map.forEach(row -> allTile.addAll(row));
 		allTile.removeAll(inVision);
 		allTile.removeAll(unexplored);
@@ -463,6 +473,11 @@ public class Game {
 		// System.out.println(order); FIXME
 	}
 	
+	/**
+	 * Per ogni @link Order ordine} assegnato alle formiche
+	 * viene mandato l'ordine al System Output tramite {@link #issueOrder(Order)}.
+	 * @param orders insieme di ordini da eseguire
+	 */
 	static public void issueOrders(Set<Order> orders) {
 		orders.parallelStream().forEachOrdered(order -> issueOrder(order));
 	}
