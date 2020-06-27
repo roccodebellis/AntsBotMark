@@ -437,10 +437,9 @@ public class Game {
 		Set<Tile> inVision = new TreeSet<Tile>();
 		myAnts.parallelStream().forEachOrdered(ant -> inVision.addAll(getTiles(ant, visionOffsets)));
 		inVision.forEach(tile -> { tile.setVisible(true); unexplored.remove(tile);});
-		
-		Comparator<Tile> comp = (Tile o1, Tile o2) -> (Integer.compare(o1.getVisible(), o2.getVisible())); //CLAUDIA fai un metodo in Tile
-		
-		Set<Tile> allTile = new TreeSet<Tile>(comp.reversed());
+		Set<Tile> allTile = new TreeSet<Tile>(Tile.visionComparator());
+		//oppure facciamo che gli elementi visti da meno tempo hanno un malus dunque non piu' +1 ma -1
+		//e possiamo togliere il reversed
 		map.forEach(row -> allTile.addAll(row));
 		allTile.removeAll(inVision);
 		allTile.removeAll(unexplored);
@@ -490,7 +489,7 @@ public class Game {
 		
 		int difRow = t1.getRow() - t2.getRow();
 		int difCol = t1.getCol() - t2.getCol();
-		int deltaRow = (difRow<0) ? Math.abs(difRow)-cols : difRow;
+		int deltaRow = (difRow<0) ? Math.abs(difRow)-rows : difRow;
 		int deltaCol = (difCol<0) ? Math.abs(difCol)-cols : difCol;
 
 		if(deltaRow>0 && deltaCol<=deltaRow && (-deltaCol> deltaRow || deltaCol > -deltaRow))
