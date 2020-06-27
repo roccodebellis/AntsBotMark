@@ -19,7 +19,7 @@ public enum Directions {
 		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
-		public Directions opponent() {
+		public Directions getOpponent() {
 			return Directions.SOUTH;
 		}
 		
@@ -29,7 +29,7 @@ public enum Directions {
 		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
-		public Directions next() {
+		public Directions getNext() {
 			return Directions.EAST;
 		}
 		
@@ -60,7 +60,7 @@ public enum Directions {
 		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
-		public Directions opponent() {
+		public Directions getOpponent() {
 			return Directions.WEST;
 		}
 		
@@ -70,7 +70,7 @@ public enum Directions {
 		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
-		public Directions next() {
+		public Directions getNext() {
 			return Directions.SOUTH;
 		}
 		
@@ -101,7 +101,7 @@ public enum Directions {
 		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
-		public Directions opponent() {
+		public Directions getOpponent() {
 			return Directions.NORTH;
 		}
 		
@@ -111,7 +111,7 @@ public enum Directions {
 		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
-		public Directions next() {
+		public Directions getNext() {
 			return Directions.WEST;
 		}
 		
@@ -142,7 +142,7 @@ public enum Directions {
 		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
-		public Directions opponent() {
+		public Directions getOpponent() {
 			return Directions.EAST;
 		}
 		
@@ -152,7 +152,7 @@ public enum Directions {
 		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
-		public Directions next() {
+		public Directions getNext() {
 			return Directions.NORTH ;
 		}
 		
@@ -183,7 +183,7 @@ public enum Directions {
 		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
-		public Directions opponent() {
+		public Directions getOpponent() {
 			return STAYSTILL;
 		}
 
@@ -211,7 +211,7 @@ public enum Directions {
 		 * <center>----------------</center> {@inheritDoc}
 		 */
 		@Override
-		public Directions next() {
+		public Directions getNext() {
 			return Directions.STAYSTILL;
 		}
 	};
@@ -219,13 +219,13 @@ public enum Directions {
 	/**
 	 * @return la direzione opposta a quella corrente
 	 */
-	public abstract Directions opponent();
+	public abstract Directions getOpponent();
 	
 	/**
 	 * 
 	 * @return la direzione successiva a quella corrente.
 	 */
-	public abstract Directions next();
+	public abstract Directions getNext();
 	
 	/**
 	 * @return la stringa contenente la lettera

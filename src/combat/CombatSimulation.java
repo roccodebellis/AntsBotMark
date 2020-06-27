@@ -49,10 +49,12 @@ public class CombatSimulation {
 	State root;
 	
 	public CombatSimulation(Tile myAnt, Tile enemyAnt, long deadLine) {
+	Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(true)); //perche ' in combattimento
 		situationRecognition(myAnt,enemyAnt);
 		
 		root = new State(0, myAntSet, enemyAntSet, false);
 		MinMax(root, deadLine, 0);	
+		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(false));
 	}
 	
 	List<Order> getMoves(){
@@ -170,8 +172,9 @@ public class CombatSimulation {
 		//return search.adaptiveSearch();
 	}
 
-
+	
 	private Set<Order> hold(State s) {
+		//E' UGUALE!! EXPLORATIONANDMOVEMENT.spreadOut(); TODO
 		double targetDistance = Game.getAttackRadius() + (s.isEnemyMove() ? 1 : 2);
 		Set<Order> ordersAssigned = new TreeSet<Order>();
 
@@ -301,13 +304,13 @@ public class CombatSimulation {
 
 		Directions dir = Game.getDirection(ant, enemy);
 		if(distance<radius)
-			dir = dir.opponent();
+			dir = dir.getOpponent();
 		Order order;
 
 		if(distance != radius) {
 			order = new Order(ant, dir);
 			if(ordersAssigned.contains(order)|| s.qualcosa(order)) {
-				order = new Order(ant,dir.next());
+				order = new Order(ant,dir.getNext());
 				if(ordersAssigned.contains(order)|| s.qualcosa(order))
 					order = new Order(ant,Directions.STAYSTILL);
 			} 

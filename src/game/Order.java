@@ -11,9 +11,9 @@ public class Order {
     /**
      * Direzione verso cui la formica deve effettuare lo spostamento.
      */
-    private final Directions direction;
-    
-    /**
+    private Directions direction;
+
+	/**
      * Crea un nuovo oggetto {@link Order} estrapolando da {@code t}
      * la sua corrispettiva  {@link #row riga} e {@link #col colonna}.
      * @param t {@link Tile} della mappa su cui si trova la mia formica
@@ -29,6 +29,11 @@ public class Order {
 		this.tile = t;
 		
 	}
+    
+    public Order withOpponentDirection() {
+    	this.direction = this.direction.getOpponent();
+    	return this;
+    }
 
 	/**
      * <p>Genera la stringa contenente l'ordine da mandare al System Output.<br>
@@ -51,6 +56,10 @@ public class Order {
 
 	public Tile getTile() {
 		return tile;
+	}
+	
+	public Directions getDirection() {
+		return direction;
 	}
 
 	@Override

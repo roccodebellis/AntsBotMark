@@ -67,14 +67,14 @@ public class Search {
 	 * Impostato a true se si vuole effettuare una ricerca a partire da un singolo
 	 * tile di cibo verso la formica pi� vicina.//TODO
 	 */
-	private Boolean search_from_one_source;
+	private Boolean one_target_per_source;//TODO cambiare nome onetargetpersource
 
 	public Search(Set<Tile> sources, Set<Tile> targets, Integer radius, Boolean heuristic, Boolean search_from_one_source) {
 		this.sources = sources;
 		this.targets = targets;
 		this.radius = radius;
 		this.heuristic = heuristic;
-		this.search_from_one_source = search_from_one_source;
+		this.one_target_per_source = search_from_one_source;
 	}
 
 	/**
@@ -126,7 +126,7 @@ public class Search {
 	
 	//TODO controllare
 	private Order getOrder (Tile origin, Tile target, Directions cardinal, Directions opposite) {
-		if(search_from_one_source)
+		if(one_target_per_source)
 			return new Order(target, opposite);
 		else return new Order(origin, cardinal);
 	}
@@ -139,7 +139,7 @@ public class Search {
 			Tile res = itRes.next();
 			Tile seed = pathSources.get(res);
 			Order newOrder;
-			if(search_from_one_source)
+			if(one_target_per_source)
 				newOrder = getOrder(res, seed, directionFromSource.get(seed), directionFromTarget.get(seed));
 			else newOrder = getOrder(seed, res, directionFromSource.get(seed), directionFromTarget.get(seed));
 			orders.add(newOrder);
@@ -210,12 +210,12 @@ public class Search {
 
 			expandedTile.add(curTile);//FIXME
 
-			if(search_from_one_source && completedSources.contains(curTileSource.getTile()))//FIXME
+			if(one_target_per_source && completedSources.contains(curTileSource.getTile()))//FIXME
 				continue;//continue while
 
 			if(targets.contains(curTile.getTile())) {
 				results.add(curTile.getTile());
-				if(search_from_one_source)//FIXME
+				if(one_target_per_source)//FIXME
 					completedSources.add(curTileSource.getTile());
 			}
 			
@@ -259,17 +259,75 @@ public class Search {
 					directionFromSource.put(neighbourTile, 
 							directionFromSource.containsKey(curTile) ? directionFromSource.get(curTile) : neighborDirection);
 
-					directionFromTarget.put(neighbourTile, neighborDirection.opponent());
+					directionFromTarget.put(neighbourTile, neighborDirection.getOpponent());
 
 					frontier.add(neighbour);
 				}
 			}
 		}
 		Map<Tile,Tile> tileSources = new HashMap(pathSources.entrySet().parallelStream().collect(Collectors.toMap(e -> e.getKey().getTile(), e -> e.getValue().getTile())));
-		
+		return null;
 		//return results, tileSources, directionFromSource, directionFromTarget;
 	}
 
+/*	private void roCloBFS() {
+		Queue<Tile> frontier = new LinkedList<Tile>();
+		Map<Tile,Tile> pathSources = new HashMap<>();
+		Set<Tile> results = new HashSet<>();
+		Map<Tile, Directions> directionFromSource = new HashMap<>();
+		Map<Tile, Directions> directionFromTarget = new HashMap<>();
+		Set<Tile> completedSources = new HashSet<>();
+
+		sources.parallelStream().forEachOrdered(source -> {
+			frontier.add(source);
+			pathSources.put(source,source);
+		});
+
+		while(!frontier.isEmpty()) {
+			Tile curTile = frontier.poll();
+
+			Tile curTileSource = pathSources.get(curTile);
+			if(one_target_per_source && completedSources.contains(curTileSource))
+				continue;//continue while
+
+			/**
+			 * for(Entry<Directions, Tile> neighborEntry : curTile.getNeighbour().entrySet()) {
+				Tile neighborTile = neighborEntry.getValue();
+				Directions neighborDirection = neighborEntry.getKey();
+			 *
+
+			curTile.getNeighbour().entrySet().parallelStream().forEachOrdered(
+					neighbourEntry -> { 
+						Tile neighbourTile = neighbourEntry.getValue();
+						Directions neighbourDirection = neighbourEntry.getKey();
+
+						if(!pathSources.containsKey(neighbourTile)) {
+
+							pathSources.put(neighbourTile,curTileSource);
+
+							if(directionFromSource.containsKey(curTile))
+								directionFromSource.put(neighbourTile, directionFromSource.get(curTile));
+							else
+								directionFromSource.put(neighbourTile, neighbourDirection);
+
+							directionFromTarget.put(neighbourTile, neighbourDirection.opponent());
+
+							if(targets.contains(neighbourTile)) {
+								results.add(neighbourTile);
+								targets.remove(neighbourTile);
+								if(one_target_per_source)//FIXME
+									completedSources.add(curTileSource);
+								//TODO: di regola non bisogna rimuovere il targhet
+								//ma se viene rieseguita la ricerca, è necessario rimuoverlo
+							}
+							else frontier.add(neighbourTile);
+						}//continue for
+					});
+		}
+		//return result, pathSources, directionFromSource, directionFromTarget; //TODO
+	}*/
+	
+	
 	private Set<Tile> extendedBFS() {
 
 		Queue<Tile> frontier = new LinkedList<Tile>();
@@ -288,7 +346,7 @@ public class Search {
 			Tile curTile = frontier.poll();
 
 			Tile curTileSource = pathSources.get(curTile);
-			if(search_from_one_source && completedSources.contains(curTileSource))
+			if(one_target_per_source && completedSources.contains(curTileSource))
 				continue;//continue while
 
 			/**
@@ -311,21 +369,22 @@ public class Search {
 							else
 								directionFromSource.put(neighbourTile, neighbourDirection);
 
-							directionFromTarget.put(neighbourTile, neighbourDirection.opponent());
+							directionFromTarget.put(neighbourTile, neighbourDirection.getOpponent());
 
 							if(targets.contains(neighbourTile)) {
 								results.add(neighbourTile);
-								if(search_from_one_source)//FIXME
+								if(one_target_per_source)//FIXME
 									completedSources.add(curTileSource);
 								//TODO: di regola non bisogna rimuovere il targhet
 								//ma se viene rieseguita la ricerca, è necessario rimuoverlo
-							}
+							}//*else*
 
 							frontier.add(neighbourTile);
 						}//continue for
 					});
 		}
-		return result, pathSources, directionFromSource, directionFromTarget; //TODO
+		//return result, pathSources, directionFromSource, directionFromTarget; //TODO
+		return null;
 	}
 }
 

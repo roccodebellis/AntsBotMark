@@ -149,6 +149,8 @@ public class Tile {
 	 * 
 	 */
 	private Integer idOwner;
+	
+	private Boolean isSuitable;
 
 	/**
 	 * Se il {@link #type} {@code =} {@link TileTypes#LAND} e {@link #occupiedByAnt}
@@ -181,6 +183,7 @@ public class Tile {
 		occupiedByAnt = false;
 		idOwner = null;
 		containsFood = false;
+		isSuitable = false;
 	}
 
 	/**
@@ -262,12 +265,13 @@ public class Tile {
 	 */
 	void setTypeWater() {
 		type = TileTypes.WATER;
-		neighbourTiles.forEach((dir, t) -> t.removeNeighbour(dir.opponent()));
+		neighbourTiles.forEach((dir, t) -> t.removeNeighbour(dir.getOpponent()));
 		neighbourTiles = null;
 		visible = 0;
 		occupiedByAnt = false;
 		idOwner = null;
 		containsFood = false;
+		//Game.getBorders().remove(this);
 	}
 
 	/**
@@ -492,7 +496,8 @@ public class Tile {
 	 * @return
 	 */
 	public boolean isSuitable() {// TODO da cancellare?? riguarda solo acqua??? bohboh
-		return true;
+		
+		return this.isSuitable;
 		// return (occupiedByAnt || (type.equals(TileTypes.HILL) && idOwner==0 )) ?
 		// false : true;
 		// FIXME se è una formica nemica ????????
@@ -504,6 +509,10 @@ public class Tile {
 		// in questa tile
 
 		// viene utilizzata da BFS
+	}
+	
+	public void setSuitable(boolean suitable) {
+		this.isSuitable = suitable;
 	}
 
 	public static final Comparator<Tile> visionComparator() {

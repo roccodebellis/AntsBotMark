@@ -2,6 +2,7 @@ package game;
 
 import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -87,7 +88,7 @@ public class Game {
 	/**
 	 * Insieme contentente le {@link Tile tile} su cui e' posizionato il cibo nel turno corrente.
 	 */
-	private Set<Tile> foods;
+	private static Set<Tile> food;
 
 	/**
 	 * Insieme di {@link Orders ordini} assegnati ad una o piu' {@link #myAnts formiche} dell'agente.
@@ -99,6 +100,9 @@ public class Game {
 	 */
 	private static Set<Tile> unexplored;
 	
+	/**
+	 * 
+	 */
 	private static Set<Tile> water;
 	
 	/**
@@ -110,6 +114,11 @@ public class Game {
 	 * Mappa del gioco.
 	 */
 	private static List<List<Tile>> map;
+	
+	/**
+	 * 
+	 */
+	private static Set<Tile> borders;
 
 	/**
 	 * Returns all orders sent so far.
@@ -149,14 +158,13 @@ public class Game {
 		myAnts = new TreeSet<Tile>();
 		enemyAnts = new TreeSet<Tile>();
 		orderlyAnts = new TreeSet<Tile>();
-		foods = new TreeSet<Tile>();
+		food = new TreeSet<Tile>();
 		orders = new TreeSet<Order>();
 		unexplored = new TreeSet<Tile>();
 		water = new TreeSet<Tile>();
 		outOfSight = new TreeSet<Tile>();
-		
+		//borders = new TreeSet<Tile>();
 		map = initGameMap();
-
 		visionOffsets = new Offsets((int) Math.sqrt(viewRadius2));// FIXME passare slo viewRadius2
 	}
 
@@ -177,8 +185,10 @@ public class Game {
 
 		for (int r = 0; r < rows; r++) {
 			ArrayList<Tile> tempRow = new ArrayList<>();
-			for (int c = 0; c < cols; c++)
+			for (int c = 0; c < cols; c++) 
 				tempRow.add(new Tile(r, c));
+				//if(r == 0 || r == rows-1 || c == 0 || c == cols-1)
+					//borders.add(t);
 			output.add(tempRow);
 			unexplored.addAll(tempRow);
 		}
@@ -280,6 +290,14 @@ public class Game {
 		return unexplored;
 	}
 	
+	/*public static Set<Tile> getBorders(){
+		return borders;
+	}*/
+	
+	public static Set<Tile> getFoodTiles(){
+		return food;
+	}
+	
 	public static int getAttackRadius() {
 		return attackRadius2;
 	}
@@ -344,8 +362,8 @@ public class Game {
 	 * Clears game state information about food locations.
 	 */
 	private void clearFood() {
-		foods.parallelStream().forEachOrdered(food -> food.removeFood());
-		foods.clear();
+		food.parallelStream().forEachOrdered(food -> food.removeFood());
+		food.clear();
 	}
 
 	/**
@@ -389,8 +407,7 @@ public class Game {
 		Tile curTile = getTile(row, col);
 		curTile.setTypeLand();
 		curTile.placeFood();
-
-		foods.add(curTile);
+		food.add(curTile);
 		unexplored.remove(curTile);
 	}
 
@@ -516,6 +533,10 @@ public class Game {
 		else
 			output = Directions.WEST;
 		return output;
+	}
+
+	public static Set<Tile> getOrderlyAnts() {
+		return orderlyAnts;
 	}
 
 }
