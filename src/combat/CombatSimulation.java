@@ -138,8 +138,8 @@ public class CombatSimulation {
 	 * poiche' dipende dalla distanza corrente dal nemico, le formiche avanzeranno o andranno in ritirata
 	 * per raggiungere la distanza richiesta.</li>
 	 * <li><b>Idle</b>: nessuna formica del gruppo sara' mossa</li>
-	 * <li><b>Directional</b>: le quattro mosse direzionali proveranno semplicemente a muovere tutti le
-	 * formiche dell'agente (o quelle nemiche) in una direzione - N S E o W.</li>
+	 * <li><b>Directional</b>: tutte le formiche dell'agente (o quelle nemiche) si muoveranno,
+	 * semplicemente, in una delle quattro direzioni cardinali - N S E o W.</li>
 	 * </ul>
 	 * </p>
 	 */
@@ -280,7 +280,7 @@ public class CombatSimulation {
 
 				State childState = state.performMove(moves);
 				long curTime = Timing.getCurTime();
-				long childDeadline = curTime + (deadLine-curTime)/(movesSet.size()-moveType.getMoveNumber());//FIXME getNumber of Moves forse è il numero di mosse in questo calcolo
+				long childDeadline = curTime + (deadLine-curTime)/(movesSet.size()-moveType.ordinal());//FIXME getNumber of Moves forse è il numero di mosse in questo calcolo
 
 				if(childState.isEnemyMove())
 					childState.resolveCombatAndFoodCollection();
