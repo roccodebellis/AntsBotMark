@@ -118,7 +118,7 @@ public class Game {
 	/**
 	 * 
 	 */
-	private static Set<Tile> borders;
+	//private static Set<Tile> borders;
 
 	/**
 	 * Returns all orders sent so far.
@@ -268,6 +268,14 @@ public class Game {
 
 	private static Tile getTile(int row, int col) {
 		return map.get(row).get(col);
+	}
+	
+	public static int getRows() {
+		return rows;
+	}
+
+	public static int getCols() {
+		return cols;
 	}
 
 	public static Set<Tile> getMyAnts() {
@@ -472,7 +480,7 @@ public class Game {
 		allTile.removeAll(unexplored);
 		allTile.removeAll(water);
 		allTile.forEach(tile -> tile.setVisible(false));
-		this.outOfSight = allTile;
+		outOfSight = allTile;
 	}
 
 	/**
