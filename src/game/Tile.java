@@ -228,7 +228,7 @@ public class Tile {
 	 *                corrente, e' in grado di vedere la {@link Tile tile};
 	 *                {@code false}, altrimenti
 	 */
-	void setVisible(boolean visible) {
+	public void setVisible(boolean visible) {
 		this.visible = visible ? 0 : this.visible - 1;
 	}
 
