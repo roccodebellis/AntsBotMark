@@ -5,7 +5,7 @@ import java.util.Set;
 import game.Game;
 import game.Tile;
 
-public class TileExtended implements Comparable<TileExtended>{
+public class Node implements Comparable<Node>{
 
 	private Tile tile;
 	private int pathCost;
@@ -16,7 +16,7 @@ public class TileExtended implements Comparable<TileExtended>{
 	/*
 	 * utilizzato per inizializzare le tile dalle sorgenti/sources
 	 */
-	TileExtended(Tile nodo, Set<Tile> targets) {
+	Node(Tile nodo, Set<Tile> targets) {
 		this.tile = nodo;
 		pathCost = 0;
 		assignTarget(targets);
@@ -28,7 +28,7 @@ public class TileExtended implements Comparable<TileExtended>{
 	 * @param target
 	 * @param i
 	 */
-	public TileExtended(Tile neighbourTile, Tile target, int pathCost) {
+	public Node(Tile neighbourTile, Tile target, int pathCost) {
 		this.tile = neighbourTile;
 		this.pathCost = pathCost + 1;
 		this.target =  target;
@@ -60,7 +60,7 @@ public class TileExtended implements Comparable<TileExtended>{
 	}
 
 	@Override
-	public int compareTo(TileExtended o) {
+	public int compareTo(Node o) {
 		return Integer.compareUnsigned(pathCost + heuristicValue, o.pathCost + o.heuristicValue);
 	}
 
@@ -81,6 +81,9 @@ public class TileExtended implements Comparable<TileExtended>{
 		return tile.getRow() * 10000 + tile.getCol() ;
 	}
 	
+	/**
+	 * Verifica se due ExtendedTile sono uguali anche in base al loro contenuto.
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -89,7 +92,7 @@ public class TileExtended implements Comparable<TileExtended>{
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		TileExtended other = (TileExtended) obj;
+		Node other = (Node) obj;
 		if (tile == null) {
 			if (other.tile != null)
 				return false;
