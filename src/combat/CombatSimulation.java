@@ -46,13 +46,13 @@ public class CombatSimulation {
 	Set<Tile> myAntSet;
 	Set<Tile> enemyAntSet;
 	
-	State root;
+	Assignment root;
 	
 	public CombatSimulation(Tile myAnt, Tile enemyAnt, long deadLine) {
 	Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(true)); //perche ' in combattimento
 		situationRecognition(myAnt,enemyAnt);
 		
-		root = new State(0, myAntSet, enemyAntSet, false);
+		root = new Assignment(0, myAntSet, enemyAntSet, false);
 		MinMax(root, deadLine, 0);	
 		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(false));
 	}
@@ -145,7 +145,7 @@ public class CombatSimulation {
 	 * </ul>
 	 * </p>
 	 */
-	private Map<MovesModels,Set<Order>> movesGenerator(State s) {
+	private Map<MovesModels,Set<Order>> movesGenerator(Assignment s) {
 		Map<MovesModels,Set<Order>> output = new HashMap<MovesModels,Set<Order>>();
 
 		output.put(MovesModels.ATTACK, attack(s));
@@ -159,10 +159,10 @@ public class CombatSimulation {
 		return output;
 	}
 
-	Map<MovesModels, State> assignments = new TreeMap<>();
+	Map<MovesModels, Assignment> assignments = new TreeMap<>();
 	//per ogni moveModel
 
-	private Set<Order> attack(State s) {
+	private Set<Order> attack(Assignment s) {
 		Set<Tile> targets = new HashSet<Tile>();
 		targets.addAll(s.getOpponentAnts());
 		targets.addAll(s.getOpponentHills());
@@ -173,7 +173,7 @@ public class CombatSimulation {
 	}
 
 	
-	private Set<Order> hold(State s) {
+	private Set<Order> hold(Assignment s) {
 		//E' UGUALE!! EXPLORATIONANDMOVEMENT.spreadOut(); TODO
 		double targetDistance = Game.getAttackRadius() + (s.isEnemyMove() ? 1 : 2);
 		Set<Order> ordersAssigned = new TreeSet<Order>();
@@ -203,11 +203,11 @@ public class CombatSimulation {
 		return ordersAssigned;
 	}
 
-	private Set<Order> idle(State s) {
+	private Set<Order> idle(Assignment s) {
 		return s.getAnts().parallelStream().map(ant -> new Order(ant,Directions.STAYSTILL)).collect(Collectors.toSet());
 	}
 
-	private Set<Order> directional(State s, Directions m) {
+	private Set<Order> directional(Assignment s, Directions m) {
 		
 		//FIXME assunzioni forte in questa classe! 
 		//m deve essere NORD SUD EST OVEST
@@ -234,7 +234,7 @@ public class CombatSimulation {
 	 * FIXME aggiungere quando veine effettuata la traduzione che un punteggio di 1 eè assegnato se un nido
 	 * nemico viene distruto
 	 */
-	private double evaluate(State s) {
+	private double evaluate(Assignment s) {
 		Double AntsMultiplier = 1.1D;
 		Double OpponentMultiplier = 1.0D;
 
@@ -272,7 +272,7 @@ public class CombatSimulation {
 
 
 
-	private double MinMax(State state, long deadLine, int depth) {
+	private double MinMax(Assignment state, long deadLine, int depth) {
 		if(AllowExtension(deadLine, depth)) {
 
 			Map<MovesModels,Set<Order>> movesSet = movesGenerator(state);
@@ -281,7 +281,7 @@ public class CombatSimulation {
 				MovesModels moveType = movesEntry.getKey();
 				Set<Order> moves = movesEntry.getValue();
 
-				State childState = state.performMove(moves);
+				Assignment childState = state.performMove(moves);
 				long curTime = Timing.getCurTime();
 				long childDeadline = curTime + (deadLine-curTime)/(movesSet.size()-moveType.ordinal());//FIXME getNumber of Moves forse è il numero di mosse in questo calcolo
 
@@ -300,7 +300,7 @@ public class CombatSimulation {
 	}
 
 
-	private Order moveBackOrForward(State s, Set<Order> ordersAssigned, Tile ant, Tile enemy, int distance, double radius) {
+	private Order moveBackOrForward(Assignment s, Set<Order> ordersAssigned, Tile ant, Tile enemy, int distance, double radius) {
 
 		Directions dir = Game.getDirection(ant, enemy);
 		if(distance<radius)
