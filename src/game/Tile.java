@@ -265,13 +265,24 @@ public class Tile {
 	 */
 	void setTypeWater() {
 		type = TileTypes.WATER;
+		/*
+		if(this.getCol()==0 && this.getRow()!=0 && !Game.getTile(this, Directions.EAST.getOffset()).type.equals(TileTypes.WATER) && !Directions.EAST.getOffset()).type.equals(null))
+			Game.getBorders().add(Game.getTile(this, Directions.EAST.getOffset()));
+		else if (this.getCol()==Game.getCols()-1 &&  this.getRow()!= Game.getRows()-1 && !Game.getTile(this, Directions.WEST.getOffset()).type.equals(TileTypes.WATER)&& !Game.getTile(this, Directions.WEST.getOffset()).type.equals(TileTypes.WATER))
+			Game.getBorders().add(Game.getTile(this, Directions.WEST.getOffset()));
+		else if (this.getRow()==0 && !Game.getTile(this, Directions.SOUTH.getOffset()).type.equals(TileTypes.WATER) && !Game.getTile(this, Directions.SOUTH.getOffset()).type.equals(null))
+			Game.getBorders().add(Game.getTile(this, Directions.SOUTH.getOffset()));
+		else if (this.getRow() == Game.getRows()-1 && !Game.getTile(this, Directions.WEST.getOffset()).type.equals(TileTypes.WATER)&& !Game.getTile(this, Directions.WEST.getOffset()).type.equals(null))
+			Game.getBorders().add(Game.getTile(this, Directions.WEST.getOffset()));
+		Game.getBorders().remove(this);
+		*/
 		neighbourTiles.forEach((dir, t) -> t.removeNeighbour(dir.getOpponent()));
 		neighbourTiles = null;
 		visible = 0;
 		occupiedByAnt = false;
 		idOwner = null;
 		containsFood = false;
-		//Game.getBorders().remove(this);
+		
 	}
 
 	/**
