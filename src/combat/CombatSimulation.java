@@ -168,8 +168,8 @@ public class CombatSimulation {
 		targets.addAll(s.getOpponentHills());
 
 		Search search = new Search(s.getAnts(), targets, null, false, false);
-
-		//return search.adaptiveSearch();
+		search.adaptiveSearch();
+		return search.getOrders();
 	}
 
 	
