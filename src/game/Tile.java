@@ -506,7 +506,7 @@ public class Tile {
 	 * 
 	 * @return
 	 */
-	public boolean isSuitable() {// TODO da cancellare?? riguarda solo acqua??? bohboh
+	private boolean isSuitable() {// TODO da cancellare?? riguarda solo acqua??? bohboh
 		
 		return this.isSuitable;
 		// return (occupiedByAnt || (type.equals(TileTypes.HILL) && idOwner==0 )) ?
