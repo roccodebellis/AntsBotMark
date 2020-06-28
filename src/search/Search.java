@@ -2,27 +2,19 @@ package search;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import vision.Offsets;
-import vision.Offset;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-
 import game.Directions;
 import game.Game;
 import game.Order;
 import game.Tile;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 /**
  * 
@@ -65,9 +57,36 @@ public class Search {
 	 * Se limitare la ricerca ed includere solo un {@link #targets} per ogni tile di
 	 * partenza {@link #source}.<br>
 	 * Impostato a true se si vuole effettuare una ricerca a partire da un singolo
-	 * tile di cibo verso la formica pi� vicina.//TODO
+	 * tile di cibo verso la formica piu' vicina o quando si vuole cercare un'unica formica
+	 * piu' vicina ad un nemico. //TODO
 	 */
-	private Boolean one_target_per_source;//TODO cambiare nome onetargetpersource
+	private Boolean one_target_per_source;
+	
+	/**
+	 * 
+	 */
+	private Set<Tile> results;
+
+	/**
+	 * 
+	 */
+	private Map<Tile, Tile> pathSources;
+	
+	/**
+	 * 
+	 */
+	private Map<Tile, Directions> directionFromSource;
+	
+	/**
+	 * 
+	 */
+	private Map<Tile, Directions> directionFromTarget;
+	
+	/**
+	 * 
+	 */
+	private Set<Order> orders;
+	
 
 	public Search(Set<Tile> sources, Set<Tile> targets, Integer radius, Boolean heuristic, Boolean search_from_one_source) {
 		this.sources = sources;
@@ -75,6 +94,13 @@ public class Search {
 		this.radius = radius;
 		this.heuristic = heuristic;
 		this.one_target_per_source = search_from_one_source;
+		
+		//Init results
+		results = new TreeSet<Tile>();
+		pathSources = new TreeMap<Tile, Tile>();
+		directionFromSource = new HashMap<Tile, Directions>();
+		directionFromTarget = new HashMap<Tile, Directions>();
+		orders = new TreeSet<Order>();
 	}
 
 	/**
@@ -94,15 +120,10 @@ public class Search {
 	public Set<Tile> adaptiveSearch() {
 		if (!radius.equals(null))
 			return staticSearch();
-		else if (heuristic) {//se i targhet sono tutti di un certo tipo 
-			
+		else if (heuristic)//se i target sono tutti di un certo tipo 
 			return extendedAStar();
-			
-		} else {
-			
+		else 			
 			return extendedBFS();
-			
-		}
 	}
 
 	/**
@@ -119,36 +140,39 @@ public class Search {
 	 *                 {@code t}
 	 */
 	private void callback(Tile result, Tile target, Directions cardinal, Directions opposite) {
-		// TODO
+		// TODO ?????????????????????
 		//Game.setOrder() //ricordati di rimuovere la formica dalla lista delle formiche disponibili
 		
 	}
 	
-	//TODO controllare
-	private Order getOrder (Tile origin, Tile target, Directions cardinal, Directions opposite) {
+	//TODO secondo me questa e' callback ed e' da integrare nelle ricerche se one_target_per_source e' true
+	private Order computeOneOrder (Tile origin, Tile target, Directions cardinal, Directions opposite) {
 		if(one_target_per_source)
 			return new Order(target, opposite);
 		else return new Order(origin, cardinal);
 	}
 	
 	//TODO controllare
-	private Set<Order> getOrders (Set<Tile> results, Map<Tile,Tile> pathSources, Map<Tile, Directions> directionFromSource,Map<Tile, Directions> directionFromTarget) {
-		Set<Order> orders = new TreeSet<>();
+	private void computeOrders () {
 		Iterator<Tile> itRes = results.iterator();
 		while(itRes.hasNext()) {
 			Tile res = itRes.next();
 			Tile seed = pathSources.get(res);
 			Order newOrder;
 			if(one_target_per_source)
-				newOrder = getOrder(res, seed, directionFromSource.get(seed), directionFromTarget.get(seed));
-			else newOrder = getOrder(seed, res, directionFromSource.get(seed), directionFromTarget.get(seed));
+				newOrder = computeOneOrder(res, seed, directionFromSource.get(seed), directionFromTarget.get(seed));
+			else newOrder = computeOneOrder(seed, res, directionFromSource.get(seed), directionFromTarget.get(seed));
 			orders.add(newOrder);
 		}
-		
+	}
+	
+	public Set<Order> getOrders(){
 		return orders;
 	}
 	
-	
+	private Map<Tile,Tile> getPathSources(){
+		return this.pathSources;
+	}
 	
 	/**
 	 * <p>
@@ -169,8 +193,6 @@ public class Search {
 	// TODO in teoria no param
 	private Set<Tile> staticSearch() {
 
-		Set<Tile> results = new TreeSet<Tile>();// Collections.<Tile>emptySet();
-
 		Offsets offsets = new Offsets(radius);
 
 		sources.parallelStream().forEachOrdered(
@@ -186,27 +208,24 @@ public class Search {
 	}
 
 	private Set<Tile> extendedAStar() {
-		PriorityQueue<TileExtended> frontier = new PriorityQueue<TileExtended>();
-		Set<TileExtended> expandedTile = new HashSet<>();
-		Map<TileExtended,TileExtended> pathSources = new HashMap<>();
-		Set<Tile> results = new HashSet<>();
-		Map<Tile, Directions> directionFromSource = new HashMap<>();
-		Map<Tile, Directions> directionFromTarget = new HashMap<>();
+		PriorityQueue<Node> frontier = new PriorityQueue<Node>();
+		Set<Node> expandedTile = new HashSet<>();
+		Map<Node,Node> tileSources = new TreeMap<>();
 		Set<Tile> completedSources = new HashSet<>();
 
 		//assegnare targhet ad ogni sorgente
 		//il targhet piu vicino
 
 		sources.forEach(source -> {
-			TileExtended curSource = new TileExtended(source,targets);
+			Node curSource = new Node(source,targets);
 			frontier.add(curSource);
-			pathSources.put(curSource,curSource);
+			tileSources.put(curSource,curSource);
 		});
 
 		while(!frontier.isEmpty()) {
 
-			TileExtended curTile = frontier.poll();
-			TileExtended curTileSource = pathSources.get(curTile);
+			Node curTile = frontier.poll();
+			Node curTileSource = tileSources.get(curTile);
 
 			expandedTile.add(curTile);//FIXME
 
@@ -243,30 +262,32 @@ public class Search {
 					frontier.add(neighbour);
 				}
 			}*/
-			
 			for(Entry<Directions, Tile> neighbourEntry : curTile.getTile().getNeighbour().entrySet()) {
 				Tile neighbourTile = neighbourEntry.getValue();
 				Directions neighborDirection = neighbourEntry.getKey();
-				TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost());		
+				Node neighbour = new Node(neighbourTile,curTileSource.getTarget(),curTile.getPathCost());		
 
-				if(expandedTile.contains(neighbourTile))
+				if(expandedTile.contains(neighbour))
 					continue;
-				if( !pathSources.containsKey(neighbourTile) || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())) {//FIXME
+				//DA CONTROLLARE TODO
+				if(tileSources.entrySet().parallelStream().filter(x -> x.getKey().equals(neighbour)).count()==0 || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())){	
+				
+				//if( !tileSources.containsKey(neighbour) || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())) {//FIXME
 					//TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost()); //FIXME altrimenti curTileSource.getTarget()
 					
-					pathSources.put(neighbour,curTileSource);
+					tileSources.put(neighbour,curTileSource);
 
 					directionFromSource.put(neighbourTile, 
-							directionFromSource.containsKey(curTile) ? directionFromSource.get(curTile) : neighborDirection);
-
+							directionFromSource.containsKey(curTile.getTile()) ? directionFromSource.get(curTile.getTile()) : neighborDirection);
 					directionFromTarget.put(neighbourTile, neighborDirection.getOpponent());
 
 					frontier.add(neighbour);
 				}
 			}
 		}
-		Map<Tile,Tile> tileSources = new HashMap(pathSources.entrySet().parallelStream().collect(Collectors.toMap(e -> e.getKey().getTile(), e -> e.getValue().getTile())));
-		return null;
+		this.pathSources = new TreeMap<>(tileSources.entrySet().parallelStream().collect(Collectors.toMap(e -> e.getKey().getTile(), e -> e.getValue().getTile())));
+		computeOrders();
+		return results;
 		//return results, tileSources, directionFromSource, directionFromTarget;
 	}
 
@@ -331,10 +352,6 @@ public class Search {
 	private Set<Tile> extendedBFS() {
 
 		Queue<Tile> frontier = new LinkedList<Tile>();
-		Map<Tile,Tile> pathSources = new HashMap<>();
-		Set<Tile> results = new HashSet<>();
-		Map<Tile, Directions> directionFromSource = new HashMap<>();
-		Map<Tile, Directions> directionFromTarget = new HashMap<>();
 		Set<Tile> completedSources = new HashSet<>();
 
 		sources.parallelStream().forEachOrdered(source -> {
@@ -384,7 +401,8 @@ public class Search {
 					});
 		}
 		//return result, pathSources, directionFromSource, directionFromTarget; //TODO
-		return null;
+		computeOrders();
+		return results;
 	}
 }
 
