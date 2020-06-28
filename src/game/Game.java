@@ -10,6 +10,7 @@ import java.util.TreeSet;
 import timing.Timing;
 import vision.Offset;
 import vision.Offsets;
+import vision.Vision;
 
 /**
  * TODO EHHH IL MONDO
@@ -104,7 +105,7 @@ public class Game {
 	 * 
 	 */
 	private static Set<Tile> water;
-	
+
 	/**
 	 * Tile che sono al di fuori della vista delle formiche.
 	 */
@@ -176,6 +177,10 @@ public class Game {
 		Game.cols = cols;
 	}
 
+	public static void setOutOfSight(Set<Tile> outOfSight) {
+		Game.outOfSight = outOfSight;
+	}
+	
 	/**
 	 * inizializza l'intera mappa assegnando ad ogni tile la lista dei tile vicini
 	 * viene assegnato ad ogni tile il valore land
@@ -265,6 +270,10 @@ public class Game {
 
 		return output;
 	}
+	
+	public static List<List<Tile>> getMap(){
+		return map;
+	}
 
 	private static Tile getTile(int row, int col) {
 		return map.get(row).get(col);
@@ -310,8 +319,12 @@ public class Game {
 		return attackRadius2;
 	}
 
-	static int getViewRadius() {
+	public static int getViewRadius() {
 		return viewRadius2;
+	}
+	
+	public static Set<Tile> getWater() {
+		return water;
 	}
 
 	static int getSpawnRadius() {
@@ -329,8 +342,7 @@ public class Game {
 		clearMyHills();
 		clearEnemyHills();
 		clearFood();
-		clearVision();
-		// clearDeadAnts(); //???
+		Vision.clearAllVision();//TODO
 		orders.clear();
 	}
 
@@ -461,7 +473,7 @@ public class Game {
 		return getTile(row, col);
 	}
 
-	private Set<Tile> getTiles(Tile tile, Offsets offsets) {
+	public static Set<Tile> getTiles(Tile tile, Offsets offsets) {
 		Set<Tile> inVisionOfThisTile = new TreeSet<Tile>();
 		offsets.parallelStream().forEachOrdered(offset -> inVisionOfThisTile.add(getTile(tile, offset)));
 		return inVisionOfThisTile;
@@ -471,16 +483,7 @@ public class Game {
 	 * EQUALS TO STATIC SEARCH Calculates visible information
 	 */
 	public void setVision() {
-		Set<Tile> inVision = new TreeSet<Tile>();
-		myAnts.parallelStream().forEachOrdered(ant -> inVision.addAll(getTiles(ant, visionOffsets)));
-		inVision.forEach(tile -> { tile.setVisible(true); unexplored.remove(tile);});
-		Set<Tile> allTile = new TreeSet<Tile>(Tile.visionComparator());
-		map.forEach(row -> allTile.addAll(row));
-		allTile.removeAll(inVision);
-		allTile.removeAll(unexplored);
-		allTile.removeAll(water);
-		allTile.forEach(tile -> tile.setVisible(false));
-		outOfSight = allTile;
+		Vision.setVision();
 	}
 
 	/**
@@ -547,4 +550,8 @@ public class Game {
 		return orderlyAnts;
 	}
 
+	public void clearAntsVision() {
+		Vision.clearAntsVision();
+		
+	}
 }
