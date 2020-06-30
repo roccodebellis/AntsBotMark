@@ -1,5 +1,6 @@
 package vision;
 
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import game.Game;
@@ -26,45 +27,59 @@ import game.Tile;
  *
  */
 public class Vision {
-//necessari tutti questi static?? forse no, inizializzazione nel costruttore
+	//necessari tutti questi static?? forse no, inizializzazione nel costruttore
 	//tutti questi metodi li utilizza solo Game (potrebbe Bot ma ho fatto in modo di no)
 	//quindi si potrebbe creare oggetto Vision in Game ed eliminare tutti questi static
 	/**
 	 * {@link Offsets} 
 	 * 
 	 */
-	private final static Offsets visionOffsets = new Offsets((int) Math.sqrt(Game.getViewRadius()));
-	
-	private static Set<Tile> inVision;
-	
-	private static Set<Tile> outOfSight;//non so se sia meglio conservarli qui o meno
-	
-	private static void computeTilesInVision() {
+	private Offsets visionOffsets;
+
+	private Set<Tile> inVision;
+
+	private Set<Tile> outOfSight;//non so se sia meglio conservarli qui o meno
+
+	private Set<Tile> mapTiles;
+
+	public Vision(Set<Tile> mapTiles, int viewRadius){
+		this.mapTiles = mapTiles;
+		visionOffsets = new Offsets((int) Math.sqrt(viewRadius));
 		inVision = new TreeSet<Tile>();
-		Game.getMyAnts().parallelStream().forEachOrdered(ant -> inVision.addAll(Game.getTiles(ant, visionOffsets)));
-		inVision.forEach(tile -> { tile.setVisible(true); Game.getUnexplored().remove(tile);});
 	}
-	
-	public static void clearAllVision(){
-		Game.getMap().parallelStream().forEachOrdered(tList -> tList.parallelStream().forEachOrdered(tile -> tile.setVisible(false)));
+
+	public void clearAllVision(){
+		mapTiles.parallelStream().forEachOrdered(tile -> Game.setVisible(tile,false));
 	}
-	
-	public static void clearAntsVision() {
-		inVision.parallelStream().forEach(tile -> tile.setVisible(false));
+
+	public void setVision(Set<Tile> visible_ants) {
+		/*
+		visible_ants.parallelStream().forEachOrdered(ant -> inVision.addAll(Game.getTiles(ant, visionOffsets)));
+		inVision.forEach(tile ->  Game.setVisible(tile,true));
+		 */
+		visible_ants.parallelStream().forEachOrdered(
+				ant -> 
+				Game.getTiles(ant, visionOffsets).parallelStream().forEachOrdered(tileVisible ->{
+					inVision.add(tileVisible);
+					Game.setVisible(tileVisible,true);
+					if(tileVisible.isOccupiedByAnt() && tileVisible.getOwner() != 0)
+						if(enemyToAnt.contains(tileVisible) ) {
+							if(Game.getDistance(ant, tileVisible) < Game.getDistance(enemyToAnt.get(tileVisible), tileVisible))
+								enemyToAnt.put(tileVisible,ant);
+						} else enemyToAnt.put(tileVisible,ant);
+						//antToEnemy.put(ant,tileVisible);
+				}));
+
+
+
+		outOfSight = new TreeSet<Tile>(Tile.visionComparator());
+		outOfSight.addAll(Game.getMapTiles());
+		outOfSight.removeAll(inVision);
+		outOfSight.removeAll(Game.getUnexplored());
+		outOfSight.removeAll(Game.getWater());		
 	}
-	
-	public static void setVision() {
-		Set<Tile> allTile = new TreeSet<Tile>(Tile.visionComparator());
-		computeTilesInVision();
-		Game.getMap().forEach(row -> allTile.addAll(row));
-		allTile.removeAll(inVision);
-		allTile.removeAll(Game.getUnexplored());
-		allTile.removeAll(Game.getWater());
-		allTile.forEach(tile -> tile.setVisible(false));
-		outOfSight = allTile;//non so se sia meglio tenerli qui o meno
-		//per il momento lo setto sia qui che in Game, poi si decide
-		Game.setOutOfSight(outOfSight);
+
+	public Set<Tile> getOutOfSight(){
+		return outOfSight;
 	}
-	
-	//473 Game setVision static search
 }

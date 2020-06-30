@@ -18,50 +18,62 @@ public class ExplorationAndMovement {
 	//in aree gia esplorate per minimizzare la distanza media dal cibo e mantenere un'area di visione
 
 	public ExplorationAndMovement() {//TODO ?
-		
+		if(!toUnexploredArea())
+			if(!toInvisibleArea()) 
+				if(!toPriorityTarget()) 
+					spreadOut();
+
 	}
 
-	private void toUnexploredArea() {
+	private boolean toUnexploredArea() {
 		Search s = new Search(Game.getMyAnts(), Game.getUnexplored(), null, false, false);
 		s.adaptiveSearch();
 		Set<Order> orders = s.getOrders(); 
-		//preventSteppingOwnHill(orders);FIXME 
+
 		Game.issueOrders(orders);
+
+		return Game.getMyAnts().isEmpty();
 	}
 
-	private void toInvisibleArea() {
+	private boolean toInvisibleArea() {
 		Search s = new Search(Game.getMyAnts(), Game.getOutOfSight(), null, false, false);
 		s.adaptiveSearch();
 		Set<Order> orders = s.getOrders();
-		//preventSteppingOwnHill(orders);FIXME		
-		
+
 		Game.issueOrders(orders);
+		return Game.getMyAnts().isEmpty();
 	}
-	
-	private void toPriorityTarget() {
+
+	private boolean toPriorityTarget() {
 		ArrayList<Set<Tile>> targets = new ArrayList<Set<Tile>>(3);
 		targets.get(0).addAll(Game.getUnexplored());
 		targets.get(1).addAll(Game.getEnemyHills());
 		targets.get(2).addAll(Game.getEnemyAnts());
-		
-		int i = 0;
-		while(!Game.getMyAnts().isEmpty() && targets.get(i).isEmpty()) {//potrebbe non capitare mai, bisogna mettere variabile booleana noPathFounded
-			i = i%3;
-			computeOrders(targets.get(i++));
+
+		int curTarget = 0;
+		int countPathFounded =0;
+
+		while(!Game.getMyAnts().isEmpty() && targets.get(curTarget).isEmpty() && countPathFounded != 3) {
+			curTarget = curTarget%3;
+			if(curTarget == 0)
+				countPathFounded =0;
+
+			countPathFounded += computeOrders(targets.get(curTarget++)) ? 0 : 1;
 		}
+		return Game.getMyAnts().isEmpty();
 	}
-	
+
 	//MASSIMIZZARE LA PERCENTUALE DI COPERTURA 
 	private void spreadOut() {
 		//E' uguale a CombatSimulation.Hold
-		
+
 		Set<Tile> source = Game.getMyAnts();
 		Set<Tile> targets = new TreeSet<>();
 		targets.addAll(Game.getMyAnts());
 		targets.addAll(Game.getOrderlyAnts());
-		
+
 		Iterator<Tile> antsItr = source.iterator();
-		
+
 		while(antsItr.hasNext()) {
 
 			Tile ant = antsItr.next();
@@ -71,9 +83,9 @@ public class ExplorationAndMovement {
 			Search s = new Search(singoletto, targets, null, false, false);//BFS
 			s.adaptiveSearch();
 			Order o = s.getOrders().iterator().next();
-			
+
 			Game.issueOrder(o.withOpponentDirection());
-			
+
 			targets.add(ant);
 		}	
 	}
@@ -81,11 +93,11 @@ public class ExplorationAndMovement {
 	 * targets.addAll(Game.getBorders()); FIXME se le formiche non vanno sui bordi
 	 *
 	 */
-	
-	private void computeOrders(Set<Tile> targets) {
-		Boolean pathFounded = true;
+
+	private boolean computeOrders(Set<Tile> targets) {
+		boolean pathFounded = true;
 		while(!Game.getMyAnts().isEmpty() && !targets.isEmpty() && pathFounded) {
-			
+
 			//io gli farei fare un A* quindi heuristic = true, che dici?
 			Search s = new Search(targets, Game.getMyAnts(), null, true, true);
 			Set<Tile> results = s.adaptiveSearch();
@@ -97,6 +109,7 @@ public class ExplorationAndMovement {
 				Game.issueOrders(orders);
 			}			
 		}
+		return pathFounded;
 	}
 
 }

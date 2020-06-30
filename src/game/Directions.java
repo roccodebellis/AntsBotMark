@@ -1,5 +1,7 @@
 package game;
 
+import java.util.Random;
+
 import vision.Offset;
 
 /**
@@ -50,6 +52,10 @@ public enum Directions {
 		public Offset getOffset() {
 			return new Offset(-1,0);
 		}
+		@Override
+		public Offset getDiagonal() {
+			return new Offset(1,1);
+		}
 	},
 	/**
 	 * Corrisponde all'{@code EST}.
@@ -90,6 +96,10 @@ public enum Directions {
 		@Override
 		public Offset getOffset() {
 			return new Offset(0,1);
+		}
+		@Override
+		public Offset getDiagonal() {
+			return new Offset(-1,1);
 		}
 	},
 	/**
@@ -132,6 +142,10 @@ public enum Directions {
 		public Offset getOffset() {
 			return new Offset(1,0);
 		}
+		@Override
+		public Offset getDiagonal() {
+			return new Offset(-1,-1);
+		}
 	},
 	/**
 	 * Corrisponde a {@code OVEST}.
@@ -173,6 +187,11 @@ public enum Directions {
 		public Offset getOffset() {
 			return new Offset(0,-1);
 		}
+		
+		@Override
+		public Offset getDiagonal() {
+			return new Offset(1,-1);
+		}
 	},
 	/**
 	 * Indica che non c'e' nessuno spostamento: la formica deve rimanere ferma.
@@ -202,6 +221,11 @@ public enum Directions {
 		 */
 		@Override
 		public Offset getOffset() {
+			return new Offset(0,0);
+		}
+		
+		@Override
+		public Offset getDiagonal() {
 			return new Offset(0,0);
 		}
 		
@@ -238,4 +262,12 @@ public enum Directions {
 	 * @return l'{@link Offset offset} della {@link Directions direzione} corrente.
 	 */
 	public abstract Offset getOffset();
+	
+	public abstract Offset getDiagonal();
+	
+	static public Directions random() {
+		Directions[] dirs = values();
+		Random random = new Random();
+		return dirs[random.nextInt(4)];
+	}
 }

@@ -2,12 +2,38 @@ package timing;
 
 public class Timing {
 	
-	private final static long loadTime;
-	private final static int maxTurns;
-	private final static long turnTime;
+	/**
+	 * in milliseconds, time given for bot to start up after it is given "ready" (see below)
+	 */
+	private final long loadTime;
 	
-	public static void setLoadTime(long loadTime2) {
-		Timing.loadTime = loadTime2;
+	/**
+	 * maximum number of turns in the game
+	 */
+	private final int maxTurns;
+	
+	/**
+	 * in milliseconds, time given to the bot each turn
+	 */
+	private final long turnTime;
+	
+	private static long turnStartTime;
+	
+	private long vision;
+	private long combat;
+	private long food;
+	private long defense;
+	private long exploration;
+		
+	public Timing(long loadTime, long turnTime, int turns) {
+		this.loadTime = loadTime;
+		this.maxTurns = turns;
+		this.turnTime = turnTime;
+		vision=0;
+		combat=0;
+		food=0;
+		defense=0;
+		exploration=0;
 	}
 
 	/**
@@ -19,16 +45,8 @@ public class Timing {
 		return loadTime;
 	}
 	
-	public static void setMaxTurns(int turns) {
-		Timing.maxTurns = turns;
-	}
-	
-	public static int getTurnLeft(int currentTurn) {
+	public int getTurnLeft(int currentTurn) {
 		return maxTurns - currentTurn;
-	}
-	
-	public static void setTurnTime(long turnTime) {
-		Timing.turnTime = turnTime;
 	}
 	
 	/**
@@ -40,49 +58,13 @@ public class Timing {
 		return turnTime;
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	/////////////////////////////
-	
-	
-	private static long turnStartTime;
-	
-	//MODULI Combattimento
-	
-	//0.8
-	Lista.addTempo(MOdulo) = nuovo tempo utilizzato da quel modulo * 0.9 + 0.1 * Lista.getTempo(Modulo);
-	//lista di moduli che stimano quanto tempo in media utilizza un modulo per effettuare
-	//effettuare i calcoli che deve fare 
-	
-	//tempo Combattimento = Tempo rimanente - sommatoria dell tempo medio utilizzato da ogni modulo
-	
-	
 	/**
 	 * Sets turn start time.
 	 * 
 	 * @param turnStartTime turn start time
 	 */
-	public static void setTurnStartTime(long turnStartTime) {
-		this.turnStartTime = turnStartTime;
-	
-		System.nanoTime()
-		long evalutateStartTime = TimingUtils.getNanoCPUTimeOfCurrentThread();
-		double time = TimingUtils.nanoTimeToSeconds(TimingUtils.getNanoCPUTimeOfCurrentThread()-evalutateStartTime);
-		
+	public void setTurnStartTime() {
+		this.turnStartTime = System.currentTimeMillis();
 	}
 
 	/**
@@ -93,13 +75,42 @@ public class Timing {
 	 *         out
 	 */
 	public long getTimeRemaining() {
-		return turnTime - (int) (System.currentTimeMillis() - turnStartTime);
+		return turnTime - (System.currentTimeMillis() - turnStartTime);
 	}
 
 	public static long getCurTime() {	
 		return System.currentTimeMillis();
 	}
 	
+	public long getVisionTime() {
+		return vision;
+	}
+	
+	public long getCombatTime() {
+		return combat;
+	}
+	
+	public long getFoodTime() {
+		return food;
+	}
 
+	public long getDefenseTime() {
+		return defense;
+	}
+
+	public long getExplorationTime() {
+		return exploration;
+	}
+	
+	public void update(long module, long start) {
+		module = (long) ((start-getCurTime()) * 0.85 + module * 0.15);
+	}
+	
+	public long getCombatTimeStime(){
+		return getTimeRemaining() - (vision+food+defense+exploration);
+	}
+	
+	
+	
 	
 }

@@ -36,6 +36,13 @@ public class Offsets extends TreeSet<Offset> {
 		super(get(radius));
 	}
 	
+	public Offsets() {
+	}
+	
+	public void addOffset(Offset o) {
+		add(o);
+	}
+	
 	/**
 	 * Restituisce l'insieme di {@link Offset} con raggio {@code radius}.<br>
 	 * Se non e' stato ancora calcolato, si richiama

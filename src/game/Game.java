@@ -7,6 +7,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+
+import combat.CombatSimulation;
 import timing.Timing;
 import vision.Offset;
 import vision.Offsets;
@@ -30,10 +32,6 @@ public class Game {
 	 */
 	private static int cols;
 
-	/**
-	 * Numero di turni totali del gioco.
-	 */
-	private static int turns;// TODO non usata!
 
 	/**
 	 * Raggio di visione delle formiche al quadrato.
@@ -55,7 +53,9 @@ public class Game {
 	 * {@link Offsets} 
 	 * 
 	 */
-	private final Offsets visionOffsets;
+	private static Vision view;
+
+	private Timing time;
 
 	/**
 	 * Insieme contenente le {@link Tile tile} su cui sono posizionati i
@@ -80,7 +80,7 @@ public class Game {
 	 * le formiche nemiche viste dalle {@link #myAnts formiche dell'agente} nel turno corrente.
 	 */
 	private static Set<Tile> enemyAnts;
-	
+
 	/**
 	 * Formiche a cui e' stato assegnato un ordine.
 	 */
@@ -100,7 +100,7 @@ public class Game {
 	 * Insieme contentente le {@link Tile tile} inesplorate.
 	 */
 	private static Set<Tile> unexplored;
-	
+
 	/**
 	 * 
 	 */
@@ -115,7 +115,9 @@ public class Game {
 	 * Mappa del gioco.
 	 */
 	private static List<List<Tile>> map;
-	
+
+	private static Set<Tile> setTiles;
+
 	/**
 	 * 
 	 */
@@ -145,11 +147,12 @@ public class Game {
 	 */
 	public Game(long loadTime, long turnTime, int rows, int cols, int turns, int viewRadius2, int attackRadius2,
 			int spawnRadius2) {
-		Timing.setLoadTime(loadTime);//
-		Timing.setTurnTime(turnTime);
+
+		time = new Timing(loadTime,turnTime,turns);
+
 		setRows(rows);
 		setCols(cols);
-		Timing.setMaxTurns(turns);
+
 		this.viewRadius2 = viewRadius2;
 		this.attackRadius2 = attackRadius2;
 		this.spawnRadius2 = spawnRadius2;
@@ -165,8 +168,10 @@ public class Game {
 		water = new TreeSet<Tile>();
 		outOfSight = new TreeSet<Tile>();
 		//borders = new TreeSet<Tile>();
+		setTiles = new TreeSet<Tile>();
 		map = initGameMap();
-		visionOffsets = new Offsets((int) Math.sqrt(viewRadius2));// FIXME passare slo viewRadius2
+
+		view = new Vision(setTiles, getViewRadius());
 	}
 
 	private static void setRows(int rows) {
@@ -177,10 +182,6 @@ public class Game {
 		Game.cols = cols;
 	}
 
-	public static void setOutOfSight(Set<Tile> outOfSight) {
-		Game.outOfSight = outOfSight;
-	}
-	
 	/**
 	 * inizializza l'intera mappa assegnando ad ogni tile la lista dei tile vicini
 	 * viene assegnato ad ogni tile il valore land
@@ -192,9 +193,10 @@ public class Game {
 			ArrayList<Tile> tempRow = new ArrayList<>();
 			for (int c = 0; c < cols; c++) 
 				tempRow.add(new Tile(r, c));
-				//if(r == 0 || r == rows-1 || c == 0 || c == cols-1)
-					//borders.add(t);
+			//if(r == 0 || r == rows-1 || c == 0 || c == cols-1)
+			//borders.add(t);
 			output.add(tempRow);
+			setTiles.addAll(tempRow);
 			unexplored.addAll(tempRow);
 		}
 
@@ -270,7 +272,7 @@ public class Game {
 
 		return output;
 	}
-	
+
 	public static List<List<Tile>> getMap(){
 		return map;
 	}
@@ -278,7 +280,7 @@ public class Game {
 	private static Tile getTile(int row, int col) {
 		return map.get(row).get(col);
 	}
-	
+
 	public static int getRows() {
 		return rows;
 	}
@@ -306,15 +308,15 @@ public class Game {
 	public static Set<Tile> getUnexplored() {
 		return unexplored;
 	}
-	
+
 	/*public static Set<Tile> getBorders(){
 		return borders;
 	}*/
-	
+
 	public static Set<Tile> getFoodTiles(){
 		return food;
 	}
-	
+
 	public static int getAttackRadius() {
 		return attackRadius2;
 	}
@@ -322,7 +324,7 @@ public class Game {
 	public static int getViewRadius() {
 		return viewRadius2;
 	}
-	
+
 	public static Set<Tile> getWater() {
 		return water;
 	}
@@ -330,9 +332,9 @@ public class Game {
 	static int getSpawnRadius() {
 		return spawnRadius2;
 	}
-	
+
 	public static Set<Tile> getOutOfSight() {
-		return outOfSight;
+		return view.getOutOfSight(); 
 	}
 
 
@@ -342,7 +344,7 @@ public class Game {
 		clearMyHills();
 		clearEnemyHills();
 		clearFood();
-		Vision.clearAllVision();//TODO
+		view.clearAllVision();//TODO
 		orders.clear();
 	}
 
@@ -394,6 +396,12 @@ public class Game {
 	 * 
 	 * }
 	 */
+
+	public static void setVisible(Tile tile, boolean visible) {
+		if(visible)
+			getUnexplored().remove(tile);
+		tile.setVisible(visible);
+	}
 
 	public void setWater(int row, int col) {
 		Tile curTile = getTile(row, col);
@@ -449,7 +457,7 @@ public class Game {
 			myHills.add(curTile);
 		else
 			enemyHills.add(curTile);
-			
+
 		unexplored.remove(curTile);
 	}
 
@@ -482,8 +490,10 @@ public class Game {
 	/**
 	 * EQUALS TO STATIC SEARCH Calculates visible information
 	 */
-	public void setVision() {
-		Vision.setVision();
+	public void doVision() {
+		long start = Timing.getCurTime();		
+		view.setVision(myAnts);
+		time.update(time.getVisionTime(), start);
 	}
 
 	/**
@@ -496,11 +506,11 @@ public class Game {
 		Tile ant = order.getTile();
 		myAnts.remove(ant);
 		orderlyAnts.add(ant);
-		
+
 		orders.add(order);
 		// System.out.println(order); FIXME
 	}
-	
+
 	/**
 	 * Per ogni @link Order ordine} assegnato alle formiche
 	 * viene mandato l'ordine al System Output tramite {@link #issueOrder(Order)}.
@@ -529,7 +539,7 @@ public class Game {
 
 	public static Directions getDirection(Tile t1, Tile t2) {
 		Directions output = Directions.STAYSTILL;
-		
+
 		int difRow = t1.getRow() - t2.getRow();
 		int difCol = t1.getCol() - t2.getCol();
 		int deltaRow = (difRow<0) ? Math.abs(difRow)-rows : difRow;
@@ -550,8 +560,31 @@ public class Game {
 		return orderlyAnts;
 	}
 
-	public void clearAntsVision() {
-		Vision.clearAntsVision();
-		
+	public static Set<Tile> getMapTiles() {
+		return setTiles;	
 	}
+
+	public void doCombat() {
+		Set<CombatSimulation> battles = new TreeSet<CombatSimulation>(definire un comparato con il nunero di formiche);
+		Set<Tile> seen = new TreeSet<Tile>();
+		Iterator<Tile> enemysItr = enemyAnts.iterator();
+		
+		while(enemysItr.hasNext()) {
+			Tile curEnemy = enemysItr.next();
+			if(!seen.contains(curEnemy)) {
+				battles.add(new CombatSimulation(myAnts, enemyAnts, time.getCombatTimeStime()));
+				seen.addAll(c.getEnemyCoinvolti());
+			}
+		}
+		
+		Iterator<CombatSimulation> battlesItr =battles.iterator();
+		while(battlesItr.hasNext()) {
+			battlesItr.next().doBattle();
+		}
+	}
+
+
+
+
+
 }

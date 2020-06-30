@@ -149,7 +149,7 @@ public class Tile {
 	 * 
 	 */
 	private Integer idOwner;
-	
+
 	private Boolean isSuitable;
 
 	/**
@@ -159,8 +159,6 @@ public class Tile {
 	 */
 	private boolean containsFood;// TODO da usare!
 
-	private static final Comparator<Tile> visionComparator = (Tile o1, Tile o2) -> (Integer.compare(o1.getVisible(), o2.getVisible()));
-	
 	/**
 	 * <p>
 	 * Costruttore di un oggetto di {@link Tile}.
@@ -229,7 +227,8 @@ public class Tile {
 	 *                {@code false}, altrimenti
 	 */
 	public void setVisible(boolean visible) {
-		this.visible = visible ? 0 : this.visible - 1;
+		if(!type.equals(TileTypes.WATER))
+			this.visible = visible ? 0 : this.visible - 1;
 	}
 
 	/**
@@ -275,14 +274,14 @@ public class Tile {
 		else if (this.getRow() == Game.getRows()-1 && !Game.getTile(this, Directions.WEST.getOffset()).type.equals(TileTypes.WATER)&& !Game.getTile(this, Directions.WEST.getOffset()).type.equals(null))
 			Game.getBorders().add(Game.getTile(this, Directions.WEST.getOffset()));
 		Game.getBorders().remove(this);
-		*/
+		 */
 		neighbourTiles.forEach((dir, t) -> t.removeNeighbour(dir.getOpponent()));
 		neighbourTiles = null;
 		visible = 0;
 		occupiedByAnt = false;
 		idOwner = null;
 		containsFood = false;
-		
+
 	}
 
 	/**
@@ -411,11 +410,11 @@ public class Tile {
 	 *                           formica oppure il suo {@link #type tipo}
 	 *                           {@code != } {@link TileTypes#HILL HILL}
 	 */
-	private int getOwner() throws TileTypeException {// TODO non lo utilizziamo?!
+	public int getOwner() {// TODO non lo utilizziamo?!
 		if (occupiedByAnt || type.equals(TileTypes.HILL))
 			return idOwner;
-		else
-			throw new TileTypeException("Pensavi ci fosse una formica/un HILL invece era " + type);
+		//else
+			//throw new TileTypeException("Pensavi ci fosse una formica/un HILL invece era " + type);
 	}
 
 	/**
@@ -507,7 +506,7 @@ public class Tile {
 	 * @return
 	 */
 	private boolean isSuitable() {// TODO da cancellare?? riguarda solo acqua??? bohboh
-		
+
 		return this.isSuitable;
 		// return (occupiedByAnt || (type.equals(TileTypes.HILL) && idOwner==0 )) ?
 		// false : true;
@@ -521,12 +520,12 @@ public class Tile {
 
 		// viene utilizzata da BFS
 	}
-	
+
 	public void setSuitable(boolean suitable) {
 		this.isSuitable = suitable;
 	}
 
 	public static final Comparator<Tile> visionComparator() {
-		return visionComparator;
+		return (Tile o1, Tile o2) -> (Integer.compare(o1.getVisible(), o2.getVisible()));
 	}
 }

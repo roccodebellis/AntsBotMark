@@ -66,9 +66,20 @@ public class MyBot extends Bot {
 	public void doTurn() {
 		Game state = getGame();
 		
-		//VISION MODULE
-		//COMBAT SIMULATION
-		//FOOD COLLECTION
+		state.doCombat();
+		
+		state.doFood();
+		
+		state.doDefense();
+		
+		state.doExploration();
+		
+		//1 VISION MODULE
+		//2 COMBAT SIMULATION
+		//3 FOOD COLLECTION
+		//2.5\3.5 HILL ATTACK AND DEFENSE 
+		//4 EXPLORATION AND MOVEMENTS
+		
 	}
 
 }

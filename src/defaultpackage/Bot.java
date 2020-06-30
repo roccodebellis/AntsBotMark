@@ -41,7 +41,6 @@ public abstract class Bot extends AbstractSystemInputParser {
 	@Override
 	public void beforeUpdate() {
 		Timing.setTurnStartTime(System.currentTimeMillis()); 
-		state.clearAntsVision();
 		state.clear();
 	}
 
@@ -90,6 +89,6 @@ public abstract class Bot extends AbstractSystemInputParser {
 	 */
 	@Override
 	public void afterUpdate() {
-		state.setVision();
+		state.doVision();
 	}
 }
