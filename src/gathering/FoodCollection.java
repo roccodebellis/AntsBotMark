@@ -1,6 +1,9 @@
 package gathering;
 
+import java.util.Set;
+
 import game.Game;
+import game.Tile;
 import search.Search;
 //import java.util.Set;
 //import game.Order;
@@ -26,22 +29,8 @@ import search.Search;
  */
 public class FoodCollection {
 
-	public FoodCollection() {
-		foodCollection();
-	}
-
-	private void foodCollection() {//private Set<Order> foodCollection() {
-		Search s = new Search(Game.getFoodTiles(), Game.getMyAnts(), null, false, true);
+	public FoodCollection(Set<Tile> foodTiles, Set<Tile> myAnts) {
+		Search s = new Search(foodTiles, myAnts, null, false, true);
 		s.adaptiveSearch();
-		
-		// secondo me la callback function e' la nostra Search.computeOneOrder()
-		//e' da integrare nella ricerca nel caso in cui one_target_per_source sia true
-		//la richiamiamo e per ogni order lo manda direttamente al system output (non aspetta di
-		//collezionarli tutti: in questo modo le formiche a cui sono state assegnate Tile di cibo
-		//verranno tolte da MyAnts (ossia la lista di target del cibo) in modo che solo una formica
-		//vada verso il cibo
-		//in tal caso, non c'e' bisogno di fare s.getOrders() perche' lo fa gia' callback aka Search.computeOneOrder()
-		
-		//return s.getOrders();
 	}
 }

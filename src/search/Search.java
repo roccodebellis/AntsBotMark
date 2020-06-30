@@ -139,12 +139,6 @@ public class Search {
 	 * @param opposite la direzione inversa con cui il percorso arriva al target
 	 *                 {@code t}
 	 */
-	private void callback(Tile result, Tile target, Directions cardinal, Directions opposite) {
-		// TODO ?????????????????????
-		//Game.setOrder() //ricordati di rimuovere la formica dalla lista delle formiche disponibili
-		
-	}
-	
 	//TODO secondo me questa e' callback ed e' da integrare nelle ricerche se one_target_per_source e' true
 	private Order computeOneOrder (Tile origin, Tile target, Directions cardinal, Directions opposite) {
 		if(one_target_per_source)
@@ -210,7 +204,7 @@ public class Search {
 	private Set<Tile> extendedAStar() {
 		PriorityQueue<Node> frontier = new PriorityQueue<Node>();
 		Set<Node> expandedTile = new HashSet<>();
-		Map<Node,Node> tileSources = new TreeMap<>();
+		Map<Node,Node> tileSources = new TreeMap<>();// is pathSources but with Node (Tile extended) instead of Tile
 		Set<Tile> completedSources = new HashSet<>();
 
 		//assegnare targhet ad ogni sorgente
@@ -238,29 +232,11 @@ public class Search {
 					completedSources.add(curTileSource.getTile());
 			}
 			
-			/*TODO 
+			/*TODO change for to iterator 
 			Iterator<Map.Entry<Directions, Tile>> itNeigh = curTile.getTile().getNeighbour().entrySet().iterator();
 			Entry<Directions, Tile> neighbourEntry;
 			while(it.hasNext()) {
-				neighbourEntry = itNeigh.next();
-				Tile neighbourTile = neighbourEntry.getValue();
-				Directions neighborDirection = neighbourEntry.getKey();
-				TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost());		
-
-				if(expandedTile.contains(neighbourTile))
-					continue;
-				if( !pathSources.containsKey(neighbourTile) || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())) {//FIXME
-					//TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost()); //FIXME altrimenti curTileSource.getTarget()
-					
-					pathSources.put(neighbour,curTileSource);
-
-					directionFromSource.put(neighbourTile, 
-							directionFromSource.containsKey(curTile) ? directionFromSource.get(curTile) : neighborDirection);
-
-					directionFromTarget.put(neighbourTile, neighborDirection.opponent());
-
-					frontier.add(neighbour);
-				}
+			
 			}*/
 			for(Entry<Directions, Tile> neighbourEntry : curTile.getTile().getNeighbour().entrySet()) {
 				Tile neighbourTile = neighbourEntry.getValue();
@@ -270,7 +246,7 @@ public class Search {
 				if(expandedTile.contains(neighbour))
 					continue;
 				//DA CONTROLLARE TODO
-				if(tileSources.entrySet().parallelStream().filter(x -> x.getKey().equals(neighbour)).count()==0 || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())){	
+				if(!tileSources.containsKey(neighbour) || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())){	
 				
 				//if( !tileSources.containsKey(neighbour) || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())) {//FIXME
 					//TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost()); //FIXME altrimenti curTileSource.getTarget()
@@ -287,68 +263,17 @@ public class Search {
 		}
 		this.pathSources = new TreeMap<>(tileSources.entrySet().parallelStream().collect(Collectors.toMap(e -> e.getKey().getTile(), e -> e.getValue().getTile())));
 		computeOrders();
-		return results;
+		return this.results;
 		//return results, tileSources, directionFromSource, directionFromTarget;
 	}
-
-/*	private void roCloBFS() {
-		Queue<Tile> frontier = new LinkedList<Tile>();
-		Map<Tile,Tile> pathSources = new HashMap<>();
-		Set<Tile> results = new HashSet<>();
-		Map<Tile, Directions> directionFromSource = new HashMap<>();
-		Map<Tile, Directions> directionFromTarget = new HashMap<>();
-		Set<Tile> completedSources = new HashSet<>();
-
-		sources.parallelStream().forEachOrdered(source -> {
-			frontier.add(source);
-			pathSources.put(source,source);
-		});
-
-		while(!frontier.isEmpty()) {
-			Tile curTile = frontier.poll();
-
-			Tile curTileSource = pathSources.get(curTile);
-			if(one_target_per_source && completedSources.contains(curTileSource))
-				continue;//continue while
-
-			/**
-			 * for(Entry<Directions, Tile> neighborEntry : curTile.getNeighbour().entrySet()) {
-				Tile neighborTile = neighborEntry.getValue();
-				Directions neighborDirection = neighborEntry.getKey();
-			 *
-
-			curTile.getNeighbour().entrySet().parallelStream().forEachOrdered(
-					neighbourEntry -> { 
-						Tile neighbourTile = neighbourEntry.getValue();
-						Directions neighbourDirection = neighbourEntry.getKey();
-
-						if(!pathSources.containsKey(neighbourTile)) {
-
-							pathSources.put(neighbourTile,curTileSource);
-
-							if(directionFromSource.containsKey(curTile))
-								directionFromSource.put(neighbourTile, directionFromSource.get(curTile));
-							else
-								directionFromSource.put(neighbourTile, neighbourDirection);
-
-							directionFromTarget.put(neighbourTile, neighbourDirection.opponent());
-
-							if(targets.contains(neighbourTile)) {
-								results.add(neighbourTile);
-								targets.remove(neighbourTile);
-								if(one_target_per_source)//FIXME
-									completedSources.add(curTileSource);
-								//TODO: di regola non bisogna rimuovere il targhet
-								//ma se viene rieseguita la ricerca, è necessario rimuoverlo
-							}
-							else frontier.add(neighbourTile);
-						}//continue for
-					});
-		}
-		//return result, pathSources, directionFromSource, directionFromTarget; //TODO
-	}*/
 	
-	
+	/**
+	 * one_target_per_source trova per ogni sorgente il targhet più vicino e te li restituisce
+	 * altrimenti per ogni source invia tutti i targhet vicini verso quelle sorgenti (sicuramente
+	 * i più vicini ad ogni sorgente)
+	 * 
+	 * @return
+	 */
 	private Set<Tile> extendedBFS() {
 
 		Queue<Tile> frontier = new LinkedList<Tile>();
@@ -390,8 +315,10 @@ public class Search {
 
 							if(targets.contains(neighbourTile)) {
 								results.add(neighbourTile);
-								if(one_target_per_source)//FIXME
+								if(one_target_per_source) {//FIXME
 									completedSources.add(curTileSource);
+									callback ---> computeOneOrder();//FIXME
+								}
 								//TODO: di regola non bisogna rimuovere il targhet
 								//ma se viene rieseguita la ricerca, è necessario rimuoverlo
 							}//*else*
@@ -401,8 +328,8 @@ public class Search {
 					});
 		}
 		//return result, pathSources, directionFromSource, directionFromTarget; //TODO
-		computeOrders();
-		return results;
+		computeOrders(); cambiare in base a come vengono impostati target e source
+		return this.results;
 	}
 }
 

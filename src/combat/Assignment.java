@@ -1,18 +1,13 @@
 package combat;
 
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import game.Directions;
-import game.Game;
 import game.Order;
 import game.Tile;
 import timing.Timing;
 
-public class State {
+public class Assignment {
 
 
 	Set<Tile> ants;
@@ -34,11 +29,11 @@ public class State {
 
 	boolean isEnemyMoves;
 	
-	Set<State> child;
+	Set<Assignment> child;
 
 
-	State(int turn, List<Order> myAntsOrders, List<Order> enemyAntsOrders, boolean enemyMoves) {
-		child = new TreeSet<State>();
+	Assignment(int turn, List<Order> myAntsOrders, List<Order> enemyAntsOrders, boolean enemyMoves) {
+		child = new TreeSet<Assignment>();
 		isEnemyMoves = enemyMoves;
 		this.currentTurn = turn;
 	}
@@ -97,7 +92,7 @@ public class State {
 	}
 
 
-	public State performMove(Set<Order> moves) {
+	public Assignment performMove(Set<Order> moves) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -108,7 +103,7 @@ public class State {
 	}
 
 
-	public void addChild(State childState) {
+	public void addChild(Assignment childState) {
 		// TODO Auto-generated method stub
 		
 	}

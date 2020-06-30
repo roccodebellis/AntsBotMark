@@ -65,10 +65,14 @@ public class MyBot extends Bot {
 	@Override //DA FARW
 	public void doTurn() {
 		Game state = getGame();
-		
-		//VISION MODULE
-		//COMBAT SIMULATION
-		//FOOD COLLECTION
+		//1 VISION MODULE
+		//2 COMBAT SIMULATION
+		state.doCombat();
+		//3 FOOD COLLECTION
+		state.doFood();
+		//2.5\3.5 HILL ATTACK AND DEFENSE 
+		state.doDefense();
+		//4 EXPLORATION AND MOVEMENTS
+		state.doExploration();		
 	}
-
 }

@@ -4,12 +4,23 @@ import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+
+import attackdefensehills.AttackDefenseHills;
+import combat.CombatSimulation;
+import exploration.ExplorationAndMovement;
+import gathering.FoodCollection;
+import search.Node;
 import timing.Timing;
 import vision.Offset;
 import vision.Offsets;
+import vision.Vision;
 
 /**
  * TODO EHHH IL MONDO
@@ -29,10 +40,6 @@ public class Game {
 	 */
 	private static int cols;
 
-	/**
-	 * Numero di turni totali del gioco.
-	 */
-	private static int turns;// TODO non usata!
 
 	/**
 	 * Raggio di visione delle formiche al quadrato.
@@ -54,7 +61,9 @@ public class Game {
 	 * {@link Offsets} 
 	 * 
 	 */
-	private final Offsets visionOffsets;
+	private static Vision view;
+
+	private Timing time;
 
 	/**
 	 * Insieme contenente le {@link Tile tile} su cui sono posizionati i
@@ -79,7 +88,7 @@ public class Game {
 	 * le formiche nemiche viste dalle {@link #myAnts formiche dell'agente} nel turno corrente.
 	 */
 	private static Set<Tile> enemyAnts;
-	
+
 	/**
 	 * Formiche a cui e' stato assegnato un ordine.
 	 */
@@ -99,12 +108,12 @@ public class Game {
 	 * Insieme contentente le {@link Tile tile} inesplorate.
 	 */
 	private static Set<Tile> unexplored;
-	
+
 	/**
 	 * 
 	 */
 	private static Set<Tile> water;
-	
+
 	/**
 	 * Tile che sono al di fuori della vista delle formiche.
 	 */
@@ -114,7 +123,9 @@ public class Game {
 	 * Mappa del gioco.
 	 */
 	private static List<List<Tile>> map;
-	
+
+	private static Set<Tile> setTiles;
+
 	/**
 	 * 
 	 */
@@ -144,11 +155,12 @@ public class Game {
 	 */
 	public Game(long loadTime, long turnTime, int rows, int cols, int turns, int viewRadius2, int attackRadius2,
 			int spawnRadius2) {
-		Timing.setLoadTime(loadTime);//
-		Timing.setTurnTime(turnTime);
+
+		time = new Timing(loadTime,turnTime,turns);
+
 		setRows(rows);
 		setCols(cols);
-		Timing.setMaxTurns(turns);
+
 		this.viewRadius2 = viewRadius2;
 		this.attackRadius2 = attackRadius2;
 		this.spawnRadius2 = spawnRadius2;
@@ -164,8 +176,10 @@ public class Game {
 		water = new TreeSet<Tile>();
 		outOfSight = new TreeSet<Tile>();
 		//borders = new TreeSet<Tile>();
+		setTiles = new TreeSet<Tile>();
 		map = initGameMap();
-		visionOffsets = new Offsets((int) Math.sqrt(viewRadius2));// FIXME passare slo viewRadius2
+
+		view = new Vision(setTiles, getViewRadius());
 	}
 
 	private static void setRows(int rows) {
@@ -187,9 +201,10 @@ public class Game {
 			ArrayList<Tile> tempRow = new ArrayList<>();
 			for (int c = 0; c < cols; c++) 
 				tempRow.add(new Tile(r, c));
-				//if(r == 0 || r == rows-1 || c == 0 || c == cols-1)
-					//borders.add(t);
+			//if(r == 0 || r == rows-1 || c == 0 || c == cols-1)
+			//borders.add(t);
 			output.add(tempRow);
+			setTiles.addAll(tempRow);
 			unexplored.addAll(tempRow);
 		}
 
@@ -266,10 +281,14 @@ public class Game {
 		return output;
 	}
 
+	public static List<List<Tile>> getMap(){
+		return map;
+	}
+
 	private static Tile getTile(int row, int col) {
 		return map.get(row).get(col);
 	}
-	
+
 	public static int getRows() {
 		return rows;
 	}
@@ -297,29 +316,33 @@ public class Game {
 	public static Set<Tile> getUnexplored() {
 		return unexplored;
 	}
-	
+
 	/*public static Set<Tile> getBorders(){
 		return borders;
 	}*/
-	
+
 	public static Set<Tile> getFoodTiles(){
 		return food;
 	}
-	
+
 	public static int getAttackRadius() {
 		return attackRadius2;
 	}
 
-	static int getViewRadius() {
+	public static int getViewRadius() {
 		return viewRadius2;
+	}
+
+	public static Set<Tile> getWater() {
+		return water;
 	}
 
 	static int getSpawnRadius() {
 		return spawnRadius2;
 	}
-	
+
 	public static Set<Tile> getOutOfSight() {
-		return outOfSight;
+		return view.getOutOfSight(); 
 	}
 
 
@@ -329,8 +352,7 @@ public class Game {
 		clearMyHills();
 		clearEnemyHills();
 		clearFood();
-		clearVision();
-		// clearDeadAnts(); //???
+		view.clearAllVision();//TODO
 		orders.clear();
 	}
 
@@ -382,6 +404,12 @@ public class Game {
 	 * 
 	 * }
 	 */
+
+	public static void setVisible(Tile tile, boolean visible) {
+		if(visible)
+			getUnexplored().remove(tile);
+		tile.setVisible(visible);
+	}
 
 	public void setWater(int row, int col) {
 		Tile curTile = getTile(row, col);
@@ -437,7 +465,7 @@ public class Game {
 			myHills.add(curTile);
 		else
 			enemyHills.add(curTile);
-			
+
 		unexplored.remove(curTile);
 	}
 
@@ -461,7 +489,7 @@ public class Game {
 		return getTile(row, col);
 	}
 
-	private Set<Tile> getTiles(Tile tile, Offsets offsets) {
+	public static Set<Tile> getTiles(Tile tile, Offsets offsets) {
 		Set<Tile> inVisionOfThisTile = new TreeSet<Tile>();
 		offsets.parallelStream().forEachOrdered(offset -> inVisionOfThisTile.add(getTile(tile, offset)));
 		return inVisionOfThisTile;
@@ -470,17 +498,10 @@ public class Game {
 	/**
 	 * EQUALS TO STATIC SEARCH Calculates visible information
 	 */
-	public void setVision() {
-		Set<Tile> inVision = new TreeSet<Tile>();
-		myAnts.parallelStream().forEachOrdered(ant -> inVision.addAll(getTiles(ant, visionOffsets)));
-		inVision.forEach(tile -> { tile.setVisible(true); unexplored.remove(tile);});
-		Set<Tile> allTile = new TreeSet<Tile>(Tile.visionComparator());
-		map.forEach(row -> allTile.addAll(row));
-		allTile.removeAll(inVision);
-		allTile.removeAll(unexplored);
-		allTile.removeAll(water);
-		allTile.forEach(tile -> tile.setVisible(false));
-		outOfSight = allTile;
+	public void doVision() {
+		long start = Timing.getCurTime();		
+		view.setVision(myAnts);
+		time.update(time.getVisionTime(), start);
 	}
 
 	/**
@@ -493,11 +514,12 @@ public class Game {
 		Tile ant = order.getTile();
 		myAnts.remove(ant);
 		orderlyAnts.add(ant);
-		
+
 		orders.add(order);
-		// System.out.println(order); FIXME
+		if (!order.getDirection().equals(Directions.STAYSTILL))
+			System.out.println(order);
 	}
-	
+
 	/**
 	 * Per ogni @link Order ordine} assegnato alle formiche
 	 * viene mandato l'ordine al System Output tramite {@link #issueOrder(Order)}.
@@ -526,7 +548,7 @@ public class Game {
 
 	public static Directions getDirection(Tile t1, Tile t2) {
 		Directions output = Directions.STAYSTILL;
-		
+
 		int difRow = t1.getRow() - t2.getRow();
 		int difCol = t1.getCol() - t2.getCol();
 		int deltaRow = (difRow<0) ? Math.abs(difRow)-rows : difRow;
@@ -546,5 +568,61 @@ public class Game {
 	public static Set<Tile> getOrderlyAnts() {
 		return orderlyAnts;
 	}
+
+	public static Set<Tile> getMapTiles() {
+		return setTiles;	
+	}
+	
+	public static Map<Node, Tile> getEnemyToAnt() {
+		return view.getEnemyToAnt();
+	}
+
+	public void doCombat() {
+		Map<Node,Tile> enemyToAnt = getEnemyToAnt();
+		Iterator<Entry<Node, Tile>> battlePairItr = enemyToAnt.entrySet().iterator();
+		Set<Tile> myAntsEngaged = new TreeSet<Tile>();
+		
+		Map<Tile,Tile> battlesLeading = new HashMap<Tile,Tile>();
+		Set<CombatSimulation> battles = new TreeSet<CombatSimulation>();
+		
+		
+		while(battlePairItr.hasNext()) {
+			Entry<Node, Tile> curPair = battlePairItr.next();
+			Node enemyExt = curPair.getKey();
+			Tile ant = curPair.getValue();
+	
+			//if(enemyExt.getHeuristicValue()) FIXME magari diminuire e non utilizzare il raggio di visione, utilizzando la distanza
+			if(!myAntsEngaged.contains(ant)) {
+				battlesLeading.put(ant, enemyExt.getTile());
+			}
+			
+		}
+		
+		
+		long timeAssigned = time.getCombatTimeStime()/battlesLeading.size();
+		battlesLeading.entrySet().parallelStream().forEachOrdered(e ->
+			battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
+		
+		battles.parallelStream().forEachOrdered(battle -> battle.combatResolution());
+	
+	}
+
+	public void doFood() {
+		new FoodCollection(getFoodTiles(),getMyAnts());
+		
+	}
+
+	public void doDefense() {
+		new AttackDefenseHills(getMyAnts(), getMyHills(), getEnemyAnts(), getEnemyHills());
+	}
+
+	public void doExploration() {
+		new ExplorationAndMovement( getMyAnts(), getUnexplored(), getOutOfSight(),getOrderlyAnts());
+		
+	}
+
+
+
+
 
 }
