@@ -4,11 +4,19 @@ import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
+import attackdefensehills.AttackDefenseHills;
 import combat.CombatSimulation;
+import exploration.ExplorationAndMovement;
+import gathering.FoodCollection;
+import search.Node;
 import timing.Timing;
 import vision.Offset;
 import vision.Offsets;
@@ -508,7 +516,8 @@ public class Game {
 		orderlyAnts.add(ant);
 
 		orders.add(order);
-		// System.out.println(order); FIXME
+		if (!order.getDirection().equals(Directions.STAYSTILL))
+			System.out.println(order);
 	}
 
 	/**
@@ -563,24 +572,53 @@ public class Game {
 	public static Set<Tile> getMapTiles() {
 		return setTiles;	
 	}
+	
+	public static Map<Node, Tile> getEnemyToAnt() {
+		return view.getEnemyToAnt();
+	}
 
 	public void doCombat() {
-		Set<CombatSimulation> battles = new TreeSet<CombatSimulation>(definire un comparato con il nunero di formiche);
-		Set<Tile> seen = new TreeSet<Tile>();
-		Iterator<Tile> enemysItr = enemyAnts.iterator();
+		Map<Node,Tile> enemyToAnt = getEnemyToAnt();
+		Iterator<Entry<Node, Tile>> battlePairItr = enemyToAnt.entrySet().iterator();
+		Set<Tile> myAntsEngaged = new TreeSet<Tile>();
 		
-		while(enemysItr.hasNext()) {
-			Tile curEnemy = enemysItr.next();
-			if(!seen.contains(curEnemy)) {
-				battles.add(new CombatSimulation(myAnts, enemyAnts, time.getCombatTimeStime()));
-				seen.addAll(c.getEnemyCoinvolti());
+		Map<Tile,Tile> battlesLeading = new HashMap<Tile,Tile>();
+		Set<CombatSimulation> battles = new TreeSet<CombatSimulation>();
+		
+		
+		while(battlePairItr.hasNext()) {
+			Entry<Node, Tile> curPair = battlePairItr.next();
+			Node enemyExt = curPair.getKey();
+			Tile ant = curPair.getValue();
+	
+			//if(enemyExt.getHeuristicValue()) FIXME magari diminuire e non utilizzare il raggio di visione, utilizzando la distanza
+			if(!myAntsEngaged.contains(ant)) {
+				battlesLeading.put(ant, enemyExt.getTile());
 			}
+			
 		}
 		
-		Iterator<CombatSimulation> battlesItr =battles.iterator();
-		while(battlesItr.hasNext()) {
-			battlesItr.next().doBattle();
-		}
+		
+		long timeAssigned = time.getCombatTimeStime()/battlesLeading.size();
+		battlesLeading.entrySet().parallelStream().forEachOrdered(e ->
+			battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
+		
+		battles.parallelStream().forEachOrdered(battle -> battle.combatResolution());
+	
+	}
+
+	public void doFood() {
+		new FoodCollection(getFoodTiles(),getMyAnts());
+		
+	}
+
+	public void doDefense() {
+		new AttackDefenseHills(getMyAnts(), getMyHills(), getEnemyAnts(), getEnemyHills());
+	}
+
+	public void doExploration() {
+		new ExplorationAndMovement( getMyAnts(), getUnexplored(), getOutOfSight(),getOrderlyAnts());
+		
 	}
 
 

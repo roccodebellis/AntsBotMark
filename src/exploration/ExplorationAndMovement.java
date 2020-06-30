@@ -17,16 +17,16 @@ public class ExplorationAndMovement {
 	//oppure inviare dove e' necessario (battaglie in corso, punti chiave, etc
 	//in aree gia esplorate per minimizzare la distanza media dal cibo e mantenere un'area di visione
 
-	public ExplorationAndMovement() {//TODO ?
-		if(!toUnexploredArea())
-			if(!toInvisibleArea()) 
-				if(!toPriorityTarget()) 
-					spreadOut();
+	public ExplorationAndMovement(Set<Tile> myAnts, Set<Tile> unexplored, Set<Tile> outOfSight, Set<Tile> orderlyAnts) {//TODO ?
+		if(!toUnexploredArea(myAnts,unexplored))
+			if(!toInvisibleArea(myAnts, outOfSight)) 
+				if(!toPriorityTarget(myAnts)) 
+					spreadOut(myAnts,orderlyAnts);
 
 	}
 
-	private boolean toUnexploredArea() {
-		Search s = new Search(Game.getMyAnts(), Game.getUnexplored(), null, false, false);
+	private boolean toUnexploredArea(Set<Tile> myAnts, Set<Tile> unexplored) {
+		Search s = new Search(myAnts, unexplored, null, false, false);
 		s.adaptiveSearch();
 		Set<Order> orders = s.getOrders(); 
 
@@ -35,8 +35,8 @@ public class ExplorationAndMovement {
 		return Game.getMyAnts().isEmpty();
 	}
 
-	private boolean toInvisibleArea() {
-		Search s = new Search(Game.getMyAnts(), Game.getOutOfSight(), null, false, false);
+	private boolean toInvisibleArea(Set<Tile> myAnts, Set<Tile> outOfSight) {
+		Search s = new Search(myAnts, outOfSight, null, false, false);
 		s.adaptiveSearch();
 		Set<Order> orders = s.getOrders();
 
@@ -44,7 +44,7 @@ public class ExplorationAndMovement {
 		return Game.getMyAnts().isEmpty();
 	}
 
-	private boolean toPriorityTarget() {
+	private boolean toPriorityTarget(Set<Tile> myAnts) {
 		ArrayList<Set<Tile>> targets = new ArrayList<Set<Tile>>(3);
 		targets.get(0).addAll(Game.getUnexplored());
 		targets.get(1).addAll(Game.getEnemyHills());
@@ -53,7 +53,7 @@ public class ExplorationAndMovement {
 		int curTarget = 0;
 		int countPathFounded =0;
 
-		while(!Game.getMyAnts().isEmpty() && targets.get(curTarget).isEmpty() && countPathFounded != 3) {
+		while(!myAnts.isEmpty() && targets.get(curTarget).isEmpty() && countPathFounded != 3) {
 			curTarget = curTarget%3;
 			if(curTarget == 0)
 				countPathFounded =0;
@@ -64,13 +64,13 @@ public class ExplorationAndMovement {
 	}
 
 	//MASSIMIZZARE LA PERCENTUALE DI COPERTURA 
-	private void spreadOut() {
+	private void spreadOut(Set<Tile> myAnts, Set<Tile> orderlyAnts) {
 		//E' uguale a CombatSimulation.Hold
 
-		Set<Tile> source = Game.getMyAnts();
+		Set<Tile> source = myAnts;
 		Set<Tile> targets = new TreeSet<>();
-		targets.addAll(Game.getMyAnts());
-		targets.addAll(Game.getOrderlyAnts());
+		targets.addAll(myAnts);
+		targets.addAll(orderlyAnts);
 
 		Iterator<Tile> antsItr = source.iterator();
 

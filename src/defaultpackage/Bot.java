@@ -40,7 +40,7 @@ public abstract class Bot extends AbstractSystemInputParser {
 	 */
 	@Override
 	public void beforeUpdate() {
-		Timing.setTurnStartTime(System.currentTimeMillis()); 
+		Timing.setTurnStartTime(); 
 		state.clear();
 	}
 

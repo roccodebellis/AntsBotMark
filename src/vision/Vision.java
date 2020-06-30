@@ -1,10 +1,12 @@
 package vision;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import game.Game;
 import game.Tile;
+import search.Node;
 
 /**
  * Vision module is the very first module to be run at a beginning of the
@@ -41,11 +43,14 @@ public class Vision {
 	private Set<Tile> outOfSight;//non so se sia meglio conservarli qui o meno
 
 	private Set<Tile> mapTiles;
+	
+	private Map<Node,Tile> enemyToAnt;
 
 	public Vision(Set<Tile> mapTiles, int viewRadius){
 		this.mapTiles = mapTiles;
 		visionOffsets = new Offsets((int) Math.sqrt(viewRadius));
 		inVision = new TreeSet<Tile>();
+		enemyToAnt = new TreeMap<Node,Tile>();
 	}
 
 	public void clearAllVision(){
@@ -60,13 +65,16 @@ public class Vision {
 		visible_ants.parallelStream().forEachOrdered(
 				ant -> 
 				Game.getTiles(ant, visionOffsets).parallelStream().forEachOrdered(tileVisible ->{
+					Node visibleTileEx = new Node(tileVisible,ant);;
 					inVision.add(tileVisible);
 					Game.setVisible(tileVisible,true);
 					if(tileVisible.isOccupiedByAnt() && tileVisible.getOwner() != 0)
-						if(enemyToAnt.contains(tileVisible) ) {
-							if(Game.getDistance(ant, tileVisible) < Game.getDistance(enemyToAnt.get(tileVisible), tileVisible))
-								enemyToAnt.put(tileVisible,ant);
-						} else enemyToAnt.put(tileVisible,ant);
+						if(enemyToAnt.containsKey(visibleTileEx) ) {
+							if(Game.getDistance(ant, tileVisible) < Game.getDistance(enemyToAnt.get(visibleTileEx), tileVisible))
+								visibleTileEx = new Node(tileVisible,ant);
+						} else 
+							enemyToAnt.put(visibleTileEx,ant);
+						
 						//antToEnemy.put(ant,tileVisible);
 				}));
 
@@ -77,6 +85,10 @@ public class Vision {
 		outOfSight.removeAll(inVision);
 		outOfSight.removeAll(Game.getUnexplored());
 		outOfSight.removeAll(Game.getWater());		
+	}
+	
+	public Map<Node,Tile> getEnemyToAnt() {
+		return enemyToAnt;
 	}
 
 	public Set<Tile> getOutOfSight(){

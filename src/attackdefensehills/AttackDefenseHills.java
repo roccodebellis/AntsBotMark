@@ -11,16 +11,16 @@ import search.Search;
 
 public class AttackDefenseHills {
 
-	public AttackDefenseHills() {
-		defense();
-		attack();
+	public AttackDefenseHills(Set<Tile> myAnts, Set<Tile> myHills, Set<Tile> enemy,  Set<Tile> enemyHills) {
+		defense(myAnts, myHills, enemy);
+		attack(myAnts, enemyHills);
 
 	}
 
-	private void defense() {
-		int avaiableAnts = Game.getMyAnts().size();
+	private void defense(Set<Tile> myAnts, Set<Tile> myHills, Set<Tile> enemy) {
+		int avaiableAnts = myAnts.size();
 
-		double antsForHill = avaiableAnts/Game.getMyHills().size();
+		double antsForHill = avaiableAnts/myHills.size();
 
 		Set<Tile> defender = new TreeSet<Tile>();
 
@@ -30,7 +30,7 @@ public class AttackDefenseHills {
 				defender.add(Game.getTile(hill,sentinel.getDiagonal()));
 
 				//ricerca la formica nemica più vicina
-				Iterator<Tile> enemyItr = Game.getEnemyAnts().iterator();
+				Iterator<Tile> enemyItr = enemy.iterator();
 
 				if(enemyItr.hasNext()) {
 					Tile minTarget = enemyItr.next();
@@ -56,7 +56,7 @@ public class AttackDefenseHills {
 
 		}else if(avaiableAnts > 0 ) {
 			Directions sentinel = Directions.random();
-			Tile hill = Game.getMyHills().iterator().next();
+			Tile hill = myHills.iterator().next();
 			//difendi almeno un nido
 			defender.add(Game.getTile(hill,sentinel.getDiagonal()));
 
@@ -66,7 +66,7 @@ public class AttackDefenseHills {
 
 	}
 
-	private void attack() {
+	private void attack(Set<Tile> myAnts, Set<Tile> enemyHills) {
 		
 		Search s = new Search(Game.getEnemyHills(), Game.getMyAnts(), null, false, false);
 		s.adaptiveSearch();

@@ -7,5 +7,6 @@ public class Configuration {
 	public static int getCombatModuleMinMaxMaxDepth(){
 		return CombatModuleMinMaxMaxDepth;
 	}
-
+	
+	
 }

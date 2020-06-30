@@ -411,7 +411,7 @@ public class Tile {
 	 *                           {@code != } {@link TileTypes#HILL HILL}
 	 */
 	public int getOwner() {// TODO non lo utilizziamo?!
-		if (occupiedByAnt || type.equals(TileTypes.HILL))
+		//if (occupiedByAnt || type.equals(TileTypes.HILL)) FIXME
 			return idOwner;
 		//else
 			//throw new TileTypeException("Pensavi ci fosse una formica/un HILL invece era " + type);
@@ -520,6 +520,12 @@ public class Tile {
 
 		// viene utilizzata da BFS
 	}
+	
+	public boolean isAccessible() {
+		if(type.equals(TileTypes.WATER))
+			return false;
+		return true;
+	}
 
 	public void setSuitable(boolean suitable) {
 		this.isSuitable = suitable;
@@ -528,4 +534,5 @@ public class Tile {
 	public static final Comparator<Tile> visionComparator() {
 		return (Tile o1, Tile o2) -> (Integer.compare(o1.getVisible(), o2.getVisible()));
 	}
+
 }

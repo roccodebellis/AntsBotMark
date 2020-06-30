@@ -1,13 +1,8 @@
 package combat;
 
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import game.Directions;
-import game.Game;
 import game.Order;
 import game.Tile;
 import timing.Timing;

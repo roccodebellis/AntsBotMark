@@ -15,6 +15,7 @@ import game.Directions;
 import game.Game;
 import game.Order;
 import game.Tile;
+import search.Node;
 import search.Search;
 import timing.Timing;
 import vision.Offset;
@@ -23,7 +24,7 @@ import vision.Offset;
  * <p>Questo modulo processa tutte le situazioni in cui le formiche degli agenti incontrano formiche nemiche
  * ad una certa distanza.<br>
  * Il modulo provera' a determinare le migliori mosse per le formiche dell'agente in una data situazione
- * usando una ricerca spazio-tempo, simulando le possibili mosse che potrebbero compiere l'agente
+ * usando una ricerca stati-spazio, simulando le possibili mosse che potrebbero compiere l'agente
  * ed il nemico e valutando le situazioni risultanti.</p>
  * <p>In questo modulo le formiche vengono raggruppate in clusters simulando, in modo sincronizzato,
  * le mosse del gruppo.<br>
@@ -41,27 +42,27 @@ import vision.Offset;
  * @author Debellis, Lorusso
  *
  */
-public class CombatSimulation {
-	
+public class CombatSimulation implements Comparable<CombatSimulation>{
+
 	Set<Tile> myAntSet;
 	Set<Tile> enemyAntSet;
-	
+
 	Assignment root;
-	
+
 	public CombatSimulation(Tile myAnt, Tile enemyAnt, long deadLine) {
-	Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(true)); //perche ' in combattimento
+		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(true)); //perche ' in combattimento
 		situationRecognition(myAnt,enemyAnt);
-		
+
 		root = new Assignment(0, myAntSet, enemyAntSet, false);
 		MinMax(root, deadLine, 0);	
 		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(false));
 	}
-	
+
 	List<Order> getMoves(){
 		return root.getFirstChild();
 	}
 
-	
+
 
 	/**
 	 * Dopo aver incontrato una formica nemica nel range di visione di una delle formiche
@@ -86,12 +87,12 @@ public class CombatSimulation {
 	 * </li>
 	 * </ul>
 	 */
-	public void situationRecognition(Tile myAnt, Tile enemyAnt){ 
+	private void situationRecognition(Tile myAnt, Tile enemyAnt){ 
 		//TROVARE UN MODO PER SAPERE SE LA FORMICA POSIZIONATA SUL TILE è disponibile 
 		// no, claudia isOccupied dice solo se quella tile è occupata da una formica!
 		Set<Tile> myAntSet = new HashSet<>();
 		Set<Tile> enemyAntSet = new HashSet<>();
-		
+
 		myAntSet.add(myAnt);
 		enemyAntSet.add(enemyAnt);
 
@@ -105,14 +106,14 @@ public class CombatSimulation {
 			addedAnts = false;
 			Search forEnemyAnts = new Search(myAntSet, Game.getEnemyAnts(), attackRadius, false, false);
 			Set<Tile> newEnemyFound = forEnemyAnts.adaptiveSearch();
-			if(newEnemyFound.size()> enemyAntSet.size()) {
+			if(newEnemyFound.size() > enemyAntSet.size()) {
 				addedAnts = true;
 				enemyAntSet = newEnemyFound;
 			}
 
 			Search forMyAnts = new Search(enemyAntSet, Game.getMyAnts(), attackRadius, false, false);
 			Set<Tile> newMyAntsFound = forMyAnts.adaptiveSearch();
-			if(newMyAntsFound.size()> myAntSet.size()) {
+			if(newMyAntsFound.size() > myAntSet.size()) {
 				addedAnts = true;
 				myAntSet = newMyAntsFound;
 			}
@@ -150,7 +151,7 @@ public class CombatSimulation {
 
 		output.put(MovesModels.ATTACK, attack(s));
 		output.put(MovesModels.HOLD, hold(s));
-		output.put(MovesModels.IDLE,idle(s));
+		output.put(MovesModels.IDLE, idle(s));
 		output.put(MovesModels.NORTH, directional(s,Directions.NORTH));
 		output.put(MovesModels.SOUTH, directional(s,Directions.SOUTH));
 		output.put(MovesModels.EAST, directional(s,Directions.EAST));
@@ -158,9 +159,6 @@ public class CombatSimulation {
 
 		return output;
 	}
-
-	Map<MovesModels, Assignment> assignments = new TreeMap<>();
-	//per ogni moveModel
 
 	private Set<Order> attack(Assignment s) {
 		Set<Tile> targets = new HashSet<Tile>();
@@ -172,9 +170,10 @@ public class CombatSimulation {
 		return search.getOrders();
 	}
 
-	
+
 	private Set<Order> hold(Assignment s) {
 		//E' UGUALE!! EXPLORATIONANDMOVEMENT.spreadOut(); TODO
+
 		double targetDistance = Game.getAttackRadius() + (s.isEnemyMove() ? 1 : 2);
 		Set<Order> ordersAssigned = new TreeSet<Order>();
 
@@ -197,33 +196,56 @@ public class CombatSimulation {
 						minDist = nextDist;
 					}
 				}
-				ordersAssigned.add(moveBackOrForward(s, ordersAssigned, ant, minTarget, minDist, targetDistance));
+				ordersAssigned.add(moveBackOrForward(ordersAssigned, ant, minTarget, minDist, targetDistance));
 			}
 		}
 		return ordersAssigned;
 	}
+
+	private Order moveBackOrForward(Set<Order> ordersAssigned, Tile ant, Tile enemy, int distance, double targetDistance) {
+
+		Directions dir = Game.getDirection(ant, enemy);
+		if(distance < targetDistance)
+			dir = dir.getOpponent();
+		Order order;
+
+		if(distance != targetDistance) {
+			order = new Order(ant, dir);
+			if(ordersAssigned.contains(order) || !Game.getTile(ant, dir.getOffset()).isAccessible()) {
+				order = new Order(ant,dir.getNext());
+				if(ordersAssigned.contains(order)|| !Game.getTile(ant, dir.getNext().getOffset()).isAccessible()) {
+					order = new Order(ant,dir.getOpponent().getNext());
+					if(ordersAssigned.contains(order)|| !Game.getTile(ant, dir.getOpponent().getNext().getOffset()).isAccessible())
+						order = new Order(ant,Directions.STAYSTILL); //FIXME
+				}
+			} 
+
+		} else order = new Order(ant, Directions.STAYSTILL);
+		return order;
+	}
+
 
 	private Set<Order> idle(Assignment s) {
 		return s.getAnts().parallelStream().map(ant -> new Order(ant,Directions.STAYSTILL)).collect(Collectors.toSet());
 	}
 
 	private Set<Order> directional(Assignment s, Directions m) {
-		
-		//FIXME assunzioni forte in questa classe! 
-		//m deve essere NORD SUD EST OVEST
 		Set<Order> orders = new HashSet<Order>();
 
 		s.getAnts().forEach(a -> {
 			Tile target = a.getNeighbour().get(m);
 
 			if(target.equals(null)) //acqua
-				orders.add(new Order(a,Directions.STAYSTILL));
+				orders.add(new Order(a,Directions.STAYSTILL)); //FIXME
 			else {
 				Order o = new Order(a,m);
+				if(orders.contains(o)) 
+					o = new Order(a,m.getNext());
+				else if(orders.contains(o))
+					o = new Order(a,m.getOpponent().getNext());
 				if(orders.contains(o))
-					orders.add(new Order(a,Directions.STAYSTILL));
-				else
-					orders.add(o);
+					o = new Order(a, Directions.STAYSTILL);
+				orders.add(o);
 			}
 		});
 		return orders;
@@ -300,23 +322,14 @@ public class CombatSimulation {
 	}
 
 
-	private Order moveBackOrForward(Assignment s, Set<Order> ordersAssigned, Tile ant, Tile enemy, int distance, double radius) {
 
-		Directions dir = Game.getDirection(ant, enemy);
-		if(distance<radius)
-			dir = dir.getOpponent();
-		Order order;
+	private int antInvolved() {
+		return myAntSet.size() + enemyAntSet.size();
+	}
 
-		if(distance != radius) {
-			order = new Order(ant, dir);
-			if(ordersAssigned.contains(order)|| s.qualcosa(order)) {
-				order = new Order(ant,dir.getNext());
-				if(ordersAssigned.contains(order)|| s.qualcosa(order))
-					order = new Order(ant,Directions.STAYSTILL);
-			} 
-
-		} else order = new Order(ant, Directions.STAYSTILL);
-		return order;
+	@Override
+	public int compareTo(CombatSimulation o) {
+		return Integer.compare(o.antInvolved(),antInvolved());//FIXME SONO INVERTITI per ordinarli in ordine decrescente, o almeno si spera
 	}
 
 }

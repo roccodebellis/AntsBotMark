@@ -10,7 +10,7 @@ public class Timing {
 	/**
 	 * maximum number of turns in the game
 	 */
-	private final int maxTurns;
+	private static int maxTurns;
 	
 	/**
 	 * in milliseconds, time given to the bot each turn
@@ -27,7 +27,7 @@ public class Timing {
 		
 	public Timing(long loadTime, long turnTime, int turns) {
 		this.loadTime = loadTime;
-		this.maxTurns = turns;
+		maxTurns = turns;
 		this.turnTime = turnTime;
 		vision=0;
 		combat=0;
@@ -45,7 +45,7 @@ public class Timing {
 		return loadTime;
 	}
 	
-	public int getTurnLeft(int currentTurn) {
+	public static int getTurnLeft(int currentTurn) {
 		return maxTurns - currentTurn;
 	}
 	
@@ -63,8 +63,8 @@ public class Timing {
 	 * 
 	 * @param turnStartTime turn start time
 	 */
-	public void setTurnStartTime() {
-		this.turnStartTime = System.currentTimeMillis();
+	public static void setTurnStartTime() {
+		turnStartTime = System.currentTimeMillis();
 	}
 
 	/**

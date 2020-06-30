@@ -1,6 +1,9 @@
 package gathering;
 
+import java.util.Set;
+
 import game.Game;
+import game.Tile;
 import search.Search;
 //import java.util.Set;
 //import game.Order;
@@ -26,8 +29,8 @@ import search.Search;
  */
 public class FoodCollection {
 
-	public FoodCollection() {
-		Search s = new Search(Game.getFoodTiles(), Game.getMyAnts(), null, false, true);
+	public FoodCollection(Set<Tile> foodTiles, Set<Tile> myAnts) {
+		Search s = new Search(foodTiles, myAnts, null, false, true);
 		s.adaptiveSearch();
 	}
 }

@@ -11,15 +11,22 @@ public class Node implements Comparable<Node>{
 	private int pathCost;
 	private int heuristicValue;
 	private Tile target;
-
-
+	
 	/*
 	 * utilizzato per inizializzare le tile dalle sorgenti/sources
 	 */
 	Node(Tile nodo, Set<Tile> targets) {
 		this.tile = nodo;
-		pathCost = 0;
+		this.pathCost = 0;
 		assignTarget(targets);
+		//heuristicValue = Game.getDistance(enemy,ant);
+	}
+	
+	public Node(Tile enemy, Tile ant){
+		this.tile = enemy;
+		this.pathCost = 0;
+		this.target = ant;
+		heuristicValue = Game.getDistance(enemy,ant);
 	}
 
 	/**
@@ -75,6 +82,10 @@ public class Node implements Comparable<Node>{
 	public int getPathCost() {
 		return pathCost;
 	}
+	
+	public int getHeuristicValue() {
+		return heuristicValue;
+	}
 
 	@Override
 	public int hashCode(){
@@ -100,4 +111,6 @@ public class Node implements Comparable<Node>{
 			return false;
 		return true;
 	}
+	
+	
 }
