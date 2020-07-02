@@ -139,6 +139,8 @@ public class Game {
 	private Set<Order> getOrders() {
 		return orders;
 	}
+	
+	private static int numberEnemy;
 
 	/**
 	 * Creates new {@link Ants} object.
@@ -161,9 +163,10 @@ public class Game {
 		setRows(rows);
 		setCols(cols);
 
-		this.viewRadius2 = viewRadius2;
-		this.attackRadius2 = attackRadius2;
-		this.spawnRadius2 = spawnRadius2;
+		Game.numberEnemy = 1;
+		Game.viewRadius2 = viewRadius2;
+		Game.attackRadius2 = attackRadius2;
+		Game.spawnRadius2 = spawnRadius2;
 
 		myHills = new TreeSet<Tile>();
 		enemyHills = new TreeSet<Tile>();
@@ -344,6 +347,10 @@ public class Game {
 	public static Set<Tile> getOutOfSight() {
 		return view.getOutOfSight(); 
 	}
+	
+	public static int getNumberEnemy() {
+		return numberEnemy;
+	}
 
 
 	public void clear() {
@@ -458,6 +465,7 @@ public class Game {
 	}
 
 	public void setHills(int row, int col, int owner) {
+		
 		Tile curTile = getTile(row, col);
 		curTile.setTypeHill(owner);
 
@@ -465,9 +473,14 @@ public class Game {
 			myHills.add(curTile);
 		else
 			enemyHills.add(curTile);
+		
+		if(owner > numberEnemy)
+			numberEnemy = owner;
 
 		unexplored.remove(curTile);
 	}
+	
+	
 
 	/**
 	 * Returns location with the specified offset from the specified location.
