@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -32,18 +33,17 @@ public class Assignment {
 	private Map<Integer, Set<Tile>> enemyHills;
 	private List<Integer> enemyHillsDestroyed;
 
-	private Set<Tile> foodTile;
+	private Set<Tile> foodTiles;
 	private int antsFoodCollected;
 	private List<Integer> enemyFoodCollected;
-
-	private Set<Tile> antMoves;
-	private Map<Integer, Set<Tile>> enemyMoves;
 
 	private int currentTurn;
 
 	private boolean isEnemyMoves;
 
-	private Set<Assignment> child;
+	private TreeSet<Assignment> child;
+	
+	private Set<Order> antsMove;
 
 
 	Assignment(int turn,  Set<Tile> myAntSet, Set<Tile> antHills, Map<Integer, Set<Tile>> enemyAntSet, Map<Integer, Set<Tile>> enemyHills, Set<Tile> foodTiles, boolean enemyMoves) {
@@ -58,13 +58,17 @@ public class Assignment {
 
 		this.enemyAnts = enemyAntSet;
 		this.enemyHills = enemyHills;
+		this.enemyLosses = new ArrayList<Integer>(enemyAnts.size());
 		this.enemyLosses.forEach(i -> i = 0);
+		this.enemyHillsDestroyed = new ArrayList<Integer>(enemyAnts.size());
 		this.enemyHillsDestroyed.forEach(i -> i = 0);
 
-		this.foodTile = foodTiles;
+		this.foodTiles = foodTiles;
 		this.antsFoodCollected = 0;
 		this.enemyFoodCollected = new ArrayList<Integer>(enemyAnts.size());
 		this.enemyFoodCollected.forEach(i -> i = 0);
+		
+		antsMove = new TreeSet<Order>();
 	}
 
 
@@ -80,12 +84,16 @@ public class Assignment {
 		return ants.size();
 	}
 
-	public Map<Integer, Set<Tile>> getOpponentAnts() {
-		return enemyAnts;
+	public Set<Tile> getOpponentAnts() {
+		Set<Tile> enemy = new HashSet<Tile>();
+		enemyAnts.values().forEach( enemySet -> enemy.addAll(enemySet));
+		return enemy;
 	}
 
-	public Map<Integer, Set<Tile>> getOpponentHills() {
-		return enemyHills;
+	public Set<Tile> getOpponentHills() {
+		Set<Tile> curEnemyHills = new HashSet<Tile>();
+		enemyHills.values().forEach( enemySet -> curEnemyHills.addAll(enemySet));
+		return curEnemyHills;
 	}
 
 	public int getOpponentAnts_number() {
@@ -100,12 +108,12 @@ public class Assignment {
 		return antsLosses;
 	}
 
-	public List<Integer> getOpponentLosses_number() {
-		return enemyLosses;
+	public int getOpponentLosses_number() {
+		return enemyLosses.parallelStream().mapToInt(Integer::intValue).sum();
 	}
 
-	public List<Integer> getOpponentHillDestroyed_number() {
-		return enemyHillsDestroyed;
+	public int getOpponentHillDestroyed_number() {
+		return enemyHillsDestroyed.parallelStream().mapToInt(Integer::intValue).sum();
 	}
 
 	public int getAntsHillDestroyed_number() {
@@ -116,13 +124,28 @@ public class Assignment {
 		return antsFoodCollected;
 	}
 
-	public List<Integer> getOpponentFoodCollected_number() {
-		return enemyFoodCollected;
+	public int getOpponentFoodCollected_number() {
+		return enemyFoodCollected.parallelStream().mapToInt(Integer::intValue).sum();
 	}
 
 
-	public void performMove(Set<Order> moves) {
-		moves.parallelStream().forEach(move ->{ ants.remove(move.getTile()); ants.add(move.getTarget());});
+	public Assignment performMove(Set<Order> moves) {
+		Set<Tile> newAnts = new TreeSet<Tile>(ants);
+		Map<Integer, Set<Tile>> newEnemyAnts = new TreeMap<Integer, Set<Tile>>(enemyAnts);
+		
+		if(isEnemyMoves)
+			moves.parallelStream().forEach(move ->{ 
+				IntStream.range(1, newEnemyAnts.size()+1).parallel().forEachOrdered( i  -> { 
+					if(newEnemyAnts.get(i).remove(move.getTile()))
+						newEnemyAnts.get(i).add(move.getTarget());
+				});
+		});
+		else {
+			moves.parallelStream().forEach(move ->{ newAnts.remove(move.getTile()); newAnts.add(move.getTarget());});
+			antsMove = moves;
+		}
+		return new Assignment(currentTurn+1,  newAnts, antsHills, newEnemyAnts, enemyHills, foodTiles, isEnemyMoves ? false : true);
+			
 	}
 
 	public void resolveCombatAndFoodCollection() {
@@ -282,7 +305,7 @@ public class Assignment {
 	private void foodResolution() {
 		Set<Tile> foodGathered = new TreeSet<Tile>();
 
-		foodTile.parallelStream().forEachOrdered(food -> {
+		foodTiles.parallelStream().forEachOrdered(food -> {
 			int antCount = 0;
 			List<Integer> enemyCount = new ArrayList<Integer>(enemyAnts.size());
 			enemyCount.forEach(i -> i = 0);
@@ -315,14 +338,23 @@ public class Assignment {
 				foodGathered.add(food);
 		});
 
-		foodTile.removeAll(foodGathered);
+		foodTiles.removeAll(foodGathered);
 	}
 
 
 
 	public void addChild(Assignment childState) {
-		// TODO Auto-generated method stub
+		child.add(childState);
+	}
 
+
+	public Set<Order> getFirstChild() {
+		return child.first().getMoves();
+	}
+
+
+	private Set<Order> getMoves() {
+		return antsMove;
 	}
 
 }
