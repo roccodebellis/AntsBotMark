@@ -20,30 +20,30 @@ import vision.Offsets;
 public class Assignment {
 
 
-	Set<Tile> ants;
-	int antsLosses;
+	private Set<Tile> ants;
+	private int antsLosses;
 
-	Set<Tile> antsHills;
-	int antsHillsDestroyed;
+	private Set<Tile> antsHills;
+	private int antsHillsDestroyed;
 
-	Map<Integer, Set<Tile>> enemyAnts;
-	List<Integer> enemyLosses;
+	private Map<Integer, Set<Tile>> enemyAnts;
+	private List<Integer> enemyLosses;
 
-	Map<Integer, Set<Tile>> enemyHills;
-	List<Integer> enemyHillsDestroyed;
+	private Map<Integer, Set<Tile>> enemyHills;
+	private List<Integer> enemyHillsDestroyed;
 
-	Set<Tile> foodTile;
-	int antsFoodCollected;
-	List<Integer> enemyFoodCollected;
+	private Set<Tile> foodTile;
+	private int antsFoodCollected;
+	private List<Integer> enemyFoodCollected;
 
-	Set<Tile> antMoves;
-	Map<Integer, Set<Tile>> enemyMoves;
+	private Set<Tile> antMoves;
+	private Map<Integer, Set<Tile>> enemyMoves;
 
-	int currentTurn;
+	private int currentTurn;
 
-	boolean isEnemyMoves;
+	private boolean isEnemyMoves;
 
-	Set<Assignment> child;
+	private Set<Assignment> child;
 
 
 	Assignment(int turn,  Set<Tile> myAntSet, Set<Tile> antHills, Map<Integer, Set<Tile>> enemyAntSet, Map<Integer, Set<Tile>> enemyHills, Set<Tile> foodTiles, boolean enemyMoves) {
@@ -53,18 +53,18 @@ public class Assignment {
 
 		this.ants = myAntSet;
 		this.antsHills = antHills;
-		antsLosses = 0;
-		antsHillsDestroyed = 0;
+		this.antsLosses = 0;
+		this.antsHillsDestroyed = 0;
 
 		this.enemyAnts = enemyAntSet;
 		this.enemyHills = enemyHills;
-		enemyLosses = 0;
-		enemyHillsDestroyed = 0;
+		this.enemyLosses.forEach(i -> i = 0);
+		this.enemyHillsDestroyed.forEach(i -> i = 0);
 
 		this.foodTile = foodTiles;
-		antsFoodCollected = 0;
-		enemyFoodCollected = new ArrayList<Integer>(enemyAnts.size());
-		enemyFoodCollected.forEach(i -> i = 0);
+		this.antsFoodCollected = 0;
+		this.enemyFoodCollected = new ArrayList<Integer>(enemyAnts.size());
+		this.enemyFoodCollected.forEach(i -> i = 0);
 	}
 
 
@@ -80,11 +80,11 @@ public class Assignment {
 		return ants.size();
 	}
 
-	public Set<Tile> getOpponentAnts() {
+	public Map<Integer, Set<Tile>> getOpponentAnts() {
 		return enemyAnts;
 	}
 
-	public Set<Tile> getOpponentHills() {
+	public Map<Integer, Set<Tile>> getOpponentHills() {
 		return enemyHills;
 	}
 
@@ -100,11 +100,11 @@ public class Assignment {
 		return antsLosses;
 	}
 
-	public int getOpponentLosses_number() {
+	public List<Integer> getOpponentLosses_number() {
 		return enemyLosses;
 	}
 
-	public int getOpponentHillDestroyed_number() {
+	public List<Integer> getOpponentHillDestroyed_number() {
 		return enemyHillsDestroyed;
 	}
 
@@ -116,7 +116,7 @@ public class Assignment {
 		return antsFoodCollected;
 	}
 
-	public int getOpponentFoodCollected_number() {
+	public List<Integer> getOpponentFoodCollected_number() {
 		return enemyFoodCollected;
 	}
 
@@ -179,7 +179,7 @@ public class Assignment {
 			Set<Tile> deadEnemyAnts = new TreeSet<Tile>();
 			
 			IntStream.range(1, enemyAnts.size()+1).parallel().forEachOrdered( i  -> { 
-				int enemyLost = enemyLosses.get(i);
+				int enemyLossesNumber = enemyLosses.get(i);
 				Set<Tile> ienemySet = enemyAnts.get(i);
 				
 				deadEnemyAnts.clear();
@@ -192,12 +192,12 @@ public class Assignment {
 						deadAnts.add(ant);
 					} else if (curAntFA < curEnemyFA) {
 						deadEnemyAnts.add(enemyAnt);
-						enemyLosses.set(i, enemyLost+1);
+						enemyLosses.set(i, enemyLossesNumber+1);
 					} else {
 						antsLosses++;
 						deadAnts.add(ant);
 						deadEnemyAnts.add(enemyAnt);
-						enemyLosses.set(i, enemyLost+1);
+						enemyLosses.set(i, enemyLossesNumber+1);
 					}
 					
 				});
