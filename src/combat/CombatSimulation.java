@@ -45,7 +45,7 @@ import vision.Offset;
 public class CombatSimulation implements Comparable<CombatSimulation>{
 
 	Set<Tile> myAntSet;
-	Set<Tile> enemyAntSet;
+	Map<Integer, Set<Tile>> enemyAntSet;
 
 	Assignment root;
 
@@ -53,7 +53,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(true)); //perche ' in combattimento
 		situationRecognition(myAnt,enemyAnt);
 
-		root = new Assignment(0, myAntSet, enemyAntSet, false);
+		root = new Assignment(0, myAntSet, Game.getMyHills(), enemyAntSet, Game.getEnemyHills(), Game.getFoodTiles(), false);
 		MinMax(root, deadLine, 0);	
 		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(false));
 	}
