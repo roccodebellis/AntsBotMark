@@ -1,6 +1,8 @@
 package combat;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +15,7 @@ import game.Game;
 import game.Order;
 import game.Tile;
 import timing.Timing;
+import vision.Offsets;
 
 public class Assignment {
 
@@ -125,29 +128,123 @@ public class Assignment {
 	public void resolveCombatAndFoodCollection() {
 
 		istantKill();
-		//combattimento
+		battle();
 		hillRazing();
 		foodResolution();
 
 	}
 
+	private HashMap<Tile, Integer> computeFocusAttack(Set<Tile> ants, Set<Tile> enemy){
+		HashMap<Tile, Integer> focusAttack = new HashMap<Tile, Integer>();
+
+		Offsets attack = new Offsets(Game.getAttackRadius());
+
+		ants.parallelStream().forEachOrdered( ant -> {
+			Set<Tile> shape = Game.getTiles(ant, attack);
+			focusAttack.put(ant, (int) shape.parallelStream().filter(t -> enemy.contains(t)).count());
+		});
+
+		return focusAttack;
+	}
+
+	private void battle() {
+		HashMap<Tile, Integer> focusAttack= new HashMap<Tile, Integer>();
+
+
+		Set<Tile> enemy = new HashSet<Tile>();
+		enemyAnts.values().forEach( enemySet -> enemy.addAll(enemySet));
+
+		focusAttack.putAll(computeFocusAttack(ants, enemy));
+
+
+		IntStream.range(1, enemyAnts.size()+1).parallel().forEachOrdered( i  -> { 
+			Set<Tile> ienemySet = enemyAnts.get(i);
+
+			enemy.clear();
+			enemy.addAll(ants);
+			if(i-1 > 1)
+				IntStream.range(1, i-1).parallel().forEachOrdered( j -> enemy.addAll(enemyAnts.get(j)));
+			if(i+1 < enemyAnts.size()+1)
+				IntStream.range(i+1, enemyAnts.size()+1).parallel().forEachOrdered( j -> enemy.addAll(enemyAnts.get(j)));
+
+			focusAttack.putAll(computeFocusAttack(ienemySet, enemy));
+		});
+		
+		Set<Tile> deadAnts = new TreeSet<Tile>();
+
+		ants.parallelStream().forEachOrdered(ant -> {
+			int curAntFA = focusAttack.get(ant);
+			
+			
+			Set<Tile> deadEnemyAnts = new TreeSet<Tile>();
+			
+			IntStream.range(1, enemyAnts.size()+1).parallel().forEachOrdered( i  -> { 
+				int enemyLost = enemyLosses.get(i);
+				Set<Tile> ienemySet = enemyAnts.get(i);
+				
+				deadEnemyAnts.clear();
+				
+				ienemySet.parallelStream().forEachOrdered(enemyAnt -> {
+					int curEnemyFA = focusAttack.get(enemyAnt);
+					
+					if(curAntFA > curEnemyFA) {
+						antsLosses++;
+						deadAnts.add(ant);
+					} else if (curAntFA < curEnemyFA) {
+						deadEnemyAnts.add(enemyAnt);
+						enemyLosses.set(i, enemyLost+1);
+					} else {
+						antsLosses++;
+						deadAnts.add(ant);
+						deadEnemyAnts.add(enemyAnt);
+						enemyLosses.set(i, enemyLost+1);
+					}
+					
+				});
+				ienemySet.removeAll(deadEnemyAnts);
+			});
+		});
+
+	}
 
 
 	private void istantKill(){
 
-		//formiche tue si suicidano tra di loro
+		//formiche tue/di ogni nemico si suicidano tra di loro
 
-		
+
 		//formiche nemiche si suicidano tra di loro
+		IntStream.range(1, enemyAnts.size()).parallel().forEachOrdered(i -> { 
+			Set<Tile> iremoveAnts = new TreeSet<Tile>();
+			Set<Tile> ienemyAnts = enemyAnts.get(i);
+
+
+			ienemyAnts.parallelStream().forEachOrdered(ienemy -> {
+				IntStream.range(i+1, enemyAnts.size()+1).parallel().forEachOrdered(j -> { 
+					if(enemyAnts.get(j).remove(ienemy)){ 
+						if(!iremoveAnts.contains(ienemy)) {
+							iremoveAnts.add(ienemy);
+							enemyLosses.set(i,enemyLosses.get(i)+1); 
+						}
+						enemyLosses.set(j,enemyLosses.get(j)+1); 
+					}
+				});
+			});
+			ienemyAnts.removeAll(iremoveAnts);
+		});
 
 		//formiche nostre e formiche nemiche si suicidono
 		Set<Tile> antsKilled = new TreeSet<Tile>();
 		ants.parallelStream().forEachOrdered(ant -> {
-			if(enemyAnts.remove(ant)) {
-				antsKilled.add(ant);
-				antsLosses++;
-				enemyLosses++;
-			}
+			IntStream.range(1, enemyAnts.size()).parallel().forEachOrdered(i -> { 
+				if(enemyAnts.get(i).remove(ant)){ 
+					if(!antsKilled.contains(ant)) {
+						antsKilled.add(ant);
+						antsLosses++;
+					}
+					enemyLosses.set(i,enemyLosses.get(i)+1); 
+				}
+			});
 		});
 		ants.removeAll(antsKilled);
 	}
@@ -164,8 +261,8 @@ public class Assignment {
 			});
 		});
 		antsHills.removeAll(hillDestroyed);	
-		
-		
+
+
 		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> {
 			hillDestroyed.clear();
 			Set<Tile> curEnemyHills = enemyHills.get(i);
@@ -210,10 +307,8 @@ public class Assignment {
 				antsFoodCollected++;
 			else if(antCount==0 && count>0)
 				IntStream.range(0, enemyCount.size()).parallel().forEachOrdered(i -> { 
-					if(enemyCount.get(i) == count) {
-						enemyFoodCollected.set(i,enemyFoodCollected.get(i)); 
-						break;
-					}
+					if(enemyCount.get(i) == count) 
+						enemyFoodCollected.set(i,enemyFoodCollected.get(i)+1); 
 				});
 
 			if(antCount>0 || count>0)
