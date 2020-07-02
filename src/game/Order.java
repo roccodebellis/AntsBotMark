@@ -90,5 +90,9 @@ public class Order {
 		return true;
 	}
 	
+	public Tile getTarget() {
+		return Game.getTile(getTile(), getDirection().getOffset());
+	}
+	
 	
 }
