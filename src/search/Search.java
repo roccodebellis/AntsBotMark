@@ -140,12 +140,12 @@ public class Search {
 	 *                 {@code t}
 	 */
 	//TODO secondo me questa e' callback ed e' da integrare nelle ricerche se one_target_per_source e' true
-	private Order computeOneOrder (Tile origin, Tile target, Directions cardinal, Directions opposite) {
-		if(one_target_per_source)
-			return new Order(target, opposite);
-		else return new Order(origin, cardinal);
+	private void createOneOrder (Tile origin, Tile target, Directions direction) {
+		this.targets.remove(target);
+		this.orders.add(new Order(origin, direction));
 	}
 	
+	/*
 	//TODO controllare
 	private void computeOrders () {
 		Iterator<Tile> itRes = results.iterator();
@@ -158,7 +158,7 @@ public class Search {
 			else newOrder = computeOneOrder(seed, res, directionFromSource.get(seed), directionFromTarget.get(seed));
 			orders.add(newOrder);
 		}
-	}
+	}*/
 	
 	public Set<Order> getOrders(){
 		return orders;
@@ -228,8 +228,11 @@ public class Search {
 
 			if(targets.contains(curTile.getTile())) {
 				results.add(curTile.getTile());
-				if(one_target_per_source)//FIXME
+				if(one_target_per_source) {
 					completedSources.add(curTileSource.getTile());
+					createOneOrder(curTile.getTile(), curTileSource.getTile(), directionFromTarget.get(curTile.getTile()));
+				}else
+				createOneOrder(curTileSource.getTile(), curTile.getTile(), directionFromSource.get(curTileSource.getTile()));
 			}
 			
 			/*TODO change for to iterator 
@@ -243,7 +246,7 @@ public class Search {
 				Directions neighborDirection = neighbourEntry.getKey();
 				Node neighbour = new Node(neighbourTile,curTileSource.getTarget(),curTile.getPathCost());		
 
-				if(expandedTile.contains(neighbour))
+				if(!neighbourTile.isSuitable() || expandedTile.contains(neighbour))
 					continue;
 				//DA CONTROLLARE TODO
 				if(!tileSources.containsKey(neighbour) || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())){	
@@ -253,8 +256,8 @@ public class Search {
 					
 					tileSources.put(neighbour,curTileSource);
 
-					directionFromSource.put(neighbourTile, 
-							directionFromSource.containsKey(curTile.getTile()) ? directionFromSource.get(curTile.getTile()) : neighborDirection);
+					directionFromSource.put(curTile.getTile(), neighborDirection);//TODO FIXME
+					//directionFromSource.put(neighbourTile,directionFromSource.containsKey(curTile.getTile()) ? directionFromSource.get(curTile.getTile()) : neighborDirection);
 					directionFromTarget.put(neighbourTile, neighborDirection.getOpponent());
 
 					frontier.add(neighbour);
@@ -262,7 +265,7 @@ public class Search {
 			}
 		}
 		this.pathSources = new TreeMap<>(tileSources.entrySet().parallelStream().collect(Collectors.toMap(e -> e.getKey().getTile(), e -> e.getValue().getTile())));
-		computeOrders();
+		//computeOrders(); TODO
 		return this.results;
 		//return results, tileSources, directionFromSource, directionFromTarget;
 	}
@@ -302,14 +305,15 @@ public class Search {
 						Tile neighbourTile = neighbourEntry.getValue();
 						Directions neighbourDirection = neighbourEntry.getKey();
 
-						if(!pathSources.containsKey(neighbourTile)) {
+						if(!neighbourTile.isSuitable() || !pathSources.containsKey(neighbourTile)) {
 
 							pathSources.put(neighbourTile,curTileSource);
-
+							
+							directionFromSource.put(curTile, neighbourDirection);/*
 							if(directionFromSource.containsKey(curTile))
 								directionFromSource.put(neighbourTile, directionFromSource.get(curTile));
 							else
-								directionFromSource.put(neighbourTile, neighbourDirection);
+								directionFromSource.put(neighbourTile, neighbourDirection);*/
 
 							directionFromTarget.put(neighbourTile, neighbourDirection.getOpponent());
 
@@ -317,8 +321,8 @@ public class Search {
 								results.add(neighbourTile);
 								if(one_target_per_source) {//FIXME
 									completedSources.add(curTileSource);
-									callback ---> computeOneOrder();//FIXME
-								}
+									createOneOrder(curTile, curTileSource, directionFromTarget.get(curTile));
+								}else createOneOrder(curTileSource, curTile, directionFromSource.get(curTileSource));
 								//TODO: di regola non bisogna rimuovere il targhet
 								//ma se viene rieseguita la ricerca, è necessario rimuoverlo
 							}//*else*
@@ -328,7 +332,7 @@ public class Search {
 					});
 		}
 		//return result, pathSources, directionFromSource, directionFromTarget; //TODO
-		computeOrders(); cambiare in base a come vengono impostati target e source
+		//computeOrders(); cambiare in base a come vengono impostati target e source
 		return this.results;
 	}
 }
