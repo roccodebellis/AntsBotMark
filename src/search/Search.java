@@ -96,11 +96,11 @@ public class Search {
 		this.one_target_per_source = search_from_one_source;
 		
 		//Init results
-		results = new TreeSet<Tile>();
-		pathSources = new TreeMap<Tile, Tile>();
+		results = new HashSet<Tile>();
+		pathSources = new HashMap<Tile, Tile>();
 		directionFromSource = new HashMap<Tile, Directions>();
 		directionFromTarget = new HashMap<Tile, Directions>();
-		orders = new TreeSet<Order>();
+		orders = new HashSet<Order>();
 	}
 
 	/**
@@ -118,7 +118,7 @@ public class Search {
 	 */
 	// In teoria no param
 	public Set<Tile> adaptiveSearch() {
-		if (!radius.equals(null))
+		if (radius != null)
 			return staticSearch();
 		else if (heuristic)//se i target sono tutti di un certo tipo 
 			return extendedAStar();

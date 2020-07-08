@@ -1,5 +1,6 @@
 package vision;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -18,7 +19,7 @@ import game.Tile;
  * @author Debellis, Lorusso
  *
  */
-public class Offsets extends TreeSet<Offset> {
+public class Offsets extends HashSet<Offset> {
 	
 	/**
 	 * Contenitore degli insiemi di {@link Offset} computati per diversi raggi.
@@ -61,7 +62,7 @@ public class Offsets extends TreeSet<Offset> {
 	 * @param radius raggio di cui si desidera ottenere il corrispondente {@link Offset}
 	 */
 	private static void computeOffset(int radius) {
-		Set<Offset> visionOffsets = new TreeSet<Offset>();
+		Set<Offset> visionOffsets = new HashSet<Offset>();
 		//int mx = (int) Math.sqrt(viewRadius2); TODO
 		for (int row = -radius; row <= radius; ++row) {
 			for (int col = -radius; col <= radius; ++col) {

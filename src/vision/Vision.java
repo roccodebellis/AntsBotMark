@@ -1,5 +1,6 @@
 package vision;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -49,7 +50,7 @@ public class Vision {
 	public Vision(Set<Tile> mapTiles, int viewRadius){
 		this.mapTiles = mapTiles;
 		visionOffsets = new Offsets((int) Math.sqrt(viewRadius));
-		inVision = new TreeSet<Tile>();
+		inVision = new HashSet<Tile>();
 		enemyToAnt = new TreeMap<Node,Tile>();
 	}
 

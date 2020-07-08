@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import attackdefensehills.AttackDefenseHills;
 import combat.CombatSimulation;
@@ -168,18 +169,18 @@ public class Game {
 		Game.attackRadius2 = attackRadius2;
 		Game.spawnRadius2 = spawnRadius2;
 
-		myHills = new TreeSet<Tile>();
-		enemyHills = new TreeSet<Tile>();
-		myAnts = new TreeSet<Tile>();
-		enemyAnts = new TreeSet<Tile>();
+		myHills = new HashSet<Tile>();
+		enemyHills = new HashSet<Tile>();
+		myAnts = new HashSet<Tile>();
+		enemyAnts = new HashSet<Tile>();
 		orderlyAnts = new TreeSet<Tile>();
-		food = new TreeSet<Tile>();
-		orders = new TreeSet<Order>();
-		unexplored = new TreeSet<Tile>();
-		water = new TreeSet<Tile>();
-		outOfSight = new TreeSet<Tile>();
+		food = new HashSet<Tile>();
+		orders = new HashSet<Order>();
+		unexplored = new TreeSet<Tile>(Tile.visionComparator());
+		water = new HashSet<Tile>();
+		outOfSight = new TreeSet<Tile>(Tile.visionComparator());//TODO check if comparator
 		//borders = new TreeSet<Tile>();
-		setTiles = new TreeSet<Tile>();
+		setTiles = new HashSet<Tile>();
 		map = initGameMap();
 
 		view = new Vision(setTiles, getViewRadius());
@@ -207,8 +208,12 @@ public class Game {
 			//if(r == 0 || r == rows-1 || c == 0 || c == cols-1)
 			//borders.add(t);
 			output.add(tempRow);
-			setTiles.addAll(tempRow);
-			unexplored.addAll(tempRow);
+			setTiles.addAll(tempRow.parallelStream().collect(Collectors.toCollection(HashSet::new)));
+			unexplored.addAll(tempRow.parallelStream().collect( Collectors.toCollection(
+		            () -> new TreeSet<>(
+		                    Tile.visionComparator()
+		                )
+		            )));
 		}
 
 		// ADDED "INTERNAL" VICINI
@@ -271,7 +276,7 @@ public class Game {
 		// Iterator<Tile> firstRowIt = output.getFirst().iterator();
 		// Iterator<Tile> lastRowIt = output.getLast().iterator();
 		Iterator<Tile> firstRowIt = output.get(0).iterator();
-		Iterator<Tile> lastRowIt = output.get(rows).iterator();
+		Iterator<Tile> lastRowIt = output.get(rows-1).iterator();
 
 		while (firstRowIt.hasNext() && lastRowIt.hasNext()) {
 			Tile DOWN = lastRowIt.next();
@@ -475,7 +480,7 @@ public class Game {
 			enemyHills.add(curTile);
 		
 		if(owner > numberEnemy)
-			numberEnemy = owner;
+			Game.numberEnemy = owner;
 
 		unexplored.remove(curTile);
 	}
@@ -503,7 +508,7 @@ public class Game {
 	}
 
 	public static Set<Tile> getTiles(Tile tile, Offsets offsets) {
-		Set<Tile> inVisionOfThisTile = new TreeSet<Tile>();
+		Set<Tile> inVisionOfThisTile = new HashSet<Tile>();
 		offsets.parallelStream().forEachOrdered(offset -> inVisionOfThisTile.add(getTile(tile, offset)));
 		return inVisionOfThisTile;
 	}
@@ -593,7 +598,7 @@ public class Game {
 	public void doCombat() {
 		Map<Node,Tile> enemyToAnt = getEnemyToAnt();
 		Iterator<Entry<Node, Tile>> battlePairItr = enemyToAnt.entrySet().iterator();
-		Set<Tile> myAntsEngaged = new TreeSet<Tile>();
+		Set<Tile> myAntsEngaged = new HashSet<Tile>();
 		
 		Map<Tile,Tile> battlesLeading = new HashMap<Tile,Tile>();
 		Set<CombatSimulation> battles = new TreeSet<CombatSimulation>();
@@ -617,6 +622,9 @@ public class Game {
 			battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
 		
 		battles.parallelStream().forEachOrdered(battle -> battle.combatResolution());
+		Set<Order> attack = new TreeSet<Order>();
+		battles.parallelStream().forEachOrdered(battle -> attack.addAll(battle.getMoves()));
+		Game.issueOrders(attack);
 	
 	}
 

@@ -47,23 +47,23 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 	Set<Tile> myAntSet;
 	Map<Integer, Set<Tile>> enemyAntSet;
-
+	Map<Integer, Set<Tile>> enemyHills;
+	long deadLine;
 	Assignment root;
 
 	public CombatSimulation(Tile myAnt, Tile enemyAnt, long deadLine) {
 		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(true)); //perche ' in combattimento
 		situationRecognition(myAnt,enemyAnt);
-		
-		Map<Integer, Set<Tile>> enemyHills = new TreeMap<Integer, Set<Tile>>();
-		IntStream.range(0, Game.getNumberEnemy()).forEach(id -> enemyHills.put(id, new TreeSet<Tile>()));
-		Game.getEnemyHills().forEach(eHill -> enemyHills.get(eHill.getOwner()).add(eHill));
+		this.deadLine = deadLine;
+		enemyHills = new TreeMap<Integer, Set<Tile>>();
+		IntStream.range(0, Game.getNumberEnemy()).forEach(id -> enemyHills.put(id, new HashSet<Tile>()));
 
-		root = new Assignment(0, myAntSet, Game.getMyHills(), enemyAntSet, enemyHills, Game.getFoodTiles(), false);
-		MinMax(root, deadLine, 0);	
-		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(false));
+		Game.getEnemyHills().forEach(eHill -> enemyHills.get(eHill.getOwner()-1).add(eHill));
+
+
 	}
 
-	Set<Order> getMoves(){
+	public Set<Order> getMoves(){
 		return root.getFirstChild();
 	}
 
@@ -93,11 +93,12 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	private void situationRecognition(Tile myAnt, Tile enemyAnt){ 
 		//TROVARE UN MODO PER SAPERE SE LA FORMICA POSIZIONATA SUL TILE è disponibile 
 		// no, claudia isOccupied dice solo se quella tile è occupata da una formica!
-		Set<Tile> myAntSet = new TreeSet<>();
-		Set<Tile> enemyAntSet = new TreeSet<>();
+		myAntSet = new HashSet<>();
+		enemyAntSet = new HashMap<Integer, Set<Tile>>();
 
 		myAntSet.add(myAnt);
-		enemyAntSet.add(enemyAnt);
+		IntStream.range(0, Game.getNumberEnemy()).forEach(id -> enemyAntSet.put(id, new HashSet<Tile>()));
+		enemyAntSet.get(enemyAnt.getOwner()-1).add(enemyAnt);
 
 		int attackRadius = Game.getAttackRadius() * 3;
 
@@ -109,12 +110,22 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 			addedAnts = false;
 			Search forEnemyAnts = new Search(myAntSet, Game.getEnemyAnts(), attackRadius, false, false);
 			Set<Tile> newEnemyFound = forEnemyAnts.adaptiveSearch();
-			if(newEnemyFound.size() > enemyAntSet.size()) {
+
+			if(newEnemyFound.size() > (int) enemyAntSet.entrySet().parallelStream().count()) {
 				addedAnts = true;
-				enemyAntSet = newEnemyFound;
+				newEnemyFound.parallelStream().forEachOrdered(eA ->
+				enemyAntSet.get(eA.getOwner()).add(eA)
+						);
+
 			}
 
-			Search forMyAnts = new Search(enemyAntSet, Game.getMyAnts(), attackRadius, false, false);
+
+			
+
+			Set<Tile> enemyAntsSet = new HashSet<Tile>();
+			enemyAntSet.values().forEach( enemySet -> enemyAntsSet.addAll(enemySet));
+
+			Search forMyAnts = new Search(enemyAntsSet, Game.getMyAnts(), attackRadius, false, false);
 			Set<Tile> newMyAntsFound = forMyAnts.adaptiveSearch();
 			if(newMyAntsFound.size() > myAntSet.size()) {
 				addedAnts = true;
@@ -265,8 +276,8 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 		double value;
 
-		//TODO impostare mass radio in base al numero di formiche
-		if (s.getAnts_number() > MassRatioThreshold) 
+		//TODO MassRatioThreshold impostare mass radio in base al numero di formiche
+		if (s.getAnts_number() > 3) //FIXME MassRatioThreshold
 			OpponentMultiplier *= Math.max(1,Math.pow((s.getAnts_number()+1)/(s.getOpponentAnts_number()+1),2));
 
 		//TODO crescita logaritmica col passare dei turni a partire da una certa soglia
@@ -321,18 +332,25 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	}
 
 	boolean AllowExtension(long deadline, int depth){
-		return (depth%2 == 0) || (depth < Configuration.getCombatModuleMinMaxMaxDepth() && deadline > Timing.getCurTime()+GetExtensionEstimate); 
+		return (depth%2 == 0) || (depth < Configuration.getCombatModuleMinMaxMaxDepth() && deadline > Timing.getCurTime()+85); //FIXME GetExtensionEstimate
 	}
 
 
 
 	private int antInvolved() {
-		return myAntSet.size() + enemyAntSet.size();
+		return myAntSet.size() + (int) enemyAntSet.entrySet().parallelStream().count(); //TODO check deve contare il numero di formiche coinvolte
 	}
 
 	@Override
 	public int compareTo(CombatSimulation o) {
 		return Integer.compare(o.antInvolved(),antInvolved());//FIXME SONO INVERTITI per ordinarli in ordine decrescente, o almeno si spera
+	}
+
+	public void combatResolution() {
+		root = new Assignment(0, myAntSet, Game.getMyHills(), enemyAntSet, enemyHills, Game.getFoodTiles(), false);
+		MinMax(root, deadLine, 0);	
+		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(false));
+
 	}
 
 }
