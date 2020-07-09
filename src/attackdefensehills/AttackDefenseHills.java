@@ -22,7 +22,7 @@ public class AttackDefenseHills {
 
 		double antsForHill = avaiableAnts/(myHills.size()+1);
 
-		Set<Tile> defender = new TreeSet<Tile>();
+		Set<Tile> defender = new TreeSet<Tile>(Tile.tileComparator());
 
 		if(antsForHill>0) {
 			Game.getMyHills().parallelStream().forEachOrdered(hill -> {

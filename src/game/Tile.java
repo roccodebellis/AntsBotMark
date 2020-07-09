@@ -330,6 +330,8 @@ public class Tile {
 	void placeAnt(Integer newIdOwner) {
 		if (type == TileTypes.HILL && idOwner != newIdOwner)
 			type = TileTypes.LAND;
+		else if(type != TileTypes.HILL)
+			type = TileTypes.LAND;
 		// else e' un Hill e sopra ci va una sua formica
 
 		// visible = true; fatto da set vision!

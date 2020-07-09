@@ -218,7 +218,7 @@ public class Game {
 		Iterator<List<Tile>> rows_It = output.iterator();
 
 		List<Tile> UP_Row = rows_It.next();
-		
+
 		List<Tile> First_Row = UP_Row;
 
 		Iterator<Tile> UP_cols_It = UP_Row.iterator();
@@ -237,7 +237,7 @@ public class Game {
 		firstColTile.addNeighbour(Directions.WEST, prevTile);
 
 		List<Tile> DOWN_Row = null;
-		
+
 		while (rows_It.hasNext()) {
 			UP_cols_It = UP_Row.iterator();
 
@@ -268,16 +268,16 @@ public class Game {
 				UP_prev_Tile = UP_cur_Tile;
 			}
 
-			
+
 			DOWN_prev_Tile.addNeighbour(Directions.EAST, firstColTile);
 			firstColTile.addNeighbour(Directions.WEST, DOWN_prev_Tile);
-			
+
 			UP_Row = DOWN_Row;
 		}
-		
+
 		Iterator<Tile> DOWN_cols_It = DOWN_Row.iterator();
 		UP_cols_It = First_Row.iterator();
-		
+
 		while (DOWN_cols_It.hasNext() && UP_cols_It.hasNext()) {
 			Tile DOWN_cur_Tile = DOWN_cols_It.next();
 			Tile UP_cur_Tile = UP_cols_It.next();
@@ -285,7 +285,7 @@ public class Game {
 			DOWN_cur_Tile.addNeighbour(Directions.SOUTH, UP_cur_Tile);
 			UP_cur_Tile.addNeighbour(Directions.NORTH, DOWN_cur_Tile);
 		}
-		
+
 
 		/*
 		// ADD "EXTERNAL" NEIGHBOUR
@@ -302,9 +302,9 @@ public class Game {
 			DOWN.addNeighbour(Directions.SOUTH, UP);
 		}
 
-		*/
-		
-		
+		 */
+
+
 		//setTiles.forEach(s -> System.out.println(s+" -> "+s.getNeighbour()));
 		//output.forEach(l -> l.forEach(s -> System.out.println(s+" -> "+s.getNeighbour())));
 		return output;
@@ -454,9 +454,10 @@ public class Game {
 
 	public void setAnt(int row, int col, int owner) {
 		Tile curTile = getTile(row, col);
-		curTile.setTypeLand();
+		
 		curTile.placeAnt(owner);
-
+		
+		
 		unexplored.remove(curTile);
 
 		if (owner == 0) {
@@ -645,7 +646,7 @@ public class Game {
 
 		long timeAssigned = time.getCombatTimeStime()/battlesLeading.size();
 		battlesLeading.entrySet().parallelStream().forEachOrdered(e ->
-			battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
+		battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
 
 		battles.parallelStream().forEachOrdered(battle -> battle.combatResolution());
 		Set<Order> attack = new HashSet<Order>();
@@ -670,6 +671,15 @@ public class Game {
 
 
 
-
+	public static void printMap() {
+		Iterator<List<Tile>> rowIt = map.iterator();
+		while(rowIt.hasNext()) {
+			Iterator<Tile> colIt = rowIt.next().iterator();
+			while(colIt.hasNext()) {
+				System.out.print(!colIt.next().isAccessible()? 'x': 'o');
+			}
+			System.out.print('\n');
+		}
+	}
 
 }

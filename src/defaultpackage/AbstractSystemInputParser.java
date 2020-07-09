@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
+import game.Game;
+
 /**
  * Handles system input stream parsing.
  */
@@ -97,18 +99,30 @@ public abstract class AbstractSystemInputParser extends AbstractSystemInputReade
      */
     @Override
     public void processLine(String line) {
+    	long start;
+		
         if (line.equals(READY)) { //PRIMO TURNO
+        	start = System.currentTimeMillis();
             parseSetup(input);
             finishTurn();
             input.clear();
+            //System.out.println(System.currentTimeMillis()-start);
+            //Game.printMap();
         } else if (line.equals(GO)) { //TURNI SUCCESSIVI
+        	start = System.currentTimeMillis();
             parseUpdate(input);
             doTurn();
             finishTurn();
             input.clear();
+            
+            //Game.printMap();
+            //System.out.println(System.currentTimeMillis()-start);
         } else if (!line.isEmpty()) {
             input.add(line);
         }
+        
+        
+        
     }
     
     /**

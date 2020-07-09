@@ -1,5 +1,8 @@
 package defaultpackage;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Handles system input stream reading.
@@ -17,6 +20,11 @@ public abstract class AbstractSystemInputReader {
         int c;
         while ((c = System.in.read()) >= 0) {
             if (c == '\r' || c == '\n') {
+            	/*
+            	OutputStream f = new FileOutputStream("input.ants",false);
+            	f.write(String.valueOf(line+"\n").getBytes());
+            	f.close();
+    */        	
                 processLine(line.toString().toLowerCase().trim());
                 line.setLength(0);
             } else {

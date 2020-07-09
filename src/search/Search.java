@@ -346,15 +346,19 @@ public class Search {
 		 */
 		Queue<Tile> frontier = new LinkedList<Tile>();
 		Set<Tile> completedSources = new TreeSet<>(Tile.tileComparator());
-		Set<Tile> visited = new TreeSet<>(Tile.tileComparator());
+		//Set<Tile> visited = new TreeSet<>(Tile.tileComparator());
+		Map<Tile,Set<Tile>> visited = new TreeMap<>(Tile.tileComparator());
 
 		sources.parallelStream().forEachOrdered(source -> {
 			frontier.add(source);
 			pathSources.put(source,source);
-			visited.add(source);
+			//visited.add(source);
+			Set<Tile> set = new TreeSet<Tile>(Tile.tileComparator());
+			set.add(source);
+			visited.put(source, set);
 		});
 
-		while(!frontier.isEmpty()) {
+		while(!frontier.isEmpty() && !targets.isEmpty()) { //FIXME togliere targhets
 			Tile curTile = frontier.poll();
 
 			Tile curTileSource = pathSources.get(curTile);
@@ -388,19 +392,31 @@ public class Search {
 								results.add(neighbourTile);
 								if(one_target_per_source) {//FIXME
 									completedSources.add(curTileSource);
-									createOneOrder(curTile, curTileSource, directionFromTarget.get(curTile));
+									createOneOrder(neighbourTile, curTileSource, directionFromTarget.get(neighbourTile));
 								}else {if(reverse)
-									createOneOrder(curTile, curTileSource, directionFromTarget.get(curTile));
+									createOneOrder(neighbourTile, curTileSource, directionFromTarget.get(neighbourTile));
 								else
 									createOneOrder(curTileSource, curTile, directionFromSource.get(curTileSource));}
 								//TODO: di regola non bisogna rimuovere il targhet
 								//ma se viene rieseguita la ricerca, è necessario rimuoverlo
 							}//*else*
 
-							if(!visited.contains(neighbourTile)) {
+							//if(!visited.contains(neighbourTile)) {
+							if(!visited.containsKey(neighbourTile) || !visited.get(neighbourTile).contains(curTileSource)) {
 								frontier.add(neighbourTile);
-								visited.add(neighbourTile);
+								if(!visited.containsKey(neighbourTile)) {
+									Set<Tile> set = new TreeSet<Tile>(Tile.tileComparator());
+									set.add(curTileSource);
+									visited.put(neighbourTile, set);
+								}else {
+									Set<Tile> set = visited.get(neighbourTile);
+									set.add(curTileSource);
+									visited.put(neighbourTile, set);
+								}
 							}
+
+							//	visited.add(neighbourTile);
+							//}
 						}//continue for
 					});
 		}
