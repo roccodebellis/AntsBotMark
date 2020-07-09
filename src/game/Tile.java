@@ -534,5 +534,15 @@ public class Tile {
 	public static final Comparator<Tile> visionComparator() {
 		return (Tile o1, Tile o2) -> (Integer.compare(o1.getVisible(), o2.getVisible()));
 	}
+	
+	public static final Comparator<Tile> tileComparator(){
+		return (Tile o1, Tile o2) -> (Integer.compare((((31 * (1+o1.col) + 25523 * (1+o1.row))*77 )* 431 * (1+o1.col)) * 137 * (1+o1.row) , (((31 * (1+o2.col) + 25523 * (1+o2.row))*77 )* 431 * (1+o2.col)) * 137 * (1+o2.row)));
+	}
 
+	@Override
+	public String toString() {
+		return "[r:" + row + "-c:" + col+"]";
+	}
+
+	
 }
