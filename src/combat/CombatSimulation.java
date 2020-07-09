@@ -53,6 +53,9 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 	public CombatSimulation(Tile myAnt, Tile enemyAnt, long deadLine) {
 		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(true)); //perche ' in combattimento
+	//System.out.println("- "+myAnt);
+	//System.out.println("- "+enemyAnt);
+	
 		situationRecognition(myAnt,enemyAnt);
 		this.deadLine = deadLine;
 		enemyHills = new TreeMap<Integer, Set<Tile>>();
@@ -98,6 +101,9 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 		myAntSet.add(myAnt);
 		IntStream.range(0, Game.getNumberEnemy()).forEach(id -> enemyAntSet.put(id, new HashSet<Tile>()));
+		//System.out.println("* "+ enemyAntSet);
+		//System.out.println("* "+ enemyAnt.getOwner());
+		
 		enemyAntSet.get(enemyAnt.getOwner()-1).add(enemyAnt);
 
 		int attackRadius = Game.getAttackRadius() * 3;
@@ -105,10 +111,11 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		//FIXME ciclare solo sulle formiche aggiunte, prendere la diffrenza tra l'intersezione e l'insisme nuovo
 		//e considerare quelle formiche per la successiva iterata aggiungendole cmq alla lista delle myAntsSet
 
+		//FIXME controllare se funziona
 		boolean addedAnts = false;
 		while(addedAnts){
 			addedAnts = false;
-			Search forEnemyAnts = new Search(myAntSet, Game.getEnemyAnts(), attackRadius, false, false);
+			Search forEnemyAnts = new Search(myAntSet, Game.getEnemyAnts(), attackRadius, false, false, false);
 			Set<Tile> newEnemyFound = forEnemyAnts.adaptiveSearch();
 
 			if(newEnemyFound.size() > (int) enemyAntSet.entrySet().parallelStream().count()) {
@@ -125,7 +132,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 			Set<Tile> enemyAntsSet = new HashSet<Tile>();
 			enemyAntSet.values().forEach( enemySet -> enemyAntsSet.addAll(enemySet));
 
-			Search forMyAnts = new Search(enemyAntsSet, Game.getMyAnts(), attackRadius, false, false);
+			Search forMyAnts = new Search(enemyAntsSet, Game.getMyAnts(), attackRadius, false, false, true);
 			Set<Tile> newMyAntsFound = forMyAnts.adaptiveSearch();
 			if(newMyAntsFound.size() > myAntSet.size()) {
 				addedAnts = true;
@@ -179,7 +186,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		targets.addAll(s.getOpponentAnts());
 		targets.addAll(s.getOpponentHills());
 
-		Search search = new Search(s.getAnts(), targets, null, false, false);
+		Search search = new Search(s.getAnts(), targets, null, false, false, false);
 		search.adaptiveSearch();
 		return search.getOrders();
 	}
@@ -189,7 +196,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		//E' UGUALE!! EXPLORATIONANDMOVEMENT.spreadOut(); TODO
 
 		double targetDistance = Game.getAttackRadius() + (s.isEnemyMove() ? 1 : 2);
-		Set<Order> ordersAssigned = new TreeSet<Order>();
+		Set<Order> ordersAssigned = new HashSet<Order>();
 
 		Iterator<Tile> antsItr = s.getAnts().iterator();
 		while(antsItr.hasNext()) {
@@ -249,7 +256,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		s.getAnts().forEach(a -> {
 			Tile target = a.getNeighbour().get(m);
 
-			if(target.equals(null)) //acqua
+			if(target==null) //acqua
 				orders.add(new Order(a,Directions.STAYSTILL)); //FIXME
 			else {
 				Order o = new Order(a,m);
@@ -265,47 +272,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		return orders;
 	}
 
-	/**
-	 * 
-	 * FIXME aggiungere quando veine effettuata la traduzione che un punteggio di 1 eè assegnato se un nido
-	 * nemico viene distruto
-	 */
-	private double evaluate(Assignment s) {
-		Double AntsMultiplier = 1.1D;
-		Double OpponentMultiplier = 1.0D;
-
-		double value;
-
-		//TODO MassRatioThreshold impostare mass radio in base al numero di formiche
-		if (s.getAnts_number() > 3) //FIXME MassRatioThreshold
-			OpponentMultiplier *= Math.max(1,Math.pow((s.getAnts_number()+1)/(s.getOpponentAnts_number()+1),2));
-
-		//TODO crescita logaritmica col passare dei turni a partire da una certa soglia
-		if(s.getTurnsLeft()<50) 
-			OpponentMultiplier *= 1.5D;
-
-		value = OpponentMultiplier * s.getOpponentLosses_number() - AntsMultiplier * s.getAntsLosses_number();
-
-		if(s.getAntsLosses_number() == s.getAnts_number())
-			value -= 0.5;
-		else if (s.getOpponentLosses_number() == s.getOpponentAnts_number())
-			value += 0.4;
-
-		//TODO RISCRIVERE FUNZIONE 
-		//considerando un pareggio 
-		//considerando in caso di pareggio se il numero di formiche uccise da me è maggiore 
-		//del numero di formiche perse
-
-		value += s.getOpponentHillDestroyed_number();
-		value -= s.getAntsHillDestroyed_number() * 5;
-
-		value += s.getAntsFoodCollected_number() /2;
-		value -= s.getOpponentFoodCollected_number();
-
-
-		return value;
-	}
-
+	
 
 
 	private double MinMax(Assignment state, long deadLine, int depth) {
@@ -328,7 +295,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 				state.addChild(childState);
 			});}
-		return evaluate(state);
+		return state.evaluate();
 	}
 
 	boolean AllowExtension(long deadline, int depth){

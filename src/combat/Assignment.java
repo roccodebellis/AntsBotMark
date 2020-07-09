@@ -1,6 +1,8 @@
 package combat;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -18,7 +20,7 @@ import game.Tile;
 import timing.Timing;
 import vision.Offsets;
 
-public class Assignment {
+public class Assignment implements Comparable<Assignment>{
 
 
 	private Set<Tile> ants;
@@ -42,14 +44,16 @@ public class Assignment {
 	private boolean isEnemyMoves;
 
 	private TreeSet<Assignment> child;
-	
+
 	private Set<Order> antsMove;
+
+	private double value;
 
 
 	Assignment(int turn,  Set<Tile> myAntSet, Set<Tile> antHills, Map<Integer, Set<Tile>> enemyAntSet, Map<Integer, Set<Tile>> enemyHills, Set<Tile> foodTiles, boolean enemyMoves) {
 		this.currentTurn = turn;
 		this.isEnemyMoves = enemyMoves;
-		this.child = new TreeSet<Assignment>();
+		this.child = new TreeSet<Assignment>(Collections.reverseOrder());
 
 		this.ants = myAntSet;
 		this.antsHills = antHills;
@@ -67,7 +71,7 @@ public class Assignment {
 		this.antsFoodCollected = 0;
 		this.enemyFoodCollected = new ArrayList<Integer>(enemyAnts.size());
 		this.enemyFoodCollected.forEach(i -> i = 0);
-		
+
 		antsMove = new TreeSet<Order>();
 	}
 
@@ -130,22 +134,23 @@ public class Assignment {
 
 
 	public Assignment performMove(Set<Order> moves) {
-		Set<Tile> newAnts = new TreeSet<Tile>(ants);
+		Set<Tile> newAnts = new TreeSet<Tile>(Tile.tileComparator());
+		newAnts.addAll(ants);
 		Map<Integer, Set<Tile>> newEnemyAnts = new TreeMap<Integer, Set<Tile>>(enemyAnts);
-		
+
 		if(isEnemyMoves)
 			moves.parallelStream().forEach(move ->{ 
 				IntStream.range(1, newEnemyAnts.size()+1).parallel().forEachOrdered( i  -> { 
 					if(newEnemyAnts.get(i).remove(move.getTile()))
 						newEnemyAnts.get(i).add(move.getTarget());
 				});
-		});
+			});
 		else {
 			moves.parallelStream().forEach(move ->{ newAnts.remove(move.getTile()); newAnts.add(move.getTarget());});
 			antsMove = moves;
 		}
 		return new Assignment(currentTurn+1,  newAnts, antsHills, newEnemyAnts, enemyHills, foodTiles, isEnemyMoves ? false : true);
-			
+
 	}
 
 	public void resolveCombatAndFoodCollection() {
@@ -180,7 +185,7 @@ public class Assignment {
 		focusAttack.putAll(computeFocusAttack(ants, enemy));
 
 
-		IntStream.range(1, enemyAnts.size()+1).parallel().forEachOrdered( i  -> { 
+		IntStream.range(1, enemyAnts.size()).parallel().forEachOrdered( i  -> { 
 			Set<Tile> ienemySet = enemyAnts.get(i);
 
 			enemy.clear();
@@ -190,26 +195,29 @@ public class Assignment {
 			if(i+1 < enemyAnts.size()+1)
 				IntStream.range(i+1, enemyAnts.size()+1).parallel().forEachOrdered( j -> enemy.addAll(enemyAnts.get(j)));
 
+			System.out.println("* ienemySet"+ ienemySet);
+			System.out.println("* enemy"+ enemy);
+
 			focusAttack.putAll(computeFocusAttack(ienemySet, enemy));
 		});
-		
+
 		Set<Tile> deadAnts = new TreeSet<Tile>();
 
 		ants.parallelStream().forEachOrdered(ant -> {
 			int curAntFA = focusAttack.get(ant);
-			
-			
+
+
 			Set<Tile> deadEnemyAnts = new TreeSet<Tile>();
-			
-			IntStream.range(1, enemyAnts.size()+1).parallel().forEachOrdered( i  -> { 
+
+			IntStream.range(1, enemyAnts.size()).parallel().forEachOrdered( i  -> { 
 				int enemyLossesNumber = enemyLosses.get(i);
 				Set<Tile> ienemySet = enemyAnts.get(i);
-				
+
 				deadEnemyAnts.clear();
-				
+
 				ienemySet.parallelStream().forEachOrdered(enemyAnt -> {
 					int curEnemyFA = focusAttack.get(enemyAnt);
-					
+
 					if(curAntFA > curEnemyFA) {
 						antsLosses++;
 						deadAnts.add(ant);
@@ -222,7 +230,7 @@ public class Assignment {
 						deadEnemyAnts.add(enemyAnt);
 						enemyLosses.set(i, enemyLossesNumber+1);
 					}
-					
+
 				});
 				ienemySet.removeAll(deadEnemyAnts);
 			});
@@ -356,5 +364,53 @@ public class Assignment {
 	private Set<Order> getMoves() {
 		return antsMove;
 	}
+
+	/**
+	 * 
+	 * FIXME aggiungere quando veine effettuata la traduzione che un punteggio di 1 eè assegnato se un nido
+	 * nemico viene distruto
+	 */
+	double evaluate() {
+		Double AntsMultiplier = 1.1D;
+		Double OpponentMultiplier = 1.0D;
+
+		double value;
+
+		//TODO MassRatioThreshold impostare mass radio in base al numero di formiche
+		if (getAnts_number() > 3) //FIXME MassRatioThreshold
+			OpponentMultiplier *= Math.max(1,Math.pow((getAnts_number()+1)/(getOpponentAnts_number()+1),2));
+
+		//TODO crescita logaritmica col passare dei turni a partire da una certa soglia
+		if(getTurnsLeft()<50) 
+			OpponentMultiplier *= 1.5D;
+
+		value = OpponentMultiplier * getOpponentLosses_number() - AntsMultiplier * getAntsLosses_number();
+
+		if(getAntsLosses_number() == getAnts_number())
+			value -= 0.5;
+		else if (getOpponentLosses_number() == getOpponentAnts_number())
+			value += 0.4;
+
+		//TODO RISCRIVERE FUNZIONE 
+		//considerando un pareggio 
+		//considerando in caso di pareggio se il numero di formiche uccise da me è maggiore 
+		//del numero di formiche perse
+
+		value += getOpponentHillDestroyed_number();
+		value -= getAntsHillDestroyed_number() * 5;
+
+		value += getAntsFoodCollected_number() /2;
+		value -= getOpponentFoodCollected_number();
+
+		this.value = value;
+		return value;
+	}
+
+
+	@Override
+	public int compareTo(Assignment o) {
+		return Double.compare(value, o.value);
+	}
+
 
 }

@@ -140,7 +140,7 @@ public class Game {
 	private Set<Order> getOrders() {
 		return orders;
 	}
-	
+
 	private static int numberEnemy;
 
 	/**
@@ -173,14 +173,14 @@ public class Game {
 		enemyHills = new HashSet<Tile>();
 		myAnts = new HashSet<Tile>();
 		enemyAnts = new HashSet<Tile>();
-		orderlyAnts = new TreeSet<Tile>();
+		orderlyAnts = new TreeSet<Tile>(Tile.tileComparator());
 		food = new HashSet<Tile>();
 		orders = new HashSet<Order>();
 		unexplored = new TreeSet<Tile>(Tile.visionComparator());
 		water = new HashSet<Tile>();
 		outOfSight = new TreeSet<Tile>(Tile.visionComparator());//TODO check if comparator
 		//borders = new TreeSet<Tile>();
-		setTiles = new HashSet<Tile>();
+		setTiles = new TreeSet<Tile>(Tile.tileComparator());
 		map = initGameMap();
 
 		view = new Vision(setTiles, getViewRadius());
@@ -208,12 +208,9 @@ public class Game {
 			//if(r == 0 || r == rows-1 || c == 0 || c == cols-1)
 			//borders.add(t);
 			output.add(tempRow);
-			setTiles.addAll(tempRow.parallelStream().collect(Collectors.toCollection(HashSet::new)));
-			unexplored.addAll(tempRow.parallelStream().collect( Collectors.toCollection(
-		            () -> new TreeSet<>(
-		                    Tile.visionComparator()
-		                )
-		            )));
+			//setTiles.addAll(tempRow.parallelStream().collect(Collectors.toCollection(()->new TreeSet<Tile>(Tile.tileComparator()))));
+			setTiles.addAll(tempRow);
+			unexplored.addAll(tempRow.parallelStream().collect( Collectors.toCollection(() -> new TreeSet<Tile>(Tile.visionComparator()))));
 		}
 
 		// ADDED "INTERNAL" VICINI
@@ -221,6 +218,8 @@ public class Game {
 		Iterator<List<Tile>> rows_It = output.iterator();
 
 		List<Tile> UP_Row = rows_It.next();
+		
+		List<Tile> First_Row = UP_Row;
 
 		Iterator<Tile> UP_cols_It = UP_Row.iterator();
 		Tile prevTile = UP_cols_It.next();
@@ -237,10 +236,12 @@ public class Game {
 		prevTile.addNeighbour(Directions.EAST, firstColTile);
 		firstColTile.addNeighbour(Directions.WEST, prevTile);
 
+		List<Tile> DOWN_Row = null;
+		
 		while (rows_It.hasNext()) {
 			UP_cols_It = UP_Row.iterator();
 
-			List<Tile> DOWN_Row = rows_It.next();
+			DOWN_Row = rows_It.next();
 
 			Iterator<Tile> DOWN_cols_It = DOWN_Row.iterator();
 
@@ -267,11 +268,26 @@ public class Game {
 				UP_prev_Tile = UP_cur_Tile;
 			}
 
+			
 			DOWN_prev_Tile.addNeighbour(Directions.EAST, firstColTile);
 			firstColTile.addNeighbour(Directions.WEST, DOWN_prev_Tile);
-
+			
+			UP_Row = DOWN_Row;
 		}
+		
+		Iterator<Tile> DOWN_cols_It = DOWN_Row.iterator();
+		UP_cols_It = First_Row.iterator();
+		
+		while (DOWN_cols_It.hasNext() && UP_cols_It.hasNext()) {
+			Tile DOWN_cur_Tile = DOWN_cols_It.next();
+			Tile UP_cur_Tile = UP_cols_It.next();
 
+			DOWN_cur_Tile.addNeighbour(Directions.SOUTH, UP_cur_Tile);
+			UP_cur_Tile.addNeighbour(Directions.NORTH, DOWN_cur_Tile);
+		}
+		
+
+		/*
 		// ADD "EXTERNAL" NEIGHBOUR
 		// Iterator<Tile> firstRowIt = output.getFirst().iterator();
 		// Iterator<Tile> lastRowIt = output.getLast().iterator();
@@ -286,6 +302,11 @@ public class Game {
 			DOWN.addNeighbour(Directions.SOUTH, UP);
 		}
 
+		*/
+		
+		
+		//setTiles.forEach(s -> System.out.println(s+" -> "+s.getNeighbour()));
+		//output.forEach(l -> l.forEach(s -> System.out.println(s+" -> "+s.getNeighbour())));
 		return output;
 	}
 
@@ -352,7 +373,7 @@ public class Game {
 	public static Set<Tile> getOutOfSight() {
 		return view.getOutOfSight(); 
 	}
-	
+
 	public static int getNumberEnemy() {
 		return numberEnemy;
 	}
@@ -441,8 +462,12 @@ public class Game {
 		if (owner == 0) {
 			myAnts.add(curTile);
 			// setVision(curTile); richiamato da Bot.afterUpdate() con setVision()
-		} else
+		} else {
 			enemyAnts.add(curTile);
+			if(owner > numberEnemy)
+				Game.numberEnemy = owner;
+		}
+
 	}
 
 	/**
@@ -470,7 +495,7 @@ public class Game {
 	}
 
 	public void setHills(int row, int col, int owner) {
-		
+
 		Tile curTile = getTile(row, col);
 		curTile.setTypeHill(owner);
 
@@ -478,14 +503,14 @@ public class Game {
 			myHills.add(curTile);
 		else
 			enemyHills.add(curTile);
-		
+
 		if(owner > numberEnemy)
 			Game.numberEnemy = owner;
 
 		unexplored.remove(curTile);
 	}
-	
-	
+
+
 
 	/**
 	 * Returns location with the specified offset from the specified location.
@@ -590,7 +615,7 @@ public class Game {
 	public static Set<Tile> getMapTiles() {
 		return setTiles;	
 	}
-	
+
 	public static Map<Node, Tile> getEnemyToAnt() {
 		return view.getEnemyToAnt();
 	}
@@ -599,38 +624,39 @@ public class Game {
 		Map<Node,Tile> enemyToAnt = getEnemyToAnt();
 		Iterator<Entry<Node, Tile>> battlePairItr = enemyToAnt.entrySet().iterator();
 		Set<Tile> myAntsEngaged = new HashSet<Tile>();
-		
+
 		Map<Tile,Tile> battlesLeading = new HashMap<Tile,Tile>();
-		Set<CombatSimulation> battles = new TreeSet<CombatSimulation>();
-		
-		
+		Set<CombatSimulation> battles = new HashSet<CombatSimulation>();
+
+
 		while(battlePairItr.hasNext()) {
 			Entry<Node, Tile> curPair = battlePairItr.next();
 			Node enemyExt = curPair.getKey();
 			Tile ant = curPair.getValue();
-	
+
 			//if(enemyExt.getHeuristicValue()) FIXME magari diminuire e non utilizzare il raggio di visione, utilizzando la distanza
 			if(!myAntsEngaged.contains(ant)) {
 				battlesLeading.put(ant, enemyExt.getTile());
 			}
-			
+
 		}
-		
-		
+
+		//System.out.println("battlesLeading: "+battlesLeading);
+
 		long timeAssigned = time.getCombatTimeStime()/battlesLeading.size();
 		battlesLeading.entrySet().parallelStream().forEachOrdered(e ->
 			battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
-		
+
 		battles.parallelStream().forEachOrdered(battle -> battle.combatResolution());
-		Set<Order> attack = new TreeSet<Order>();
+		Set<Order> attack = new HashSet<Order>();
 		battles.parallelStream().forEachOrdered(battle -> attack.addAll(battle.getMoves()));
 		Game.issueOrders(attack);
-	
+
 	}
 
 	public void doFood() {
 		new FoodCollection(getFoodTiles(),getMyAnts());
-		
+
 	}
 
 	public void doDefense() {
@@ -638,8 +664,8 @@ public class Game {
 	}
 
 	public void doExploration() {
-		new ExplorationAndMovement( getMyAnts(), getUnexplored(), getOutOfSight(),getOrderlyAnts());
-		
+		new ExplorationAndMovement(getUnexplored(), getOutOfSight(),getOrderlyAnts());
+
 	}
 
 

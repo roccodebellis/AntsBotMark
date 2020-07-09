@@ -55,6 +55,7 @@ public class Vision {
 	}
 
 	public void clearAllVision(){
+		enemyToAnt.clear();
 		mapTiles.parallelStream().forEachOrdered(tile -> Game.setVisible(tile,false));
 	}
 

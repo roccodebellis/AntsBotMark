@@ -61,7 +61,9 @@ public class Search {
 	 * piu' vicina ad un nemico. //TODO
 	 */
 	private Boolean one_target_per_source;
-	
+
+	private Boolean reverse;
+
 	/**
 	 * 
 	 */
@@ -71,36 +73,39 @@ public class Search {
 	 * 
 	 */
 	private Map<Tile, Tile> pathSources;
-	
+
 	/**
 	 * 
 	 */
 	private Map<Tile, Directions> directionFromSource;
-	
+
 	/**
 	 * 
 	 */
 	private Map<Tile, Directions> directionFromTarget;
-	
+
 	/**
 	 * 
 	 */
 	private Set<Order> orders;
-	
 
-	public Search(Set<Tile> sources, Set<Tile> targets, Integer radius, Boolean heuristic, Boolean search_from_one_source) {
+
+	public Search(final Set<Tile> sources, final Set<Tile> targets, Integer radius, Boolean heuristic, Boolean search_from_one_source, Boolean reverse) {
 		this.sources = sources;
 		this.targets = targets;
 		this.radius = radius;
 		this.heuristic = heuristic;
 		this.one_target_per_source = search_from_one_source;
-		
+		this.reverse = reverse;
+
 		//Init results
 		results = new HashSet<Tile>();
 		pathSources = new HashMap<Tile, Tile>();
 		directionFromSource = new HashMap<Tile, Directions>();
 		directionFromTarget = new HashMap<Tile, Directions>();
 		orders = new HashSet<Order>();
+
+
 	}
 
 	/**
@@ -143,8 +148,9 @@ public class Search {
 	private void createOneOrder (Tile origin, Tile target, Directions direction) {
 		this.targets.remove(target);
 		this.orders.add(new Order(origin, direction));
+		//System.out.println("o:" +origin +" ->t:"+target+" "+direction);
 	}
-	
+
 	/*
 	//TODO controllare
 	private void computeOrders () {
@@ -159,15 +165,15 @@ public class Search {
 			orders.add(newOrder);
 		}
 	}*/
-	
+
 	public Set<Order> getOrders(){
 		return orders;
 	}
-	
+
 	private Map<Tile,Tile> getPathSources(){
 		return this.pathSources;
 	}
-	
+
 	/**
 	 * <p>
 	 * Utilizza un set di coordinate <i>offsets</i> per un dato raggio di ricerca e
@@ -231,15 +237,17 @@ public class Search {
 				if(one_target_per_source) {
 					completedSources.add(curTileSource.getTile());
 					createOneOrder(curTile.getTile(), curTileSource.getTile(), directionFromTarget.get(curTile.getTile()));
-				}else
-				createOneOrder(curTileSource.getTile(), curTile.getTile(), directionFromSource.get(curTileSource.getTile()));
+				}else { if(reverse)
+					createOneOrder(curTile.getTile(), curTileSource.getTile(), directionFromTarget.get(curTile.getTile()));
+				else
+					createOneOrder(curTileSource.getTile(), curTile.getTile(), directionFromSource.get(curTileSource.getTile()));}
 			}
-			
+
 			/*TODO change for to iterator 
 			Iterator<Map.Entry<Directions, Tile>> itNeigh = curTile.getTile().getNeighbour().entrySet().iterator();
 			Entry<Directions, Tile> neighbourEntry;
 			while(it.hasNext()) {
-			
+
 			}*/
 			for(Entry<Directions, Tile> neighbourEntry : curTile.getTile().getNeighbour().entrySet()) {
 				Tile neighbourTile = neighbourEntry.getValue();
@@ -250,10 +258,10 @@ public class Search {
 					continue;
 				//DA CONTROLLARE TODO
 				if(!tileSources.containsKey(neighbour) || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())){	
-				
-				//if( !tileSources.containsKey(neighbour) || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())) {//FIXME
+
+					//if( !tileSources.containsKey(neighbour) || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())) {//FIXME
 					//TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost()); //FIXME altrimenti curTileSource.getTarget()
-					
+
 					tileSources.put(neighbour,curTileSource);
 
 					directionFromSource.put(curTile.getTile(), neighborDirection);//TODO FIXME
@@ -264,12 +272,13 @@ public class Search {
 				}
 			}
 		}
-		this.pathSources = new TreeMap<>(tileSources.entrySet().parallelStream().collect(Collectors.toMap(e -> e.getKey().getTile(), e -> e.getValue().getTile())));
+		this.pathSources = new TreeMap<Tile,Tile>(Tile.tileComparator());
+		this.pathSources.putAll(	tileSources.entrySet().parallelStream().collect(Collectors.toMap(e -> e.getKey().getTile(), e -> e.getValue().getTile())));
 		//computeOrders(); TODO
 		return this.results;
 		//return results, tileSources, directionFromSource, directionFromTarget;
 	}
-	
+
 	/**
 	 * one_target_per_source trova per ogni sorgente il targhet più vicino e te li restituisce
 	 * altrimenti per ogni source invia tutti i targhet vicini verso quelle sorgenti (sicuramente
@@ -278,13 +287,71 @@ public class Search {
 	 * @return
 	 */
 	private Set<Tile> extendedBFS() {
-
+		/*
 		Queue<Tile> frontier = new LinkedList<Tile>();
 		Set<Tile> completedSources = new HashSet<>();
 
 		sources.parallelStream().forEachOrdered(source -> {
 			frontier.add(source);
 			pathSources.put(source,source);
+		});
+
+		while(!frontier.isEmpty()) {
+			Tile curTile = frontier.poll();
+
+			Tile curTileSource = pathSources.get(curTile);
+			if(one_target_per_source && completedSources.contains(curTileSource))
+				continue;//continue while
+
+		 **
+		 * for(Entry<Directions, Tile> neighborEntry : curTile.getNeighbour().entrySet()) {
+				Tile neighborTile = neighborEntry.getValue();
+				Directions neighborDirection = neighborEntry.getKey();
+		 *
+
+			curTile.getNeighbour().entrySet().parallelStream().forEachOrdered(
+					neighbourEntry -> { 
+						Tile neighbourTile = neighbourEntry.getValue();
+						Directions neighbourDirection = neighbourEntry.getKey();
+
+						if(!neighbourTile.isSuitable() || !pathSources.containsKey(neighbourTile)) {
+
+							pathSources.put(neighbourTile,curTileSource);
+
+							directionFromSource.put(curTile, neighbourDirection);/*
+							if(directionFromSource.containsKey(curTile))
+								directionFromSource.put(neighbourTile, directionFromSource.get(curTile));
+							else
+								directionFromSource.put(neighbourTile, neighbourDirection);*
+
+							directionFromTarget.put(neighbourTile, neighbourDirection.getOpponent());
+
+							if(targets.contains(neighbourTile)) {
+								results.add(neighbourTile);
+								if(one_target_per_source) {//FIXME
+									completedSources.add(curTileSource);
+									createOneOrder(curTile, curTileSource, directionFromTarget.get(curTile));
+								}else createOneOrder(curTileSource, curTile, directionFromSource.get(curTileSource));
+								//TODO: di regola non bisogna rimuovere il targhet
+								//ma se viene rieseguita la ricerca, è necessario rimuoverlo
+							}//*else*
+
+							frontier.add(neighbourTile);
+						}//continue for
+					});
+		}
+		//return result, pathSources, directionFromSource, directionFromTarget; //TODO
+		//computeOrders(); cambiare in base a come vengono impostati target e source
+		return this.results;
+		 */
+		Queue<Tile> frontier = new LinkedList<Tile>();
+		Set<Tile> completedSources = new TreeSet<>(Tile.tileComparator());
+		Set<Tile> visited = new TreeSet<>(Tile.tileComparator());
+
+		sources.parallelStream().forEachOrdered(source -> {
+			frontier.add(source);
+			pathSources.put(source,source);
+			visited.add(source);
 		});
 
 		while(!frontier.isEmpty()) {
@@ -308,7 +375,7 @@ public class Search {
 						if(!neighbourTile.isSuitable() || !pathSources.containsKey(neighbourTile)) {
 
 							pathSources.put(neighbourTile,curTileSource);
-							
+
 							directionFromSource.put(curTile, neighbourDirection);/*
 							if(directionFromSource.containsKey(curTile))
 								directionFromSource.put(neighbourTile, directionFromSource.get(curTile));
@@ -322,12 +389,18 @@ public class Search {
 								if(one_target_per_source) {//FIXME
 									completedSources.add(curTileSource);
 									createOneOrder(curTile, curTileSource, directionFromTarget.get(curTile));
-								}else createOneOrder(curTileSource, curTile, directionFromSource.get(curTileSource));
+								}else {if(reverse)
+									createOneOrder(curTile, curTileSource, directionFromTarget.get(curTile));
+								else
+									createOneOrder(curTileSource, curTile, directionFromSource.get(curTileSource));}
 								//TODO: di regola non bisogna rimuovere il targhet
 								//ma se viene rieseguita la ricerca, è necessario rimuoverlo
 							}//*else*
 
-							frontier.add(neighbourTile);
+							if(!visited.contains(neighbourTile)) {
+								frontier.add(neighbourTile);
+								visited.add(neighbourTile);
+							}
 						}//continue for
 					});
 		}

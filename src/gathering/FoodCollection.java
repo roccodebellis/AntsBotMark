@@ -30,7 +30,8 @@ import search.Search;
 public class FoodCollection {
 
 	public FoodCollection(Set<Tile> foodTiles, Set<Tile> myAnts) {
-		Search s = new Search(foodTiles, myAnts, null, false, true);
+		Search s = new Search(foodTiles, myAnts, null, false, true, false);
 		s.adaptiveSearch();
+		Game.issueOrders(s.getOrders());
 	}
 }

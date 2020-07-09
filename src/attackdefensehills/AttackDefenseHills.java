@@ -20,7 +20,7 @@ public class AttackDefenseHills {
 	private void defense(Set<Tile> myAnts, Set<Tile> myHills, Set<Tile> enemy) {
 		int avaiableAnts = myAnts.size();
 
-		double antsForHill = avaiableAnts/myHills.size();
+		double antsForHill = avaiableAnts/(myHills.size()+1);
 
 		Set<Tile> defender = new TreeSet<Tile>();
 
@@ -64,12 +64,16 @@ public class AttackDefenseHills {
 				defender.add(Game.getTile(hill,sentinel.getOpponent().getDiagonal()));
 		}
 
+		Search s = new Search(defender, Game.getMyAnts(), null, false, true, false);
+		s.adaptiveSearch();
+		Game.issueOrders(s.getOrders()); //FIXME controllare se sta cosa funziona, nel caso da l'ordine al contrario
 	}
 
 	private void attack(Set<Tile> myAnts, Set<Tile> enemyHills) {
 		
-		Search s = new Search(Game.getEnemyHills(), Game.getMyAnts(), null, false, false);
+		Search s = new Search(Game.getEnemyHills(), Game.getMyAnts(), null, false, false, true);
 		s.adaptiveSearch();
+		Game.issueOrders(s.getOrders());
 		
 	}
 

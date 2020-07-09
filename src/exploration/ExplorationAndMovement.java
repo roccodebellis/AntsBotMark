@@ -17,16 +17,16 @@ public class ExplorationAndMovement {
 	//oppure inviare dove e' necessario (battaglie in corso, punti chiave, etc
 	//in aree gia esplorate per minimizzare la distanza media dal cibo e mantenere un'area di visione
 
-	public ExplorationAndMovement(Set<Tile> myAnts, Set<Tile> unexplored, Set<Tile> outOfSight, Set<Tile> orderlyAnts) {//TODO ?
-		if(!toUnexploredArea(myAnts,unexplored))
-			if(!toInvisibleArea(myAnts, outOfSight)) 
-				if(!toPriorityTarget(myAnts)) 
-					spreadOut(myAnts,orderlyAnts);
+	public ExplorationAndMovement( Set<Tile> unexplored, Set<Tile> outOfSight, Set<Tile> orderlyAnts) {//TODO ?
+		if(!toUnexploredArea(Game.getMyAnts(),unexplored))
+			if(!toInvisibleArea(Game.getMyAnts(), outOfSight)) 
+				if(!toPriorityTarget(Game.getMyAnts())) 
+					spreadOut(Game.getMyAnts(),orderlyAnts);
 
 	}
 
 	private boolean toUnexploredArea(Set<Tile> myAnts, Set<Tile> unexplored) {
-		Search s = new Search(myAnts, unexplored, null, false, false);
+		Search s = new Search(myAnts, unexplored, null, false, false, false);
 		s.adaptiveSearch();
 		Set<Order> orders = s.getOrders(); 
 
@@ -36,7 +36,7 @@ public class ExplorationAndMovement {
 	}
 
 	private boolean toInvisibleArea(Set<Tile> myAnts, Set<Tile> outOfSight) {
-		Search s = new Search(myAnts, outOfSight, null, false, false);
+		Search s = new Search(myAnts, outOfSight, null, false, false, false);
 		s.adaptiveSearch();
 		Set<Order> orders = s.getOrders();
 
@@ -46,8 +46,11 @@ public class ExplorationAndMovement {
 
 	private boolean toPriorityTarget(Set<Tile> myAnts) {
 		ArrayList<Set<Tile>> targets = new ArrayList<Set<Tile>>(3);
+		targets.add(new TreeSet<Tile>(Tile.tileComparator()));
 		targets.get(0).addAll(Game.getUnexplored());
+		targets.add(new TreeSet<Tile>(Tile.tileComparator()));
 		targets.get(1).addAll(Game.getEnemyHills());
+		targets.add(new TreeSet<Tile>(Tile.tileComparator()));
 		targets.get(2).addAll(Game.getEnemyAnts());
 
 		int curTarget = 0;
@@ -60,6 +63,7 @@ public class ExplorationAndMovement {
 
 			countPathFounded += computeOrders(targets.get(curTarget++)) ? 0 : 1;
 		}
+		
 		return Game.getMyAnts().isEmpty();
 	}
 
@@ -68,7 +72,7 @@ public class ExplorationAndMovement {
 		//E' uguale a CombatSimulation.Hold
 
 		Set<Tile> source = myAnts;
-		Set<Tile> targets = new TreeSet<>();
+		Set<Tile> targets = new TreeSet<>(Tile.tileComparator());
 		targets.addAll(myAnts);
 		targets.addAll(orderlyAnts);
 
@@ -78,9 +82,9 @@ public class ExplorationAndMovement {
 
 			Tile ant = antsItr.next();
 			targets.remove(ant);
-			Set<Tile> singoletto = new TreeSet<Tile>();
+			Set<Tile> singoletto = new TreeSet<Tile>(Tile.tileComparator());
 			singoletto.add(ant);
-			Search s = new Search(singoletto, targets, null, false, false);//BFS
+			Search s = new Search(singoletto, targets, null, false, false, false);//BFS
 			s.adaptiveSearch();
 			Order o = s.getOrders().iterator().next();
 
@@ -99,7 +103,7 @@ public class ExplorationAndMovement {
 		while(!Game.getMyAnts().isEmpty() && !targets.isEmpty() && pathFounded) {
 
 			//io gli farei fare un A* quindi heuristic = true, che dici?
-			Search s = new Search(targets, Game.getMyAnts(), null, true, true);
+			Search s = new Search(targets, Game.getMyAnts(), null, true, true, false);
 			Set<Tile> results = s.adaptiveSearch();
 			Set<Order> orders = s.getOrders();
 			if(orders.isEmpty())
