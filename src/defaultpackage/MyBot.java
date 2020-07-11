@@ -5,7 +5,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import game.Directions;
 import game.Game;
+import game.Order;
 import game.Tile;
 
 
@@ -66,14 +68,27 @@ public class MyBot extends Bot {
 	@Override //DA FARW
 	public void doTurn() {
 		Game state = getGame();
+		/*
+		Game.getMyHills().parallelStream().forEachOrdered(h -> {
+			Directions dir = Directions.random();
+			Map<Directions, Tile> neig = h.getNeighbour();
+			
+			while(neig.get(dir)!=null)
+				dir.getNext();
+			
+			Game.issueOrder(new Order(h,dir));
+		});
+		*/
 		//1 VISION MODULE
 		//2 COMBAT SIMULATION
 		//state.doCombat();
 		//3 FOOD COLLECTION
-		state.doFood();
+		//state.doFood();
 		//2.5\3.5 HILL ATTACK AND DEFENSE 
 		//state.doDefense();
 		//4 EXPLORATION AND MOVEMENTS
-		//state.doExploration();		
+		state.doExploration();	
+		//Game.printMapVision();
+		//Game.printNeigbour();
 	}
 }

@@ -3,6 +3,8 @@ package game;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
+
 import search.Search;
 
 //TODO rivedi tutti javadoc
@@ -98,7 +100,7 @@ import search.Search;
  * @author Debellis, Lorusso
  *
  */
-public class Tile {
+public class Tile implements Comparable<Tile> {
 
 	/**
 	 * Riga della {@link Tile tile} nella mappa del gioco.
@@ -176,7 +178,7 @@ public class Tile {
 		this.row = row;
 		this.col = col;
 		type = TileTypes.UNEXPLORED;
-		neighbourTiles = new HashMap<>();
+		neighbourTiles = new TreeMap<>();
 		visible = 0;
 		occupiedByAnt = false;
 		idOwner = null;
@@ -227,8 +229,11 @@ public class Tile {
 	 *                {@code false}, altrimenti
 	 */
 	public void setVisible(boolean visible) {
-		if(!type.equals(TileTypes.WATER))
-			this.visible = visible ? 0 : this.visible - 1;
+		if(!type.equals(TileTypes.WATER)) 
+			this.visible = visible ? 0 : this.visible + 1;
+		else
+			this.visible --;
+
 	}
 
 	/**
@@ -277,10 +282,10 @@ public class Tile {
 		 */
 		neighbourTiles.forEach((dir, t) -> t.removeNeighbour(dir.getOpponent()));
 		neighbourTiles = null;
-		visible = 0;
 		occupiedByAnt = false;
 		idOwner = null;
 		containsFood = false;
+		isSuitable = false;
 
 	}
 
@@ -297,6 +302,7 @@ public class Tile {
 		occupiedByAnt = false;
 		this.idOwner = idOwner;
 		containsFood = false;
+		isSuitable = idOwner==0 ? false : true;
 	}
 
 	/**
@@ -309,6 +315,7 @@ public class Tile {
 		occupiedByAnt = false;
 		idOwner = null;
 		containsFood = false;
+		isSuitable = true;
 	}
 
 	/**
@@ -337,6 +344,7 @@ public class Tile {
 		// visible = true; fatto da set vision!
 		occupiedByAnt = true;
 		idOwner = newIdOwner;
+		//isSuitable = idOwner==0 ? false : true;
 	}
 
 	/**
@@ -355,6 +363,7 @@ public class Tile {
 	 */
 	void placeFood() {
 		containsFood = true;
+		isSuitable = true;
 	}
 
 	/**
@@ -414,9 +423,9 @@ public class Tile {
 	 */
 	public int getOwner() {// TODO non lo utilizziamo?!
 		//if (occupiedByAnt || type.equals(TileTypes.HILL)) FIXME
-			return idOwner;
+		return idOwner;
 		//else
-			//throw new TileTypeException("Pensavi ci fosse una formica/un HILL invece era " + type);
+		//throw new TileTypeException("Pensavi ci fosse una formica/un HILL invece era " + type);
 	}
 
 	/**
@@ -470,7 +479,7 @@ public class Tile {
 	 */
 	@Override
 	public int hashCode() {
-		return row * 50000 + col;
+		return (((31 * (1+col) + 25523 * (1+row))*77 )* 431 * (1+col)) * 137 * (1+row) ;
 	}
 
 	/**
@@ -522,7 +531,7 @@ public class Tile {
 
 		// viene utilizzata da BFS
 	}
-	
+
 	public boolean isAccessible() {
 		if(type.equals(TileTypes.WATER))
 			return false;
@@ -534,17 +543,26 @@ public class Tile {
 	}
 
 	public static final Comparator<Tile> visionComparator() {
-		return (Tile o1, Tile o2) -> (Integer.compare(o1.getVisible(), o2.getVisible()));
-	}
-	
-	public static final Comparator<Tile> tileComparator(){
-		return (Tile o1, Tile o2) -> (Integer.compare((((31 * (1+o1.col) + 25523 * (1+o1.row))*77 )* 431 * (1+o1.col)) * 137 * (1+o1.row) , (((31 * (1+o2.col) + 25523 * (1+o2.row))*77 )* 431 * (1+o2.col)) * 137 * (1+o2.row)));
+		return new Comparator<Tile>() {
+			@Override
+			public int compare(Tile o1, Tile o2){
+				return (o1.getVisible() < o2.getVisible()) ? 1 : 
+					((o1.getVisible() == o2.getVisible()) ? o1.compareTo(o2) : -1);
+			}
+		};
+		//return (Tile o1, Tile o2) -> (Integer.compare(o1.getVisible(), o2.getVisible()));
 	}
 
 	@Override
 	public String toString() {
-		return "[r:" + row + "-c:" + col+"]";
+		return "[" + row + "," + col+"]";
 	}
 
-	
+	@Override
+	public int compareTo(Tile o) {
+		// TODO Auto-generated method stub
+		return Integer.compare((((31 * (1+col) + 25523 * (1+row))*77 )* 431 * (1+col)) * 137 * (1+row) , (((31 * (1+o.col) + 25523 * (1+o.row))*77 )* 431 * (1+o.col)) * 137 * (1+o.row));
+	}
+
+
 }

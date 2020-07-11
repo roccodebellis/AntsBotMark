@@ -134,7 +134,7 @@ public class Assignment implements Comparable<Assignment>{
 
 
 	public Assignment performMove(Set<Order> moves) {
-		Set<Tile> newAnts = new TreeSet<Tile>(Tile.tileComparator());
+		Set<Tile> newAnts = new TreeSet<Tile>();
 		newAnts.addAll(ants);
 		Map<Integer, Set<Tile>> newEnemyAnts = new TreeMap<Integer, Set<Tile>>(enemyAnts);
 

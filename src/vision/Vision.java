@@ -60,6 +60,7 @@ public class Vision {
 	}
 
 	public void setVision(Set<Tile> visible_ants) {
+		inVision.clear();
 		/*
 		visible_ants.parallelStream().forEachOrdered(ant -> inVision.addAll(Game.getTiles(ant, visionOffsets)));
 		inVision.forEach(tile ->  Game.setVisible(tile,true));
@@ -67,7 +68,7 @@ public class Vision {
 		visible_ants.parallelStream().forEachOrdered(
 				ant -> 
 				Game.getTiles(ant, visionOffsets).parallelStream().forEachOrdered(tileVisible ->{
-					Node visibleTileEx = new Node(tileVisible,ant);;
+					Node visibleTileEx = new Node(tileVisible,ant);
 					inVision.add(tileVisible);
 					Game.setVisible(tileVisible,true);
 					if(tileVisible.isOccupiedByAnt() && tileVisible.getOwner() != 0)
@@ -83,6 +84,8 @@ public class Vision {
 
 
 		outOfSight = new TreeSet<Tile>(Tile.visionComparator());
+		//outOfSight = new HashSet<Tile>();
+		
 		outOfSight.addAll(Game.getMapTiles());
 		outOfSight.removeAll(inVision);
 		outOfSight.removeAll(Game.getUnexplored());

@@ -22,7 +22,7 @@ public class AttackDefenseHills {
 
 		double antsForHill = avaiableAnts/(myHills.size()+1);
 
-		Set<Tile> defender = new TreeSet<Tile>(Tile.tileComparator());
+		Set<Tile> defender = new TreeSet<Tile>();
 
 		if(antsForHill>0) {
 			Game.getMyHills().parallelStream().forEachOrdered(hill -> {
@@ -64,13 +64,14 @@ public class AttackDefenseHills {
 				defender.add(Game.getTile(hill,sentinel.getOpponent().getDiagonal()));
 		}
 
-		Search s = new Search(defender, Game.getMyAnts(), null, false, true, false);
+		//Search s = new Search(defender, Game.getMyAnts(), null, false, true, false);
+		Search s = new Search(defender, Game.getMyAnts(), null, false, false, true);
 		s.adaptiveSearch();
 		Game.issueOrders(s.getOrders()); //FIXME controllare se sta cosa funziona, nel caso da l'ordine al contrario
 	}
 
 	private void attack(Set<Tile> myAnts, Set<Tile> enemyHills) {
-		
+		//questa ricerca è giusta
 		Search s = new Search(Game.getEnemyHills(), Game.getMyAnts(), null, false, false, true);
 		s.adaptiveSearch();
 		Game.issueOrders(s.getOrders());

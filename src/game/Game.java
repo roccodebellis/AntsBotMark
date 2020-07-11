@@ -104,6 +104,8 @@ public class Game {
 	 * Insieme di {@link Orders ordini} assegnati ad una o piu' {@link #myAnts formiche} dell'agente.
 	 */
 	private static Set<Order> orders;
+	private static Set<Tile> ordersTarget;
+
 
 	/**
 	 * Insieme contentente le {@link Tile tile} inesplorate.
@@ -118,7 +120,7 @@ public class Game {
 	/**
 	 * Tile che sono al di fuori della vista delle formiche.
 	 */
-	private static Set<Tile> outOfSight;
+	//private static Set<Tile> outOfSight;
 
 	/**
 	 * Mappa del gioco.
@@ -173,14 +175,15 @@ public class Game {
 		enemyHills = new HashSet<Tile>();
 		myAnts = new HashSet<Tile>();
 		enemyAnts = new HashSet<Tile>();
-		orderlyAnts = new TreeSet<Tile>(Tile.tileComparator());
+		orderlyAnts = new TreeSet<Tile>();
 		food = new HashSet<Tile>();
 		orders = new HashSet<Order>();
-		unexplored = new TreeSet<Tile>(Tile.visionComparator());
+		ordersTarget = new TreeSet<Tile>();
+		unexplored = new TreeSet<Tile>();
 		water = new HashSet<Tile>();
-		outOfSight = new TreeSet<Tile>(Tile.visionComparator());//TODO check if comparator
+		//outOfSight = new TreeSet<Tile>(Tile.visionComparator());//TODO check if comparator
 		//borders = new TreeSet<Tile>();
-		setTiles = new TreeSet<Tile>(Tile.tileComparator());
+		setTiles = new TreeSet<Tile>();
 		map = initGameMap();
 
 		view = new Vision(setTiles, getViewRadius());
@@ -210,7 +213,8 @@ public class Game {
 			output.add(tempRow);
 			//setTiles.addAll(tempRow.parallelStream().collect(Collectors.toCollection(()->new TreeSet<Tile>(Tile.tileComparator()))));
 			setTiles.addAll(tempRow);
-			unexplored.addAll(tempRow.parallelStream().collect( Collectors.toCollection(() -> new TreeSet<Tile>(Tile.visionComparator()))));
+			//unexplored.addAll(tempRow.parallelStream().collect( Collectors.toCollection(() -> new TreeSet<Tile>(Tile.visionComparator()))));
+			unexplored.addAll(tempRow);
 		}
 
 		// ADDED "INTERNAL" VICINI
@@ -314,7 +318,7 @@ public class Game {
 		return map;
 	}
 
-	private static Tile getTile(int row, int col) {
+	public static Tile getTile(int row, int col) {
 		return map.get(row).get(col);
 	}
 
@@ -387,6 +391,7 @@ public class Game {
 		clearFood();
 		view.clearAllVision();//TODO
 		orders.clear();
+		ordersTarget.clear();
 	}
 
 	/**
@@ -440,7 +445,7 @@ public class Game {
 
 	public static void setVisible(Tile tile, boolean visible) {
 		if(visible)
-			getUnexplored().remove(tile);
+			unexplored.remove(tile);
 		tile.setVisible(visible);
 	}
 
@@ -449,16 +454,16 @@ public class Game {
 		curTile.setTypeWater();
 
 		water.add(curTile);
-		unexplored.remove(curTile);
+		
 	}
 
 	public void setAnt(int row, int col, int owner) {
 		Tile curTile = getTile(row, col);
-		
+
 		curTile.placeAnt(owner);
+
+
 		
-		
-		unexplored.remove(curTile);
 
 		if (owner == 0) {
 			myAnts.add(curTile);
@@ -482,7 +487,7 @@ public class Game {
 		curTile.setTypeLand();
 		curTile.placeFood();
 		food.add(curTile);
-		unexplored.remove(curTile);
+		
 	}
 
 	public void setDead(int row, int col, int owner) {
@@ -508,7 +513,7 @@ public class Game {
 		if(owner > numberEnemy)
 			Game.numberEnemy = owner;
 
-		unexplored.remove(curTile);
+		
 	}
 
 
@@ -555,13 +560,20 @@ public class Game {
 	 * @param direction direction in which to move my ant
 	 */
 	static public void issueOrder(Order order) {
-		Tile ant = order.getTile();
-		myAnts.remove(ant);
-		orderlyAnts.add(ant);
+		Tile o_ant = order.getTile();
+		Directions o_dir = order.getDirection();
 
-		orders.add(order);
-		if (!order.getDirection().equals(Directions.STAYSTILL))
-			System.out.println(order);
+		Tile dest = o_ant.getNeighbour().get(o_dir);
+
+		if(!ordersTarget.contains(dest)) {
+			ordersTarget.add(dest);
+			myAnts.remove(o_ant);
+			orderlyAnts.add(o_ant);
+
+			orders.add(order);
+			if (!order.getDirection().equals(Directions.STAYSTILL))
+				System.out.println(order);
+		}
 	}
 
 	/**
@@ -665,7 +677,7 @@ public class Game {
 	}
 
 	public void doExploration() {
-		new ExplorationAndMovement(getUnexplored(), getOutOfSight(),getOrderlyAnts());
+		new ExplorationAndMovement();
 
 	}
 
@@ -679,6 +691,29 @@ public class Game {
 				System.out.print(!colIt.next().isAccessible()? 'x': 'o');
 			}
 			System.out.print('\n');
+		}
+	}
+	
+	public static void printMapVision() {
+		Iterator<List<Tile>> rowIt = map.iterator();
+		while(rowIt.hasNext()) {
+			Iterator<Tile> colIt = rowIt.next().iterator();
+			while(colIt.hasNext()) {
+				System.out.print(colIt.next().getVisible());
+			}
+			System.out.print('\n');
+		}
+	}
+
+	public static void printNeigbour() {
+		Iterator<List<Tile>> rowIt = map.iterator();
+		while(rowIt.hasNext()) {
+			Iterator<Tile> colIt = rowIt.next().iterator();
+			while(colIt.hasNext()) {
+				Tile tile = colIt.next();
+				System.out.println(tile + " ->  " +tile.getNeighbour());
+			}
+
 		}
 	}
 

@@ -1,7 +1,6 @@
 package gathering;
 
 import java.util.Set;
-
 import game.Game;
 import game.Tile;
 import search.Search;
@@ -30,7 +29,13 @@ import search.Search;
 public class FoodCollection {
 
 	public FoodCollection(Set<Tile> foodTiles, Set<Tile> myAnts) {
+		
+		
+		
 		Search s = new Search(foodTiles, myAnts, null, false, true, false);
+		//Search s = new Search(myAnts, foodTiles, null, false, true, true); ???
+		//Search s = new Search(foodTiles, myAnts, null, false, false, true); //questo deve andare in attack
+		//Search s = new Search(myAnts, foodTiles, null, false, false, false);
 		s.adaptiveSearch();
 		Game.issueOrders(s.getOrders());
 	}

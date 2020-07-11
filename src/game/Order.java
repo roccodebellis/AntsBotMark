@@ -5,46 +5,43 @@ package game;
  * {@code t} e' caratterizzata da una {@link #row riga} e da una {@link #col colonna}.
  */
 public class Order {
-	
+
 	private Tile tile;
 
-    /**
-     * Direzione verso cui la formica deve effettuare lo spostamento.
-     */
-    private Directions direction;
+	/**
+	 * Direzione verso cui la formica deve effettuare lo spostamento.
+	 */
+	private Directions direction;
 
 	/**
-     * Crea un nuovo oggetto {@link Order} estrapolando da {@code t}
-     * la sua corrispettiva  {@link #row riga} e {@link #col colonna}.
-     * @param t {@link Tile} della mappa su cui si trova la mia formica
-     * @param direction {@link Directions direzione}e verso cui muovere la mia formica
-     */
-    public Order(Tile t, Directions direction) {
-    	this.setTile(t);
+	 * Crea un nuovo oggetto {@link Order} estrapolando da {@code t}
+	 * la sua corrispettiva  {@link #row riga} e {@link #col colonna}.
+	 * @param t {@link Tile} della mappa su cui si trova la mia formica
+	 * @param direction {@link Directions direzione}e verso cui muovere la mia formica
+	 */
+	public Order(Tile t, Directions direction) {
+		this.setTile(t);
 
-        this.direction = direction;
-    }
-    
-    private void setTile(Tile t) {
-		this.tile = t;
-		
+		this.direction = direction;
 	}
-    
-    public Order withOpponentDirection() {
-    	this.direction = this.direction.getOpponent();
-    	return this;
-    }
+
+	private void setTile(Tile t) {
+		this.tile = t;
+
+	}
+
+
 
 	/**
-     * <p>Genera la stringa contenente l'ordine da mandare al System Output.<br>
-     * La stringa avra' il seguente aspetto: "{@code o }{@link #row} {@link #col} {@link #direction}" 
-     * </p>
-     * {@inheritDoc}
-     */
-    @Override
-    public String toString() {
-        return "o " + getRow() + " " + getCol() + " " + direction;
-    }
+	 * <p>Genera la stringa contenente l'ordine da mandare al System Output.<br>
+	 * La stringa avra' il seguente aspetto: "{@code o }{@link #row} {@link #col} {@link #direction}" 
+	 * </p>
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return "o " + getRow() + " " + getCol() + " " + direction;
+	}
 
 	private int getCol() {
 		return tile.getCol();
@@ -57,7 +54,7 @@ public class Order {
 	public Tile getTile() {
 		return tile;
 	}
-	
+
 	public Directions getDirection() {
 		return direction;
 	}
@@ -65,9 +62,14 @@ public class Order {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
+		final int prime2 = 55;
+		final int prime3 = 11;
+
 		int result = 1;
 		result = prime * result + ((direction == null) ? 0 : direction.hashCode());
-		result = prime * result + ((tile == null) ? 0 : tile.hashCode());
+		result = prime2 * result + ((tile == null) ? 0 : tile.hashCode());
+		result +=  prime3* ((tile == null) ? 0 : tile.hashCode())* ((direction == null) ? 0 : direction.hashCode());
+
 		return result;
 	}
 
@@ -89,10 +91,27 @@ public class Order {
 			return false;
 		return true;
 	}
-	
+
 	public Tile getTarget() {
 		return Game.getTile(getTile(), getDirection().getOffset());
 	}
-	
-	
+
+	public Order withNext() {
+		this.direction = direction.getNext();
+		return this;
+	}
+
+	public Order withOpponentDirection() {
+		this.direction = this.direction.getOpponent();
+		return this;
+	}
+
+	public Order withOpponentNext() {
+		this.direction = direction.getOpponent().getNext();
+		return this;
+	}
+
+
+
+
 }
