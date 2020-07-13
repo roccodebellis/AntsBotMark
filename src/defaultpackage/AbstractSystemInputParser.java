@@ -104,6 +104,7 @@ public abstract class AbstractSystemInputParser extends AbstractSystemInputReade
         if (line.equals(READY)) { //PRIMO TURNO
         	start = System.currentTimeMillis();
             parseSetup(input);
+            //doTurn();
             finishTurn();
             input.clear();
             //System.out.println(System.currentTimeMillis()-start);
