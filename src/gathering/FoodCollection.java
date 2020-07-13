@@ -1,7 +1,9 @@
 package gathering;
 
+import java.util.HashSet;
 import java.util.Set;
 import game.Game;
+import game.Order;
 import game.Tile;
 import search.Search;
 //import java.util.Set;
@@ -37,6 +39,14 @@ public class FoodCollection {
 		//Search s = new Search(foodTiles, myAnts, null, false, false, true); //questo deve andare in attack
 		//Search s = new Search(myAnts, foodTiles, null, false, false, false);
 		s.adaptiveSearch();
-		Game.issueOrders(s.getOrders());
+		
+		Set<Order> withoutHill = new HashSet<Order>();
+		s.getOrders().parallelStream().forEachOrdered(o -> {
+			if (!Game.getMyHills().contains(o.getOrderedTile())) {
+				withoutHill.add(o);
+			}
+		});
+		Game.issueOrders(withoutHill);
+		//Game.issueOrders(s.getOrders());
 	}
 }
