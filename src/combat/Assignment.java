@@ -140,11 +140,11 @@ public class Assignment implements Comparable<Assignment>{
 			moves.parallelStream().forEach(move ->{ 
 				IntStream.range(1, newEnemyAnts.size()+1).parallel().forEachOrdered( i  -> { 
 					if(newEnemyAnts.get(i).remove(move.getOrigin()))
-						newEnemyAnts.get(i).add(move.getTile());
+						newEnemyAnts.get(i).add(move.getOrderedTile());
 				});
 			});
 		else {
-			moves.parallelStream().forEach(move ->{ newAnts.remove(move.getOrigin()); newAnts.add(move.getTile());});
+			moves.parallelStream().forEach(move ->{ newAnts.remove(move.getOrigin()); newAnts.add(move.getOrderedTile());});
 			antsMove = moves;
 		}
 		return new Assignment(currentTurn+1,  newAnts, antsHills, newEnemyAnts, enemyHills, foodTiles, isEnemyMoves ? false : true);

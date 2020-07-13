@@ -51,7 +51,7 @@ public class Order {
 		return tile.getRow();
 	}
 
-	public Tile getTile() {
+	public Tile getOrigin() {
 		return tile;
 	}
 
@@ -92,8 +92,8 @@ public class Order {
 		return true;
 	}
 
-	public Tile getTarget() {
-		return Game.getTile(getTile(), getDirection().getOffset());
+	public Tile getOrderedTile() {
+		return Game.getTile(getOrigin(), getDirection().getOffset());
 	}
 
 	public Order withNext() {
