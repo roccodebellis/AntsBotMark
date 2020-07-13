@@ -2,7 +2,6 @@ package combat;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -13,7 +12,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import game.Game;
 import game.Order;
 import game.Tile;
@@ -141,12 +139,12 @@ public class Assignment implements Comparable<Assignment>{
 		if(isEnemyMoves)
 			moves.parallelStream().forEach(move ->{ 
 				IntStream.range(1, newEnemyAnts.size()+1).parallel().forEachOrdered( i  -> { 
-					if(newEnemyAnts.get(i).remove(move.getTile()))
-						newEnemyAnts.get(i).add(move.getTarget());
+					if(newEnemyAnts.get(i).remove(move.getOrigin()))
+						newEnemyAnts.get(i).add(move.getTile());
 				});
 			});
 		else {
-			moves.parallelStream().forEach(move ->{ newAnts.remove(move.getTile()); newAnts.add(move.getTarget());});
+			moves.parallelStream().forEach(move ->{ newAnts.remove(move.getOrigin()); newAnts.add(move.getTile());});
 			antsMove = moves;
 		}
 		return new Assignment(currentTurn+1,  newAnts, antsHills, newEnemyAnts, enemyHills, foodTiles, isEnemyMoves ? false : true);
