@@ -83,11 +83,13 @@ public class MyBot extends Bot {
 		//2 COMBAT SIMULATION
 		//state.doCombat();
 		//3 FOOD COLLECTION
-		//state.doFood();
-		//2.5\3.5 HILL ATTACK AND DEFENSE 
-		//state.doDefense();
+		state.doFood();
 		//4 EXPLORATION AND MOVEMENTS
-		state.doExploration();	
+		state.doExploration();
+		//2.5\3.5 HILL ATTACK AND DEFENSE 
+		state.doDefense();
+		
+		
 		//Game.printMapVision();
 		//Game.printNeigbour();
 	}

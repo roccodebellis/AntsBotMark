@@ -560,7 +560,7 @@ public class Game {
 	 * @param direction direction in which to move my ant
 	 */
 	static public void issueOrder(Order order) {
-		Tile o_ant = order.getTile();
+		Tile o_ant = order.getOrigin();
 		Directions o_dir = order.getDirection();
 
 		Tile dest = o_ant.getNeighbour().get(o_dir);
@@ -705,7 +705,7 @@ public class Game {
 		}
 	}
 
-	public static void printNeigbour() {
+	public static void printNeighbour() {
 		Iterator<List<Tile>> rowIt = map.iterator();
 		while(rowIt.hasNext()) {
 			Iterator<Tile> colIt = rowIt.next().iterator();

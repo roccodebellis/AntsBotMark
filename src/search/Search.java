@@ -93,7 +93,6 @@ public class Search {
 
 	private HashSet<Tile> orderTile;
 
-
 	public Search(final Set<Tile> sources, final Set<Tile> targets, Integer radius, Boolean heuristic, Boolean search_from_one_source, Boolean reverse) {
 		this.sources = sources;
 		this.targets = new HashSet<Tile>(targets);
@@ -188,7 +187,7 @@ public class Search {
 
 		Order o = new Order(origin, direction);
 
-		if(orderTile.add(o.getTarget())) {
+		if(orderTile.add(o.getOrderedTile())) {
 			this.orders.add(o);
 			return true;
 		} else
