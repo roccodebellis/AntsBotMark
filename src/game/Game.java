@@ -104,8 +104,11 @@ public class Game {
 	 * Insieme di {@link Orders ordini} assegnati ad una o piu' {@link #myAnts formiche} dell'agente.
 	 */
 	private static Set<Order> orders;
+	
+	/**
+	 * 
+	 */
 	private static Set<Tile> ordersTarget;
-
 
 	/**
 	 * Insieme contentente le {@link Tile tile} inesplorate.
@@ -141,6 +144,10 @@ public class Game {
 	 */
 	private Set<Order> getOrders() {
 		return orders;
+	}
+	
+	public static Set<Tile> getOrdersTarget() {
+		return ordersTarget;
 	}
 
 	private static int numberEnemy;

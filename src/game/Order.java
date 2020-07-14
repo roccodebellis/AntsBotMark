@@ -4,7 +4,7 @@ package game;
  * {@code t} verso una determinata {@link Directions direzione}, {@link #direction}.</p>
  * {@code t} e' caratterizzata da una {@link #row riga} e da una {@link #col colonna}.
  */
-public class Order {
+public class Order implements Comparable<Order>{
 
 	private Tile tile;
 
@@ -109,6 +109,11 @@ public class Order {
 	public Order withOpponentNext() {
 		this.direction = direction.getOpponent().getNext();
 		return this;
+	}
+
+	@Override
+	public int compareTo(Order o) {
+		return tile.compareTo(o.tile);
 	}
 
 

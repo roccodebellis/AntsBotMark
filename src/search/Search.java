@@ -324,7 +324,7 @@ public class Search {
 			}
 		}
 		this.pathSources = new TreeMap<Tile,Tile>();
-		this.pathSources.putAll(	tileSources.entrySet().parallelStream().collect(Collectors.toMap(e -> e.getKey().getTile(), e -> e.getValue().getTile())));
+		this.pathSources.putAll(tileSources.entrySet().parallelStream().collect(Collectors.toMap(e -> e.getKey().getTile(), e -> e.getValue().getTile())));
 		//computeOrders(); TODO
 		return this.results;
 		//return results, tileSources, directionFromSource, directionFromTarget;
@@ -509,5 +509,10 @@ public class Search {
 		//computeOrders(); cambiare in base a come vengono impostati target e source
 		return this.results;
 	}
+	
+	public HashSet<Tile> getOrderTile() {
+		return orderTile;
+	}
+
 }
 
