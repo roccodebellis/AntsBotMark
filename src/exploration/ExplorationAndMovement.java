@@ -42,9 +42,9 @@ public class ExplorationAndMovement {
 			Set<Order> orders = s.getOrders();
 
 			Set<Order> withoutHill = doNotStepOnMyHills(orders);
-			Game.issueOrders(withoutHill);
-
-			// Game.issueOrders(orders);
+			if(!withoutHill.isEmpty())
+				Game.issueOrders(withoutHill);
+			//Game.issueOrders(orders);
 
 			unexplored.removeAll(targetCompleted);
 
@@ -65,7 +65,6 @@ public class ExplorationAndMovement {
 			Game.issueOrders(withoutHill);
 
 			// Game.issueOrders(orders);
-
 			outOfSight.removeAll(targetCompleted);
 		}
 		return Game.getMyAnts().isEmpty();
@@ -85,20 +84,21 @@ public class ExplorationAndMovement {
 
 		int size = targets.size();
 
-		// Boolean pathFounded = false;
-		// int priorityCount = 0;
-		
-		//TODO
-		/*  do {
-			 computeOrders(targets.get(curTarget++));
-		 } while (curTarget!=size);
-		 */
-		
-		
 		int countPathFounded = 1;
-		// IndexOutOfBoundsException: Index: 2, Size: 2 PERCHE'?? l'ha dato solo una volta dopo le modifiche
+		//TODO
+		// IndexOutOfBoundsException: Index: 2, Size: 2 PERCHE'?? l'ha dato due volte dopo le modifiche
+		//non lo da' sempre, solo quando ci sono troppe formiche ed e' in vantaggio
 		//le altre volte ha funzionato benissimo
-		while (!Game.getMyAnts().isEmpty() && !targets.get(curTarget).isEmpty() && countPathFounded != 0) {
+		//da 52 formiche in su eccezione
+		//da 43 in su time-out
+		
+		//while (!targets.get(curTarget).isEmpty() && countPathFounded != 0) {
+		
+		while (!Game.getMyAnts().isEmpty() && countPathFounded != 0) {	
+			//0%3= 0
+			//1%3= 1
+			//2%3= 2
+			//3%3= 0
 			curTarget = curTarget % size;
 			if (curTarget == 0)
 				countPathFounded = 0;
@@ -133,12 +133,14 @@ public class ExplorationAndMovement {
 			Tile ant = antsItr.next();
 			Set<Tile> targetsWithoutAnt = new HashSet<Tile>(targets);
 
-			targetsWithoutAnt.remove(ant);
+			Tile curr = ant;//fatto per via di CuncurrentException
+			
+			targetsWithoutAnt.remove(curr);
 
 			// targets.remove(ant);
 
 			Set<Tile> singoletto = new TreeSet<Tile>();
-			singoletto.add(ant);
+			singoletto.add(curr);
 
 			Search s = new Search(singoletto, targets, null, false, false, false);// da singoletto alla formica piu'
 																					// vicina non il contrario
@@ -152,13 +154,13 @@ public class ExplorationAndMovement {
 				
 				Order o = orderIt.next();
 				Directions dir = o.getDirection();
-				
-				if (ant.getNeighbour().containsKey(dir.getOpponent()))
+				//TODO da controllare ma penso stia bene
+				if (curr.getNeighbour().containsKey(dir.getOpponent()))
 					toIssue.add(o.withOpponentDirection());
-				else if(ant.getNeighbour().containsKey(dir.getOpponent().getNext()))
-					toIssue.add(new Order(ant, dir.getOpponent().getNext()));
-				else if(ant.getNeighbour().containsKey(dir.getOpponent().getNext().getOpponent()))
-					toIssue.add(new Order(ant, dir.getOpponent().getNext().getOpponent()));
+				else if(curr.getNeighbour().containsKey(dir.getOpponent().getNext()))
+					toIssue.add(new Order(curr, dir.getOpponent().getNext()));
+				else if(curr.getNeighbour().containsKey(dir.getOpponent().getNext().getOpponent()))
+					toIssue.add(new Order(curr, dir.getOpponent().getNext().getOpponent()));
 				toIssue = doNotStepOnMyHills(toIssue);
 				Game.issueOrders(toIssue);
 			}
@@ -181,7 +183,11 @@ public class ExplorationAndMovement {
 			// Search s = new Search(targets, Game.getMyAnts(), null, false, false, true);
 			//non va bene quella di sopra, se dobbiamo utilizzare quella dobbiamo farci restituire
 			//le tile di order
+			
 			Set<Tile> results = s.adaptiveSearch();
+			/*s.adaptiveSearch();
+			Set<Tile> results = s.getOrderTile(); */
+			
 			Set<Order> orders = s.getOrders();
 			if (orders.isEmpty())
 				pathFounded = false;
