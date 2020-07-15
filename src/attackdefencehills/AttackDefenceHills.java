@@ -28,7 +28,7 @@ public class AttackDefenceHills {
 
 		int enemies = 0;
 		
-		Iterator<Tile> hillIt = Game.getMyHills().iterator();
+		/*Iterator<Tile> hillIt = Game.getMyHills().iterator();
 		while(hillIt.hasNext()) {
 			Tile h = hillIt.next();
 			int size;
@@ -37,7 +37,12 @@ public class AttackDefenceHills {
 			offset.retainAll(Game.getEnemyAnts());
 			if(offset.size()<size)
 				enemies++;
-		}
+		}*/
+	
+		//bisogna capire quale sia il piu' veloce tra quello a commento e quello in basso
+		
+		Search enSearch = new Search(Game.getMyHills(), Game.getEnemyAnts(), Game.getViewRadius(), false, false, false);
+		enemies = enSearch.adaptiveSearch().size();
 		
 		if (enemies!=0) {
 			if (Game.getMyHills().size() != 0)
