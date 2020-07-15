@@ -113,10 +113,7 @@ public class Order implements Comparable<Order>{
 
 	@Override
 	public int compareTo(Order o) {
-		return tile.compareTo(o.tile);
+		return this.getOrderedTile().compareTo(o.getOrderedTile());
 	}
-
-
-
 
 }

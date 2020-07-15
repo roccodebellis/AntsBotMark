@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import attackdefensehills.AttackDefenseHills;
+//import attackdefensehills.AttackDefenseHills;
 import game.Directions;
 import game.Game;
 import game.Order;
@@ -89,14 +90,16 @@ public class MyBot extends Bot {
 		//3 FOOD COLLECTION
 		state.doFood();
 		//2.5\3.5 HILL ATTACK AND DEFENSE
-		AttackDefenseHills.defense(Game.getMyAnts(), Game.getMyHills(), Game.getEnemyAnts());
+		//togliere static
+		AttackDefenseHills.attack(Game.getMyAnts(), Game.getEnemyHills());
+		AttackDefenseHills.defense(Game.getMyHills());
 		
 		
 		
 		//4 EXPLORATION AND MOVEMENTS
 		state.doExploration();
 		
-		AttackDefenseHills.attack(Game.getMyAnts(), Game.getEnemyHills());
+		
 		
 		
 		 

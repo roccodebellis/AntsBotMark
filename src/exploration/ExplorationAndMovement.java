@@ -23,11 +23,11 @@ public class ExplorationAndMovement {
 		//le parentesi graffe le ho lasciate in modo che se dobbiamo provare
 		//singoli task ci basta mettere a commento cio' che non serve
 		if(!toUnexploredArea(Game.getUnexplored())) {}
+
 		if(!toInvisibleArea(Game.getOutOfSight())) {}
 		if (!toPriorityTarget()) {
-		}
-		spreadOut(Game.getOrderlyAnts());
-
+		
+		spreadOut(Game.getOrderlyAnts());}
 	}
 
 	private boolean toUnexploredArea(Set<Tile> unexplored) {
@@ -57,14 +57,14 @@ public class ExplorationAndMovement {
 			// Search s = new Search(myAnts, outOfSight, null, false, false, false);
 			// Search s = new Search(outOfSight, Game.getMyAnts(), null, false, false,
 			// true); //sembra non funzionare
-			Search s = new Search(outOfSight, Game.getMyAnts(), null, false, true, false);
+			Search s = new Search(Game.getMyAnts(), outOfSight, null, false, false, false);
 			Set<Tile> targetCompleted = s.adaptiveSearch();
 			Set<Order> orders = s.getOrders();
 
 			Set<Order> withoutHill = doNotStepOnMyHills(orders);
 			Game.issueOrders(withoutHill);
 
-			// Game.issueOrders(orders);
+			//Game.issueOrders(orders);
 			outOfSight.removeAll(targetCompleted);
 		}
 		return Game.getMyAnts().isEmpty();
@@ -179,7 +179,9 @@ public class ExplorationAndMovement {
 		while (!Game.getMyAnts().isEmpty() && !targets.isEmpty() && pathFounded) {
 
 			// io gli farei fare un A* quindi heuristic = true, che dici?
-			Search s = new Search(Game.getMyAnts(), targets, null, false, false, false);
+			//Search s = new Search(Game.getMyAnts(), targets, null, true, false, false);
+			
+			Search s = new Search(Game.getMyAnts(), targets, null, false, false, false);//questo funziona bene
 			// Search s = new Search(targets, Game.getMyAnts(), null, false, false, true);
 			//non va bene quella di sopra, se dobbiamo utilizzare quella dobbiamo farci restituire
 			//le tile di order
