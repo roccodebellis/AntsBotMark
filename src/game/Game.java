@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import attackdefencehills.AttackDefenceHills;
 //import attackdefensehills.AttackDefenseHills;
 import combat.CombatSimulation;
 import exploration.ExplorationAndMovement;
@@ -679,9 +680,9 @@ public class Game {
 
 	}
 
-	/*public void doDefense() {
-		new AttackDefenseHills(getMyAnts(), getMyHills(), getEnemyAnts(), getEnemyHills());
-	}*/
+	public void doDefence() {
+		new AttackDefenceHills();
+	}
 
 	public void doExploration() {
 		new ExplorationAndMovement();

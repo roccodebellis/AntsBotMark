@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import attackdefensehills.AttackDefenseHills;
+import attackdefencehills.AttackDefenceHills;
 //import attackdefensehills.AttackDefenseHills;
 import game.Directions;
 import game.Game;
@@ -69,6 +69,7 @@ public class MyBot extends Bot {
 
 	@Override //DA FARW
 	public void doTurn() {
+
 		Game state = getGame();
 		/*
 		Game.getMyHills().parallelStream().forEachOrdered(h -> {
@@ -90,9 +91,11 @@ public class MyBot extends Bot {
 		//3 FOOD COLLECTION
 		state.doFood();
 		//2.5\3.5 HILL ATTACK AND DEFENSE
-		//togliere static
-		AttackDefenseHills.attack(Game.getMyAnts(), Game.getEnemyHills());
-		AttackDefenseHills.defense(Game.getMyHills());
+		
+		AttackDefenceHills.attack();
+		AttackDefenceHills.defence();//da migliorare la difesa, attacco va bene
+		
+		
 		
 		
 		

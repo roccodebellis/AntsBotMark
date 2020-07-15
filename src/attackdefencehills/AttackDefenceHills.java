@@ -1,4 +1,4 @@
-package attackdefensehills;
+package attackdefencehills;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -11,23 +11,24 @@ import game.Tile;
 import search.Search;
 import vision.Offsets;
 
-public class AttackDefenseHills {
+public class AttackDefenceHills {
 
-	/*public AttackDefenseHills(Set<Tile> myAnts, Set<Tile> myHills, Set<Tile> enemy, Set<Tile> enemyHills) {
-		defense(myAnts, myHills, enemy);
-		attack(myAnts, enemyHills);
+	/*public AttackDefenceHills() {
+		attack();
+		defence();
+		
 
 	}*/
 
 	// c'e' qualcosa che non va
 	// entrano in difesa anche se non ci sono formiche nemiche in vista
 	// da controllare
-	public static void defense(Set<Tile> myHills) {
+	public static void defence() {
 		int avaiableAnts = Game.getMyAnts().size();
 
 		int enemies = 0;
 		
-		Iterator<Tile> hillIt = myHills.iterator();
+		Iterator<Tile> hillIt = Game.getMyHills().iterator();
 		while(hillIt.hasNext()) {
 			Tile h = hillIt.next();
 			int size;
@@ -39,10 +40,10 @@ public class AttackDefenseHills {
 		}
 		
 		if (enemies!=0) {
-			if (myHills.size() != 0)
+			if (Game.getMyHills().size() != 0)
 
 			{
-				double antsForHill = avaiableAnts / (myHills.size());// sembra dare prestazioni migliori senza +1
+				double antsForHill = avaiableAnts / (Game.getMyHills().size());// sembra dare prestazioni migliori senza +1
 
 				Set<Tile> defender = new TreeSet<Tile>();
 
@@ -97,7 +98,7 @@ public class AttackDefenseHills {
 					Boolean directionFounded = false;
 					Tile hill;
 					do {
-						Iterator<Tile> it = myHills.iterator();
+						Iterator<Tile> it = Game.getMyHills().iterator();
 						if (it.hasNext()) {
 							hill = it.next();
 							Tile target;
@@ -141,13 +142,16 @@ public class AttackDefenseHills {
 				Search s = new Search(defender, Game.getMyAnts(), null, false, true, false);
 				s.adaptiveSearch();
 				
-				Game.issueOrders(s.getOrders()); // FIXME controllare se sta cosa funziona, nel caso da l'ordine al
+				//Game.issueOrders(s.getOrders()); // FIXME controllare se sta cosa funziona, nel caso da l'ordine al
 													// contrario
+				
+				Set<Order> withoutHill = doNotStepOnMyHills(s.getOrders());
+				Game.issueOrders(withoutHill);
 			}
 		}
 	}
 
-	public static void attack(Set<Tile> myAnts, Set<Tile> enemyHills) {
+	public static void attack() {
 		// questa ricerca e' giusta
 		Search s = new Search(Game.getEnemyHills(), Game.getMyAnts(), null, false, false, true);
 		s.adaptiveSearch();
