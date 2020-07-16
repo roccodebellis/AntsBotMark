@@ -38,10 +38,7 @@ public class Offsets extends HashSet<Offset> {
 	}
 	
 	public Offsets() {
-	}
-	
-	public void addOffset(Offset o) {
-		add(o);
+		computedOffsets.put(-5, defenceHillOffsets());
 	}
 	
 	/**
@@ -73,6 +70,15 @@ public class Offsets extends HashSet<Offset> {
 			}
 		}
 		computedOffsets.put(radius, visionOffsets);
+	}
+	
+	private Offsets defenceHillOffsets() {
+		Offsets defenceTargets = new Offsets();
+		defenceTargets.add(new Offset(1,1));
+		defenceTargets.add(new Offset(1,-1));
+		defenceTargets.add(new Offset(-1,1));
+		defenceTargets.add(new Offset(-1,-1));
+		return defenceTargets;
 	}
 	
 	private static final long serialVersionUID = 7748104783701050648L;

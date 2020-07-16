@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+
 import game.Game;
 import game.Tile;
 import search.Node;
@@ -46,12 +48,35 @@ public class Vision {
 	private Set<Tile> mapTiles;
 	
 	private Map<Node,Tile> enemyToAnt;
+	
+	private static Map<Tile,Set<Tile>> hillDefenceTargets; 
 
 	public Vision(Set<Tile> mapTiles, int viewRadius){
 		this.mapTiles = mapTiles;
 		visionOffsets = new Offsets((int) Math.sqrt(viewRadius));
 		inVision = new HashSet<Tile>();
 		enemyToAnt = new TreeMap<Node,Tile>();
+		hillDefenceTargets = new TreeMap<Tile,Set<Tile>>();
+	}
+	
+	public void addHillToDefend(Tile hill) {
+		hillDefenceTargets.put(hill, Game.getTiles(hill, new Offsets(-5)));
+	}
+	
+	private void removeDefenceTargets(Tile hill, Tile target) {
+		hillDefenceTargets.get(hill).remove(target);
+	}
+	
+	public static Set<Tile> getHillDefenceTargets(Tile hill) {
+		return hillDefenceTargets.get(hill);
+	}
+	
+	public Set<Tile> getHillsToDefend() {
+		return hillDefenceTargets.entrySet().parallelStream().map(entry -> entry.getKey()).collect(Collectors.toSet());
+	}
+	
+	public void removeHillToDefend(Tile hill) {
+		hillDefenceTargets.remove(hill);
 	}
 
 	public void clearAllVision(){
@@ -99,4 +124,6 @@ public class Vision {
 	public Set<Tile> getOutOfSight(){
 		return outOfSight;
 	}
+
+	
 }

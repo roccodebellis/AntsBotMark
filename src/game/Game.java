@@ -31,6 +31,8 @@ import vision.Vision;
  *
  */
 public class Game {
+	
+	
 
 	/**
 	 * Numero di righe della mappa del gioco.
@@ -105,7 +107,7 @@ public class Game {
 	 * Insieme di {@link Orders ordini} assegnati ad una o piu' {@link #myAnts formiche} dell'agente.
 	 */
 	private static Set<Order> orders;
-	
+
 	/**
 	 * 
 	 */
@@ -146,7 +148,7 @@ public class Game {
 	private Set<Order> getOrders() {
 		return orders;
 	}
-	
+
 	public static Set<Tile> getOrdersTarget() {
 		return ordersTarget;
 	}
@@ -166,9 +168,8 @@ public class Game {
 	 * @param attackRadius2 squared attack radius of each ant
 	 * @param spawnRadius2  squared spawn radius of each ant
 	 */
-	public Game(long loadTime, long turnTime, int rows, int cols, int turns, int viewRadius2, int attackRadius2,
+	public Game(int loadTime, int turnTime, int rows, int cols, int turns, int viewRadius2, int attackRadius2,
 			int spawnRadius2) {
-
 		time = new Timing(loadTime,turnTime,turns);
 
 		setRows(rows);
@@ -462,7 +463,7 @@ public class Game {
 		curTile.setTypeWater();
 
 		water.add(curTile);
-		
+
 	}
 
 	public void setAnt(int row, int col, int owner) {
@@ -471,7 +472,7 @@ public class Game {
 		curTile.placeAnt(owner);
 
 
-		
+
 
 		if (owner == 0) {
 			myAnts.add(curTile);
@@ -495,7 +496,7 @@ public class Game {
 		curTile.setTypeLand();
 		curTile.placeFood();
 		food.add(curTile);
-		
+
 	}
 
 	public void setDead(int row, int col, int owner) {
@@ -521,7 +522,7 @@ public class Game {
 		if(owner > numberEnemy)
 			Game.numberEnemy = owner;
 
-		
+
 	}
 
 
@@ -546,10 +547,15 @@ public class Game {
 		return getTile(row, col);
 	}
 
+	/**
+	 * NON RESTITUISCE LE TILE DI ACQUA
+	 * 
+	 * @param tile
+	 * @param offsets
+	 * @return
+	 */
 	public static Set<Tile> getTiles(Tile tile, Offsets offsets) {
-		Set<Tile> inVisionOfThisTile = new HashSet<Tile>();
-		offsets.parallelStream().forEachOrdered(offset -> inVisionOfThisTile.add(getTile(tile, offset)));
-		return inVisionOfThisTile;
+		return offsets.parallelStream().map(offset -> getTile(tile, offset)).filter(t -> t.isAccessible()).collect(Collectors.toCollection(HashSet<Tile>::new));
 	}
 
 	/**
@@ -559,6 +565,16 @@ public class Game {
 		long start = Timing.getCurTime();		
 		view.setVision(myAnts);
 		time.update(time.getVisionTime(), start);
+
+		if(time.getTurnTime()==1) {
+			//aggiungere hill da difendere
+			getMyHills().parallelStream().forEachOrdered(hill -> view.addHillToDefend(hill));
+		} else {
+			//rimuovi hills distrutti
+			Set<Tile> hillsDown = view.getHillsToDefend();
+			hillsDown.removeAll(getMyHills());
+			hillsDown.parallelStream().forEachOrdered(hill -> view.removeHillToDefend(hill));
+		}
 	}
 
 	/**
@@ -701,7 +717,7 @@ public class Game {
 			System.out.print('\n');
 		}
 	}
-	
+
 	public static void printMapVision() {
 		Iterator<List<Tile>> rowIt = map.iterator();
 		while(rowIt.hasNext()) {
@@ -725,4 +741,5 @@ public class Game {
 		}
 	}
 
+	
 }

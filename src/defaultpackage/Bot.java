@@ -90,5 +90,6 @@ public abstract class Bot extends AbstractSystemInputParser {
 	@Override
 	public void afterUpdate() {
 		state.doVision();
+		
 	}
 }

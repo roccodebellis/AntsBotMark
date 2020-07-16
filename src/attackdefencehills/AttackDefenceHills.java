@@ -1,24 +1,28 @@
 package attackdefencehills;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+
 import game.Directions;
 import game.Game;
 import game.Order;
 import game.Tile;
+import search.Node;
 import search.Search;
 import vision.Offsets;
+import vision.Vision;
 
 public class AttackDefenceHills {
 
-	/*public AttackDefenceHills() {
-		attack();
+	public AttackDefenceHills() {
 		defence();
-		
-
-	}*/
+		attack();
+	}
 
 	// c'e' qualcosa che non va
 	// entrano in difesa anche se non ci sono formiche nemiche in vista
@@ -26,134 +30,120 @@ public class AttackDefenceHills {
 	public static void defence() {
 		int avaiableAnts = Game.getMyAnts().size();
 
-		int enemies = 0;
-		
-		/*Iterator<Tile> hillIt = Game.getMyHills().iterator();
-		while(hillIt.hasNext()) {
-			Tile h = hillIt.next();
-			int size;
-			Set<Tile> offset = Game.getTiles(h, new Offsets(Game.getViewRadius()));
-			size = offset.size();
-			offset.retainAll(Game.getEnemyAnts());
-			if(offset.size()<size)
-				enemies++;
-		}*/
-	
-		//bisogna capire quale sia il piu' veloce tra quello a commento e quello in basso
-		
-		Search enSearch = new Search(Game.getMyHills(), Game.getEnemyAnts(), Game.getViewRadius(), false, false, false);
-		enemies = enSearch.adaptiveSearch().size();
-		
-		if (enemies!=0) {
-			if (Game.getMyHills().size() != 0)
+		Map<Tile, TreeSet<Node>> enemiesForHills = new HashMap<Tile,TreeSet<Node>>();
 
-			{
-				double antsForHill = avaiableAnts / (Game.getMyHills().size());// sembra dare prestazioni migliori senza +1
+		Set<Tile> defender = new TreeSet<Tile>();
 
-				Set<Tile> defender = new TreeSet<Tile>();
 
-				if (antsForHill > 0) {
-					Game.getMyHills().parallelStream().forEachOrdered(hill -> {
-						Directions sentinel = Directions.random();
-						defender.add(Game.getTile(hill, sentinel.getDiagonal()));
+		Game.getMyHills().forEach(curHill -> {
+			Set<Tile> tempSet = new TreeSet<Tile>();
+			tempSet.add(curHill);
+			Search enSearch = new Search(tempSet, Game.getEnemyAnts(), Game.getViewRadius(), false, false, false);
+			tempSet.clear();
+			tempSet = enSearch.adaptiveSearch();
 
-						// ricerca la formica nemica piu' vicina
-						Iterator<Tile> enemyItr = Game.getEnemyAnts().iterator();
+			enemiesForHills.put(curHill, tempSet.parallelStream().map(e -> new Node(e, curHill)).collect(Collectors.toCollection(TreeSet<Node>::new)));
+		});
 
-						if (enemyItr.hasNext()) {
-							Tile minTarget = enemyItr.next();
-							int minDist = Game.getDistance(hill, minTarget);
 
-							while (enemyItr.hasNext()) {
-								Tile next = enemyItr.next();
-								int nextDist = Game.getDistance(hill, next);
-								if (nextDist < minDist) {
-									minTarget = next;
-									minDist = nextDist;
-								}
+
+		if (enemiesForHills.size() != 0) {
+			double antsForHill = avaiableAnts / (enemiesForHills.size());
+
+			if (antsForHill >= 1) {
+				enemiesForHills.entrySet().parallelStream().forEachOrdered(enemiesForHill -> {
+
+					Tile hill = enemiesForHill.getKey();
+					TreeSet<Node> enemies = enemiesForHill.getValue();
+					if(enemies.size()>0) {
+						Set<Tile> defendHillTile = Vision.getHillDefenceTargets(hill);
+
+						Iterator<Tile> defIt = defendHillTile.iterator();
+						if(defIt.hasNext())
+							defender.add(defIt.next());
+
+						int minDist = enemies.first().getHeuristicValue();
+						if(defIt.hasNext() && antsForHill >= 4 && minDist < Game.getViewRadius()-7)//PARAMETER
+							defender.add(defIt.next());
+						if (defIt.hasNext() && antsForHill >= 3 && minDist < Game.getAttackRadius() + 3)
+							defender.add(defIt.next());
+						if (defIt.hasNext() && antsForHill >= 2 && minDist < Game.getAttackRadius())
+							defender.add(defIt.next());
+
+					}
+				});
+
+			} /*else if (avaiableAnts > 0) {
+
+				//TODO da controllare, semba funzionare ma ad una certa ha dato timeout non vorrei fosse
+				//per colpa di questo controllo
+				Boolean directionFounded = false;
+				Tile hill;
+				do {
+					Iterator<Tile> it = Game.getMyHills().iterator();
+					if (it.hasNext()) {
+						hill = it.next();
+						Tile target;
+						Directions dir = Directions.random();
+						int i = 5;
+						do {
+							target = Game.getTile(hill, dir.getDiagonal());
+							if (Game.getOrdersTarget().contains(target)) {
+								dir = Directions.random();
+								directionFounded = false;
+								i--;
+							}else {
+								i=0;
+								directionFounded = true;
 							}
-							// >5
-							if (antsForHill > 3 && minDist < Game.getViewRadius())// era troppo alto viewradius,
-																						// richiamava
-																						// troppe formiche
-								defender.add(Game.getTile(hill, sentinel.getOpponent().getDiagonal()));
-							if (antsForHill > 2 && minDist < Game.getAttackRadius() + 3)
-								defender.add(Game.getTile(hill, sentinel.getNext().getDiagonal()));
-							if (antsForHill > 1 && minDist < Game.getAttackRadius())
-								defender.add(Game.getTile(hill, sentinel.getOpponent().getNext().getDiagonal()));
-							// anche cosi' buone prestazioni
-							/*
-							 * if(antsForHill>5 && minDist < Game.getViewRadius()-37)//era troppo alto
-							 * viewradius, richiamava troppe formiche
-							 * defender.add(Game.getTile(hill,sentinel.getOpponent().getDiagonal()));
-							 * if(antsForHill>2 && minDist < Game.getAttackRadius()+5)
-							 * defender.add(Game.getTile(hill,sentinel.getNext().getDiagonal()));
-							 * if(antsForHill>1 && minDist < Game.getAttackRadius()+1)
-							 * defender.add(Game.getTile(hill,sentinel.getOpponent().getNext().getDiagonal()
-							 * ));
-							 */
+						} while (i != 0);
+
+						if (directionFounded == false && it.hasNext())
+							continue;
+						else if (directionFounded == false && !it.hasNext())
+							break;
+						else if (directionFounded == true) {
+							defender.add(Game.getTile(hill, dir.getDiagonal()));
+							// difendi almeno un nido
+							if (antsForHill > 1) // TODO non abbiamo cercato la formica vicina
+								//lo fa la ricerca, non c'e' bisogno secondo me
+								defender.add(Game.getTile(hill, dir.getOpponent().getDiagonal()));
 						}
+					}
+				} while (!directionFounded);
+			}
+			/*
+			 * Directions sentinel = Directions.random(); Tile hill =
+			 * myHills.iterator().next(); //difendi almeno un nido
+			 * defender.add(Game.getTile(hill,sentinel.getDiagonal()));
+			 * 
+			 * if(antsForHill>1) //TODO non abbiamo cercato la formica vicina
+			 * defender.add(Game.getTile(hill,sentinel.getOpponent().getDiagonal()));
+			 */
+			Set<Order> withoutHill = null;
+			try {
+			Search s = new Search(defender, Game.getMyAnts(), null, false, true, false);
+			s.adaptiveSearch();
 
-					});
+			
+			//Game.issueOrders(s.getOrders()); // FIXME controllare se sta cosa funziona, nel caso da l'ordine al
+			// contrario
 
-				} else if (avaiableAnts > 0) {
-
-					//TODO da controllare, semba funzionare ma ad una certa ha dato timeout non vorrei fosse
-					//per colpa di questo controllo
-					Boolean directionFounded = false;
-					Tile hill;
-					do {
-						Iterator<Tile> it = Game.getMyHills().iterator();
-						if (it.hasNext()) {
-							hill = it.next();
-							Tile target;
-							Directions dir = Directions.random();
-							int i = 5;
-							do {
-								target = Game.getTile(hill, dir.getDiagonal());
-								if (Game.getOrdersTarget().contains(target)) {
-									dir = Directions.random();
-									directionFounded = false;
-									i--;
-								}else {
-									i=0;
-									directionFounded = true;
-								}
-							} while (i != 0);
-
-							if (directionFounded == false && it.hasNext())
-								continue;
-							else if (directionFounded == false && !it.hasNext())
-								break;
-							else if (directionFounded == true) {
-								defender.add(Game.getTile(hill, dir.getDiagonal()));
-								// difendi almeno un nido
-								if (antsForHill > 1) // TODO non abbiamo cercato la formica vicina
-									//lo fa la ricerca, non c'e' bisogno secondo me
-									defender.add(Game.getTile(hill, dir.getOpponent().getDiagonal()));
-							}
-						}
-					} while (!directionFounded);
-				}
-				/*
-				 * Directions sentinel = Directions.random(); Tile hill =
-				 * myHills.iterator().next(); //difendi almeno un nido
-				 * defender.add(Game.getTile(hill,sentinel.getDiagonal()));
-				 * 
-				 * if(antsForHill>1) //TODO non abbiamo cercato la formica vicina
-				 * defender.add(Game.getTile(hill,sentinel.getOpponent().getDiagonal()));
-				 */
-
-				Search s = new Search(defender, Game.getMyAnts(), null, false, true, false);
-				s.adaptiveSearch();
+			withoutHill = doNotStepOnMyHills(s.getOrders());
+			Game.issueOrders(withoutHill);
+			
+			} catch (NullPointerException e) {
+				//e.printStackTrace();
+				System.out.println("* "+enemiesForHills);
+				Game.getMyHills().forEach(hill -> System.out.println("*offset*"+Vision.getHillDefenceTargets(hill)));
+				System.out.println("*- "+defender);
+				System.out.println("* "+withoutHill);
 				
-				//Game.issueOrders(s.getOrders()); // FIXME controllare se sta cosa funziona, nel caso da l'ordine al
-													// contrario
-				
-				Set<Order> withoutHill = doNotStepOnMyHills(s.getOrders());
-				Game.issueOrders(withoutHill);
+				throw new NullPointerException("* "+"*" );
+			
 			}
 		}
+
 	}
 
 	public static void attack() {

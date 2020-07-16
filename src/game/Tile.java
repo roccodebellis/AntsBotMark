@@ -533,9 +533,7 @@ public class Tile implements Comparable<Tile> {
 	}
 
 	public boolean isAccessible() {
-		if(type.equals(TileTypes.WATER))
-			return false;
-		return true;
+		return !type.equals(TileTypes.WATER);
 	}
 
 	public void setSuitable(boolean suitable) {

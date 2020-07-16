@@ -2,6 +2,7 @@ package timing;
 
 public class Timing {
 	
+	private static int turnNo;
 	/**
 	 * in milliseconds, time given for bot to start up after it is given "ready" (see below)
 	 */
@@ -26,6 +27,7 @@ public class Timing {
 	private long exploration;
 		
 	public Timing(long loadTime, long turnTime, int turns) {
+		turnNo = 0;
 		this.loadTime = loadTime;
 		maxTurns = turns;
 		this.turnTime = turnTime;
@@ -65,6 +67,7 @@ public class Timing {
 	 */
 	public static void setTurnStartTime() {
 		turnStartTime = System.currentTimeMillis();
+		turnNo++;
 	}
 
 	/**
@@ -110,7 +113,7 @@ public class Timing {
 		return getTimeRemaining() - (vision+food+defense+exploration);
 	}
 	
-	
-	
-	
+	public int getTurnNumber() {
+		return turnNo;
+	}
 }

@@ -22,12 +22,10 @@ public class ExplorationAndMovement {
 	public ExplorationAndMovement() {// TODO ?
 		//le parentesi graffe le ho lasciate in modo che se dobbiamo provare
 		//singoli task ci basta mettere a commento cio' che non serve
-		if(!toUnexploredArea(Game.getUnexplored())) {}
-
-		if(!toInvisibleArea(Game.getOutOfSight())) {}
-		if (!toPriorityTarget()) {
-		
-		spreadOut(Game.getOrderlyAnts());}
+		if(!toUnexploredArea(Game.getUnexplored()))
+			if(!toInvisibleArea(Game.getOutOfSight()))
+				if (!toPriorityTarget()) 
+					spreadOut(Game.getOrderlyAnts());
 	}
 
 	private boolean toUnexploredArea(Set<Tile> unexplored) {
@@ -91,9 +89,9 @@ public class ExplorationAndMovement {
 		//le altre volte ha funzionato benissimo
 		//da 52 formiche in su eccezione
 		//da 43 in su time-out
-		
+
 		//while (!targets.get(curTarget).isEmpty() && countPathFounded != 0) {
-		
+
 		while (!Game.getMyAnts().isEmpty() && countPathFounded != 0) {	
 			//0%3= 0
 			//1%3= 1
@@ -104,9 +102,9 @@ public class ExplorationAndMovement {
 				countPathFounded = 0;
 			countPathFounded += computeOrders(targets.get(curTarget++)) ? 1 : 0;
 		}
-		
-		
-		
+
+
+
 		/*
 		 * do { pathFounded = computeOrders(targets.get(curTarget)); if (pathFounded)
 		 * priorityCount++; curTarget++; if (curTarget != size) pathFounded = true; else
@@ -134,7 +132,7 @@ public class ExplorationAndMovement {
 			Set<Tile> targetsWithoutAnt = new HashSet<Tile>(targets);
 
 			Tile curr = ant;//fatto per via di CuncurrentException
-			
+
 			targetsWithoutAnt.remove(curr);
 
 			// targets.remove(ant);
@@ -143,15 +141,15 @@ public class ExplorationAndMovement {
 			singoletto.add(curr);
 
 			Search s = new Search(singoletto, targets, null, false, false, false);// da singoletto alla formica piu'
-																					// vicina non il contrario
+			// vicina non il contrario
 
 			// Search s = new Search(targets, singoletto, null, false, false, true);//BFS
 			s.adaptiveSearch();
-			
+
 			Iterator<Order> orderIt = s.getOrders().iterator();
 			if (orderIt.hasNext()) {
 				Set<Order> toIssue = new HashSet<Order>();
-				
+
 				Order o = orderIt.next();
 				Directions dir = o.getDirection();
 				//TODO da controllare ma penso stia bene
@@ -168,7 +166,7 @@ public class ExplorationAndMovement {
 			// targets.add(ant);
 		}
 	}
-	
+
 	/*
 	 * targets.addAll(Game.getBorders()); FIXME se le formiche non vanno sui bordi
 	 *
@@ -180,16 +178,16 @@ public class ExplorationAndMovement {
 
 			// io gli farei fare un A* quindi heuristic = true, che dici?
 			//Search s = new Search(Game.getMyAnts(), targets, null, true, false, false);
-			
+
 			Search s = new Search(Game.getMyAnts(), targets, null, false, false, false);//questo funziona bene
 			// Search s = new Search(targets, Game.getMyAnts(), null, false, false, true);
 			//non va bene quella di sopra, se dobbiamo utilizzare quella dobbiamo farci restituire
 			//le tile di order
-			
+
 			Set<Tile> results = s.adaptiveSearch();
 			/*s.adaptiveSearch();
 			Set<Tile> results = s.getOrderTile(); */
-			
+
 			Set<Order> orders = s.getOrders();
 			if (orders.isEmpty())
 				pathFounded = false;
