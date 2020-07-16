@@ -60,7 +60,7 @@ public class Vision {
 	}
 	
 	public void addHillToDefend(Tile hill) {
-		hillDefenceTargets.put(hill, Game.getTiles(hill, new Offsets(-5)));
+		hillDefenceTargets.put(hill, Game.getTiles(hill, Offsets.getDefenceHillOffsets()));
 	}
 	
 	private void removeDefenceTargets(Tile hill, Tile target) {

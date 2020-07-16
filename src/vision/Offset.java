@@ -51,4 +51,10 @@ public class Offset {
 	public int getCol() {
 		return deltaCol;
 	}
+	@Override
+	public String toString() {
+		return "[" + deltaRow + "," + deltaCol + "]";
+	}
+	
+	
 }

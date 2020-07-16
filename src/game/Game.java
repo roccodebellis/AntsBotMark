@@ -195,7 +195,7 @@ public class Game {
 		setTiles = new TreeSet<Tile>();
 		map = initGameMap();
 
-		view = new Vision(setTiles, getViewRadius());
+		view = new Vision(setTiles, getViewRadius2());
 	}
 
 	private static void setRows(int rows) {
@@ -367,11 +367,11 @@ public class Game {
 		return food;
 	}
 
-	public static int getAttackRadius() {
+	public static int getAttackRadius2() {
 		return attackRadius2;
 	}
 
-	public static int getViewRadius() {
+	public static int getViewRadius2() {
 		return viewRadius2;
 	}
 
@@ -544,6 +544,7 @@ public class Game {
 		if (col < 0) {
 			col += cols;
 		}
+		
 		return getTile(row, col);
 	}
 
@@ -566,14 +567,20 @@ public class Game {
 		view.setVision(myAnts);
 		time.update(time.getVisionTime(), start);
 
-		if(time.getTurnTime()==1) {
+		if(time.getTurnNumber()==1) {
 			//aggiungere hill da difendere
 			getMyHills().parallelStream().forEachOrdered(hill -> view.addHillToDefend(hill));
 		} else {
 			//rimuovi hills distrutti
-			Set<Tile> hillsDown = view.getHillsToDefend();
-			hillsDown.removeAll(getMyHills());
-			hillsDown.parallelStream().forEachOrdered(hill -> view.removeHillToDefend(hill));
+			Set<Tile> hillsDown = new TreeSet<Tile>(view.getHillsToDefend());
+			Set<Tile> myHillsTemp = new TreeSet<Tile>(getMyHills());
+			if(hillsDown.size() > myHillsTemp.size()) {
+				hillsDown.removeAll(myHillsTemp);
+				hillsDown.parallelStream().forEachOrdered(hill -> view.removeHillToDefend(hill));
+			} else if(hillsDown.size() < getMyHills().size()) {
+				myHillsTemp.removeAll(hillsDown);
+				myHillsTemp.parallelStream().forEachOrdered(hill -> view.addHillToDefend(hill));
+			}
 		}
 	}
 

@@ -106,7 +106,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		
 		enemyAntSet.get(enemyAnt.getOwner()-1).add(enemyAnt);
 
-		int attackRadius = Game.getAttackRadius() * 3;
+		int attackRadius = Game.getAttackRadius2() * 3;
 
 		//FIXME ciclare solo sulle formiche aggiunte, prendere la diffrenza tra l'intersezione e l'insisme nuovo
 		//e considerare quelle formiche per la successiva iterata aggiungendole cmq alla lista delle myAntsSet
@@ -195,7 +195,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	private Set<Order> hold(Assignment s) {
 		//E' UGUALE!! EXPLORATIONANDMOVEMENT.spreadOut(); TODO
 
-		double targetDistance = Game.getAttackRadius() + (s.isEnemyMove() ? 1 : 2);
+		double targetDistance = Game.getAttackRadius2() + (s.isEnemyMove() ? 1 : 2);
 		Set<Order> ordersAssigned = new HashSet<Order>();
 
 		Iterator<Tile> antsItr = s.getAnts().iterator();

@@ -163,7 +163,7 @@ public class Assignment implements Comparable<Assignment>{
 	private HashMap<Tile, Integer> computeFocusAttack(Set<Tile> ants, Set<Tile> enemy){
 		HashMap<Tile, Integer> focusAttack = new HashMap<Tile, Integer>();
 
-		Offsets attack = new Offsets(Game.getAttackRadius());
+		Offsets attack = new Offsets(Game.getAttackRadius2());
 
 		ants.parallelStream().forEachOrdered( ant -> {
 			Set<Tile> shape = Game.getTiles(ant, attack);

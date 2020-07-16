@@ -94,7 +94,7 @@ public class Search {
 	private HashSet<Tile> orderTile;
 
 	public Search(final Set<Tile> sources, final Set<Tile> targets, Integer radius, Boolean heuristic, Boolean search_from_one_source, Boolean reverse) {
-		this.sources = sources;
+		this.sources = new HashSet<Tile>(sources);
 		this.targets = new HashSet<Tile>(targets);
 
 		this.orderTile = new HashSet<Tile>();
@@ -244,17 +244,27 @@ public class Search {
 	private Set<Tile> staticSearch() {
 
 		Offsets offsets = new Offsets(radius);
-
+		
+		//System.out.println("***Offsets("+radius+"):"+offsets);
+/*
 		sources.parallelStream().forEachOrdered(
 				source -> offsets.parallelStream().forEachOrdered(
 						offset -> {
 							Tile curTile = Game.getTile(source, offset);
-							if (targets.contains(curTile))
+							if (targets.contains(curTile)) {
 								results.add(curTile);
+								System.out.println("SS:"+curTile);
+							}
 						})
 				);
-
-		return results;
+				
+				*/
+		//System.out.println("SS: source"+sources+" targets"+targets);
+		/* la sorgente è una se viene passata piu di una sorgente il risultato non è quello desiderato*/
+		Set<Tile> ciao = sources.parallelStream().map(source -> Game.getTiles(source, offsets)).flatMap(set -> set.parallelStream()).filter(x -> targets.contains(x)).collect(Collectors.toCollection(TreeSet<Tile>::new));
+	
+		//System.out.println("SS: "+ciao);
+		return ciao;
 	}
 
 	private Set<Tile> extendedAStar() {

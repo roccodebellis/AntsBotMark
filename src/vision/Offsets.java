@@ -38,7 +38,6 @@ public class Offsets extends HashSet<Offset> {
 	}
 	
 	public Offsets() {
-		computedOffsets.put(-5, defenceHillOffsets());
 	}
 	
 	/**
@@ -58,21 +57,21 @@ public class Offsets extends HashSet<Offset> {
 	 * Calcola l'insieme di {@link Offset} con raggio {@code radius}.
 	 * @param radius raggio di cui si desidera ottenere il corrispondente {@link Offset}
 	 */
-	private static void computeOffset(int radius) {
+	private static void computeOffset(int viewRadius2) {
 		Set<Offset> visionOffsets = new HashSet<Offset>();
-		//int mx = (int) Math.sqrt(viewRadius2); TODO
-		for (int row = -radius; row <= radius; ++row) {
-			for (int col = -radius; col <= radius; ++col) {
+		int mx = (int) Math.sqrt(viewRadius2);
+		for (int row = -mx; row <= mx; ++row) {
+			for (int col = -mx; col <= mx; ++col) {
 				int d = row * row + col * col;
-				if (d <= radius * radius) {
+				if (d <= viewRadius2) {
 					visionOffsets.add(new Offset(row, col));
 				}
 			}
 		}
-		computedOffsets.put(radius, visionOffsets);
+		computedOffsets.put(viewRadius2, visionOffsets);
 	}
 	
-	private Offsets defenceHillOffsets() {
+	public static Offsets getDefenceHillOffsets() {
 		Offsets defenceTargets = new Offsets();
 		defenceTargets.add(new Offset(1,1));
 		defenceTargets.add(new Offset(1,-1));

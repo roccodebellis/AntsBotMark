@@ -34,18 +34,20 @@ public class AttackDefenceHills {
 
 		Set<Tile> defender = new TreeSet<Tile>();
 
+		try {
+			Game.getMyHills().forEach(curHill -> {
+				Set<Tile> tempSet = new TreeSet<Tile>();
+				tempSet.add(curHill);
+				Search enSearch = new Search(tempSet, Game.getEnemyAnts(), Game.getViewRadius2(), false, false, false);
+				tempSet.clear();
+				tempSet = enSearch.adaptiveSearch();
 
-		Game.getMyHills().forEach(curHill -> {
-			Set<Tile> tempSet = new TreeSet<Tile>();
-			tempSet.add(curHill);
-			Search enSearch = new Search(tempSet, Game.getEnemyAnts(), Game.getViewRadius(), false, false, false);
-			tempSet.clear();
-			tempSet = enSearch.adaptiveSearch();
+				enemiesForHills.put(curHill, tempSet.parallelStream().map(e -> new Node(e, curHill)).collect(Collectors.toCollection(TreeSet<Node>::new)));
+			});
 
-			enemiesForHills.put(curHill, tempSet.parallelStream().map(e -> new Node(e, curHill)).collect(Collectors.toCollection(TreeSet<Node>::new)));
-		});
-
-
+		}catch(Exception e) {
+			throw new NullPointerException("ciao");
+		}
 
 		if (enemiesForHills.size() != 0) {
 			double antsForHill = avaiableAnts / (enemiesForHills.size());
@@ -63,11 +65,11 @@ public class AttackDefenceHills {
 							defender.add(defIt.next());
 
 						int minDist = enemies.first().getHeuristicValue();
-						if(defIt.hasNext() && antsForHill >= 4 && minDist < Game.getViewRadius()-7)//PARAMETER
+						if(defIt.hasNext() && antsForHill >= 4 && minDist < Math.sqrt(Game.getViewRadius2())-7)//PARAMETER
 							defender.add(defIt.next());
-						if (defIt.hasNext() && antsForHill >= 3 && minDist < Game.getAttackRadius() + 3)
+						if (defIt.hasNext() && antsForHill >= 3 && minDist < Math.sqrt(Game.getAttackRadius2()) + 3)
 							defender.add(defIt.next());
-						if (defIt.hasNext() && antsForHill >= 2 && minDist < Game.getAttackRadius())
+						if (defIt.hasNext() && antsForHill >= 2 && minDist < Math.sqrt(Game.getAttackRadius2()))
 							defender.add(defIt.next());
 
 					}
@@ -112,6 +114,7 @@ public class AttackDefenceHills {
 					}
 				} while (!directionFounded);
 			}
+
 			/*
 			 * Directions sentinel = Directions.random(); Tile hill =
 			 * myHills.iterator().next(); //difendi almeno un nido
@@ -120,29 +123,32 @@ public class AttackDefenceHills {
 			 * if(antsForHill>1) //TODO non abbiamo cercato la formica vicina
 			 * defender.add(Game.getTile(hill,sentinel.getOpponent().getDiagonal()));
 			 */
-			Set<Order> withoutHill = null;
-			try {
+
+		}
+		Set<Order> withoutHill = null;
+		if(!defender.isEmpty()) {
 			Search s = new Search(defender, Game.getMyAnts(), null, false, true, false);
 			s.adaptiveSearch();
 
-			
+
 			//Game.issueOrders(s.getOrders()); // FIXME controllare se sta cosa funziona, nel caso da l'ordine al
 			// contrario
 
 			withoutHill = doNotStepOnMyHills(s.getOrders());
+			//Game.issueOrders(s.getOrders());//
 			Game.issueOrders(withoutHill);
-			
-			} catch (NullPointerException e) {
-				//e.printStackTrace();
-				System.out.println("* "+enemiesForHills);
-				Game.getMyHills().forEach(hill -> System.out.println("*offset*"+Vision.getHillDefenceTargets(hill)));
-				System.out.println("*- "+defender);
-				System.out.println("* "+withoutHill);
-				
-				throw new NullPointerException("* "+"*" );
-			
-			}
 		}
+
+		/*
+		System.out.println("*enemiesForHills* "+enemiesForHills);
+		Game.getMyHills().forEach(hill -> System.out.println("*offset*"+Vision.getHillDefenceTargets(hill)));
+		System.out.println("*defender* "+defender);
+		System.out.println("*order* "+withoutHill);
+		System.out.println("*enemy*"+ Game.getEnemyAnts());
+		 */
+
+
+
 
 	}
 
