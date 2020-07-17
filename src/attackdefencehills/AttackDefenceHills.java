@@ -20,8 +20,8 @@ import vision.Vision;
 public class AttackDefenceHills {
 
 	public AttackDefenceHills() {
-		defence();
-		attack();
+		//defence();
+		//attack();
 	}
 
 	// c'e' qualcosa che non va
@@ -38,7 +38,7 @@ public class AttackDefenceHills {
 			Game.getMyHills().forEach(curHill -> {
 				Set<Tile> tempSet = new TreeSet<Tile>();
 				tempSet.add(curHill);
-				Search enSearch = new Search(tempSet, Game.getEnemyAnts(), Game.getViewRadius2(), false, false, false);
+				Search enSearch = new Search(tempSet, Game.getEnemyAnts(), Game.getViewRadius2()+8, false, false, false);
 				tempSet.clear();
 				tempSet = enSearch.adaptiveSearch();
 
@@ -65,54 +65,35 @@ public class AttackDefenceHills {
 							defender.add(defIt.next());
 
 						int minDist = enemies.first().getHeuristicValue();
-						if(defIt.hasNext() && antsForHill >= 4 && minDist < Math.sqrt(Game.getViewRadius2())-7)//PARAMETER
+						if(defIt.hasNext() && antsForHill >= 4 && minDist < Math.sqrt(Game.getViewRadius2()))//PARAMETER
 							defender.add(defIt.next());
-						if (defIt.hasNext() && antsForHill >= 3 && minDist < Math.sqrt(Game.getAttackRadius2()) + 3)
+						if (defIt.hasNext() && antsForHill >= 3 && minDist < Math.sqrt(Game.getAttackRadius2())+3)
 							defender.add(defIt.next());
 						if (defIt.hasNext() && antsForHill >= 2 && minDist < Math.sqrt(Game.getAttackRadius2()))
 							defender.add(defIt.next());
 
 					}
 				});
-
-			} /*else if (avaiableAnts > 0) {
-
-				//TODO da controllare, semba funzionare ma ad una certa ha dato timeout non vorrei fosse
-				//per colpa di questo controllo
-				Boolean directionFounded = false;
-				Tile hill;
-				do {
-					Iterator<Tile> it = Game.getMyHills().iterator();
-					if (it.hasNext()) {
-						hill = it.next();
-						Tile target;
-						Directions dir = Directions.random();
-						int i = 5;
-						do {
-							target = Game.getTile(hill, dir.getDiagonal());
-							if (Game.getOrdersTarget().contains(target)) {
-								dir = Directions.random();
-								directionFounded = false;
-								i--;
-							}else {
-								i=0;
-								directionFounded = true;
-							}
-						} while (i != 0);
-
-						if (directionFounded == false && it.hasNext())
-							continue;
-						else if (directionFounded == false && !it.hasNext())
-							break;
-						else if (directionFounded == true) {
-							defender.add(Game.getTile(hill, dir.getDiagonal()));
-							// difendi almeno un nido
-							if (antsForHill > 1) // TODO non abbiamo cercato la formica vicina
-								//lo fa la ricerca, non c'e' bisogno secondo me
-								defender.add(Game.getTile(hill, dir.getOpponent().getDiagonal()));
-						}
+			} else if (avaiableAnts > 0) {	
+				TreeSet<Node> enemiesNearHills = new TreeSet<Node>();
+				enemiesForHills.values().forEach(enemiesNearHills::addAll);
+				
+				Iterator<Node> enemiesNearHillsIt = enemiesNearHills.iterator();
+				
+				int assignedAnts = 0;
+				while(enemiesNearHillsIt.hasNext() && assignedAnts<avaiableAnts) {
+					Tile hill = enemiesNearHillsIt.next().getTarget();
+					Set<Tile> defendHillTile = Vision.getHillDefenceTargets(hill);
+					
+					Iterator<Tile> defIt = defendHillTile.iterator();
+					if(defIt.hasNext()) {
+						Tile tileToDefend = defIt.next();
+						if(!defender.add(tileToDefend) && defIt.hasNext())
+							if(!defender.add(defIt.next()) && defIt.hasNext())
+								defender.add(defIt.next());
 					}
-				} while (!directionFounded);
+				}
+				
 			}
 
 			/*
@@ -125,7 +106,7 @@ public class AttackDefenceHills {
 			 */
 
 		}
-		Set<Order> withoutHill = null;
+		//Set<Order> withoutHill = null;
 		if(!defender.isEmpty()) {
 			Search s = new Search(defender, Game.getMyAnts(), null, false, true, false);
 			s.adaptiveSearch();
@@ -134,9 +115,9 @@ public class AttackDefenceHills {
 			//Game.issueOrders(s.getOrders()); // FIXME controllare se sta cosa funziona, nel caso da l'ordine al
 			// contrario
 
-			withoutHill = doNotStepOnMyHills(s.getOrders());
-			//Game.issueOrders(s.getOrders());//
-			Game.issueOrders(withoutHill);
+			//withoutHill = doNotStepOnMyHills(s.getOrders()); //TODO
+			Game.issueOrders(s.getOrders());//
+			//Game.issueOrders(withoutHill);
 		}
 
 		/*
@@ -152,15 +133,18 @@ public class AttackDefenceHills {
 
 	}
 
+	//TODO controllare la disponibilità di formiche con la quantità di formiche nemiche che circondano il nido
 	public static void attack() {
 		// questa ricerca e' giusta
 		Search s = new Search(Game.getEnemyHills(), Game.getMyAnts(), null, false, false, true);
 		s.adaptiveSearch();
-		Set<Order> withoutHill = doNotStepOnMyHills(s.getOrders());
-		Game.issueOrders(withoutHill);
+		//Set<Order> withoutHill = doNotStepOnMyHills(s.getOrders());
+		//Game.issueOrders(withoutHill);
+		Game.issueOrders(s.getOrders());
 	}
 
-	private static Set<Order> doNotStepOnMyHills(Set<Order> orders) {
+	//TODO magari da rimuovere
+	private Set<Order> doNotStepOnMyHills(Set<Order> orders) {
 		Set<Order> withoutHill = new HashSet<Order>();
 		orders.parallelStream().forEachOrdered(o -> {
 			if (!Game.getMyHills().contains(o.getOrderedTile())) {

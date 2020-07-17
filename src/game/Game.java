@@ -706,6 +706,13 @@ public class Game {
 	public void doDefence() {
 		new AttackDefenceHills();
 	}
+	public void doAttackHills() {
+		new AttackDefenceHills().attack();
+	}
+	public void doDefenceHills() {
+		new AttackDefenceHills().defence();
+	}
+
 
 	public void doExploration() {
 		new ExplorationAndMovement();
