@@ -53,9 +53,9 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 	public CombatSimulation(Tile myAnt, Tile enemyAnt, long deadLine) {
 		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(true)); //perche ' in combattimento
-	//System.out.println("- "+myAnt);
-	//System.out.println("- "+enemyAnt);
-	
+		//System.out.println("- "+myAnt);
+		//System.out.println("- "+enemyAnt);
+
 		situationRecognition(myAnt,enemyAnt);
 		this.deadLine = deadLine;
 		enemyHills = new TreeMap<Integer, Set<Tile>>();
@@ -103,10 +103,10 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		IntStream.range(0, Game.getNumberEnemy()).forEach(id -> enemyAntSet.put(id, new HashSet<Tile>()));
 		//System.out.println("* "+ enemyAntSet);
 		//System.out.println("* "+ enemyAnt.getOwner());
-		
+
 		enemyAntSet.get(enemyAnt.getOwner()-1).add(enemyAnt);
 
-		int attackRadius = Game.getAttackRadius2() * 3;
+		int attackRadius = Game.getAttackRadius2() * 9;
 
 		//FIXME ciclare solo sulle formiche aggiunte, prendere la diffrenza tra l'intersezione e l'insisme nuovo
 		//e considerare quelle formiche per la successiva iterata aggiungendole cmq alla lista delle myAntsSet
@@ -121,23 +121,20 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 			if(newEnemyFound.size() > (int) enemyAntSet.entrySet().parallelStream().count()) {
 				addedAnts = true;
 				newEnemyFound.parallelStream().forEachOrdered(eA ->
-				enemyAntSet.get(eA.getOwner()).add(eA)
+					enemyAntSet.get(eA.getOwner()).add(eA)
 						);
 
 			}
 
 
-			
+
 
 			Set<Tile> enemyAntsSet = new HashSet<Tile>();
 			enemyAntSet.values().forEach( enemySet -> enemyAntsSet.addAll(enemySet));
 
 			Search forMyAnts = new Search(enemyAntsSet, Game.getMyAnts(), attackRadius, false, false, true);
 			Set<Tile> newMyAntsFound = forMyAnts.adaptiveSearch();
-			if(newMyAntsFound.size() > myAntSet.size()) {
-				addedAnts = true;
-				myAntSet = newMyAntsFound;
-			}
+			addedAnts =	myAntSet.addAll(newMyAntsFound);
 		}
 	}
 
@@ -177,7 +174,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		output.put(MovesModels.SOUTH, directional(s,Directions.SOUTH));
 		output.put(MovesModels.EAST, directional(s,Directions.EAST));
 		output.put(MovesModels.WEST, directional(s,Directions.WEST));
-
+		
 		return output;
 	}
 
@@ -186,7 +183,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		targets.addAll(s.getOpponentAnts());
 		targets.addAll(s.getOpponentHills());
 
-		Search search = new Search(s.getAnts(), targets, null, false, false, false);
+		Search search = new Search(targets, s.getAnts(), null, false, true, false);
 		search.adaptiveSearch();
 		return search.getOrders();
 	}
@@ -195,7 +192,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	private Set<Order> hold(Assignment s) {
 		//E' UGUALE!! EXPLORATIONANDMOVEMENT.spreadOut(); TODO
 
-		double targetDistance = Game.getAttackRadius2() + (s.isEnemyMove() ? 1 : 2);
+		double targetDistance = Math.sqrt(Game.getAttackRadius2()) + (s.isEnemyMove() ? 1 : 2);
 		Set<Order> ordersAssigned = new HashSet<Order>();
 
 		Iterator<Tile> antsItr = s.getAnts().iterator();
@@ -232,6 +229,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 		if(distance != targetDistance) {
 			order = new Order(ant, dir);
+			/*
 			if(ordersAssigned.contains(order) || !Game.getTile(ant, dir.getOffset()).isAccessible()) {
 				order = new Order(ant,dir.getNext());
 				if(ordersAssigned.contains(order)|| !Game.getTile(ant, dir.getNext().getOffset()).isAccessible()) {
@@ -240,6 +238,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 						order = new Order(ant,Directions.STAYSTILL); //FIXME
 				}
 			} 
+			 */
 
 		} else order = new Order(ant, Directions.STAYSTILL);
 		return order;
@@ -260,6 +259,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 				orders.add(new Order(a,Directions.STAYSTILL)); //FIXME
 			else {
 				Order o = new Order(a,m);
+				/*
 				if(orders.contains(o)) 
 					o = new Order(a,m.getNext());
 				else if(orders.contains(o))
@@ -267,12 +267,13 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 				if(orders.contains(o))
 					o = new Order(a, Directions.STAYSTILL);
 				orders.add(o);
+				 */
 			}
 		});
 		return orders;
 	}
 
-	
+
 
 
 	private double MinMax(Assignment state, long deadLine, int depth) {

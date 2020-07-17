@@ -32,8 +32,8 @@ import vision.Vision;
  *
  */
 public class Game {
-	
-	
+
+
 
 	/**
 	 * Numero di righe della mappa del gioco.
@@ -169,7 +169,7 @@ public class Game {
 	 * @param spawnRadius2  squared spawn radius of each ant
 	 */
 	public Game(int rows, int cols, int viewRadius2, int attackRadius2, int spawnRadius2) {
-		
+
 
 		setRows(rows);
 		setCols(cols);
@@ -543,7 +543,7 @@ public class Game {
 		if (col < 0) {
 			col += cols;
 		}
-		
+
 		return getTile(row, col);
 	}
 
@@ -562,9 +562,9 @@ public class Game {
 	 * EQUALS TO STATIC SEARCH Calculates visible information
 	 */
 	public void doVision() {
-		
+
 		view.setVision(myAnts);
-		
+
 		if(Timing.getTurnNumber()==1) {
 			//aggiungere hill da difendere
 			getMyHills().parallelStream().forEachOrdered(hill -> view.addHillToDefend(hill));
@@ -685,19 +685,21 @@ public class Game {
 
 		//System.out.println("battlesLeading: "+battlesLeading);
 
-		long timeAssigned = Timing.getCombatTimeStime()/battlesLeading.size();
-		battlesLeading.entrySet().parallelStream().forEachOrdered(e ->
-		battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
+		if(battlesLeading.size()!=0) {
+			long timeAssigned = Timing.getCombatTimeStime()/battlesLeading.size();
+			battlesLeading.entrySet().parallelStream().forEachOrdered(e ->
+			battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
 
-		battles.parallelStream().forEachOrdered(battle -> battle.combatResolution());
-		Set<Order> attack = new HashSet<Order>();
-		battles.parallelStream().forEachOrdered(battle -> attack.addAll(battle.getMoves()));
-		Game.issueOrders(attack);
-
+			battles.parallelStream().forEachOrdered(battle -> battle.combatResolution());
+			Set<Order> attack = new HashSet<Order>();
+			battles.parallelStream().forEachOrdered(battle -> attack.addAll(battle.getMoves()));
+			Game.issueOrders(attack);
+		}
 	}
 
 	public void doFood() {
-		new FoodCollection(getFoodTiles(),getMyAnts());
+		if(getMyAnts().size()>0)
+			new FoodCollection(getFoodTiles(),getMyAnts());
 
 	}
 
@@ -753,5 +755,5 @@ public class Game {
 		}
 	}
 
-	
+
 }

@@ -1,10 +1,12 @@
 package exploration;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import game.Directions;
 import game.Game;
@@ -23,9 +25,11 @@ public class ExplorationAndMovement {
 		//le parentesi graffe le ho lasciate in modo che se dobbiamo provare
 		//singoli task ci basta mettere a commento cio' che non serve
 		if(!toUnexploredArea(Game.getUnexplored()))
-			if(!toInvisibleArea(Game.getOutOfSight()))
-				if (!toPriorityTarget()) 
+			if(!toInvisibleArea(Game.getOutOfSight())) {
+				if (!toPriorityTarget()) {
 					spreadOut(Game.getOrderlyAnts());
+				}
+			}
 	}
 
 	private boolean toUnexploredArea(Set<Tile> unexplored) {
@@ -128,19 +132,15 @@ public class ExplorationAndMovement {
 
 		while (antsItr.hasNext()) {
 
+
 			Tile ant = antsItr.next();
-			Set<Tile> targetsWithoutAnt = new HashSet<Tile>(targets);
 
-			Tile curr = ant;//fatto per via di CuncurrentException
-
-			targetsWithoutAnt.remove(curr);
-
-			// targets.remove(ant);
+			Set<Tile> targetsWithoutAnt = targets.parallelStream().filter(curAnt -> !curAnt.equals(ant)).collect(Collectors.toSet());
 
 			Set<Tile> singoletto = new TreeSet<Tile>();
-			singoletto.add(curr);
+			singoletto.add(ant);
 
-			Search s = new Search(singoletto, targets, null, false, false, false);// da singoletto alla formica piu'
+			Search s = new Search(singoletto, targetsWithoutAnt, null, false, false, false);// da singoletto alla formica piu'
 			// vicina non il contrario
 
 			// Search s = new Search(targets, singoletto, null, false, false, true);//BFS
@@ -153,13 +153,14 @@ public class ExplorationAndMovement {
 				Order o = orderIt.next();
 				Directions dir = o.getDirection();
 				//TODO da controllare ma penso stia bene
-				if (curr.getNeighbour().containsKey(dir.getOpponent()))
+				if (ant.getNeighbour().containsKey(dir.getOpponent()))
 					toIssue.add(o.withOpponentDirection());
-				else if(curr.getNeighbour().containsKey(dir.getOpponent().getNext()))
-					toIssue.add(new Order(curr, dir.getOpponent().getNext()));
-				else if(curr.getNeighbour().containsKey(dir.getOpponent().getNext().getOpponent()))
-					toIssue.add(new Order(curr, dir.getOpponent().getNext().getOpponent()));
-				toIssue = doNotStepOnMyHills(toIssue);
+				else if(ant.getNeighbour().containsKey(dir.getOpponent().getNext()))
+					toIssue.add(new Order(ant, dir.getOpponent().getNext()));
+				else if(ant.getNeighbour().containsKey(dir.getOpponent().getNext().getOpponent()))
+					toIssue.add(new Order(ant, dir.getOpponent().getNext().getOpponent()));
+				//toIssue = doNotStepOnMyHills(toIssue);
+
 				Game.issueOrders(toIssue);
 			}
 

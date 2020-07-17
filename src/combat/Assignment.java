@@ -61,14 +61,16 @@ public class Assignment implements Comparable<Assignment>{
 		this.enemyAnts = enemyAntSet;
 		this.enemyHills = enemyHills;
 		this.enemyLosses = new ArrayList<Integer>(enemyAnts.size());
-		this.enemyLosses.forEach(i -> i = 0);
+		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyLosses.add(0));
+		
 		this.enemyHillsDestroyed = new ArrayList<Integer>(enemyAnts.size());
-		this.enemyHillsDestroyed.forEach(i -> i = 0);
+		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyHillsDestroyed.add(0));
 
 		this.foodTiles = foodTiles;
 		this.antsFoodCollected = 0;
 		this.enemyFoodCollected = new ArrayList<Integer>(enemyAnts.size());
-		this.enemyFoodCollected.forEach(i -> i = 0);
+		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyFoodCollected.add(0));
+
 
 		antsMove = new TreeSet<Order>();
 	}
@@ -190,11 +192,11 @@ public class Assignment implements Comparable<Assignment>{
 			enemy.addAll(ants);
 			if(i-1 > 1)
 				IntStream.range(1, i-1).parallel().forEachOrdered( j -> enemy.addAll(enemyAnts.get(j)));
-			if(i+1 < enemyAnts.size()+1)
-				IntStream.range(i+1, enemyAnts.size()+1).parallel().forEachOrdered( j -> enemy.addAll(enemyAnts.get(j)));
+			if(i+1 < enemyAnts.size())
+				IntStream.range(i+1, enemyAnts.size()).parallel().forEachOrdered( j -> enemy.addAll(enemyAnts.get(j)));
 
-			System.out.println("* ienemySet"+ ienemySet);
-			System.out.println("* enemy"+ enemy);
+			//System.out.println("* ienemySet"+ ienemySet);
+			//System.out.println("* enemy"+ enemy);
 
 			focusAttack.putAll(computeFocusAttack(ienemySet, enemy));
 		});
@@ -249,7 +251,7 @@ public class Assignment implements Comparable<Assignment>{
 
 
 			ienemyAnts.parallelStream().forEachOrdered(ienemy -> {
-				IntStream.range(i+1, enemyAnts.size()+1).parallel().forEachOrdered(j -> { 
+				IntStream.range(i+1, enemyAnts.size()).parallel().forEachOrdered(j -> { 
 					if(enemyAnts.get(j).remove(ienemy)){ 
 						if(!iremoveAnts.contains(ienemy)) {
 							iremoveAnts.add(ienemy);
@@ -282,8 +284,8 @@ public class Assignment implements Comparable<Assignment>{
 		//FIXME TENERE IN CONSIDERAZIONE L'AVER MANGIATO CIBO NEL TURNO PRECEDENTE
 		Set<Tile> hillDestroyed = new TreeSet<Tile>();
 		antsHills.parallelStream().forEachOrdered(hill -> {
-			IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> { 
-				if(enemyAnts.get(i+1).contains(hill)) {
+			IntStream.range(1, enemyAnts.size()).parallel().forEachOrdered(i -> { 
+				if(enemyAnts.get(i).contains(hill)) {
 					antsHillsDestroyed++;
 					hillDestroyed.add(hill);
 				}
@@ -382,7 +384,7 @@ public class Assignment implements Comparable<Assignment>{
 		if(getTurnsLeft()<50) 
 			OpponentMultiplier *= 1.5D;
 
-		value = OpponentMultiplier * getOpponentLosses_number() - AntsMultiplier * getAntsLosses_number();
+		value = OpponentMultiplier * getOpponentLosses_number() - AntsMultiplier  * getAntsLosses_number();
 
 		if(getAntsLosses_number() == getAnts_number())
 			value -= 0.5;
