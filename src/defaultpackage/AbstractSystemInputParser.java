@@ -5,6 +5,7 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import game.Game;
+import timing.Timing;
 
 /**
  * Handles system input stream parsing.
@@ -17,6 +18,9 @@ public abstract class AbstractSystemInputParser extends AbstractSystemInputReade
     private static final char COMMENT_CHAR = '#';
     
     private final List<String> input = new ArrayList<String>();
+    
+    
+    Timing time;
     
     /**
      * Classe enumerativa che specifica i token contenenti le informazioni base
@@ -99,25 +103,26 @@ public abstract class AbstractSystemInputParser extends AbstractSystemInputReade
      */
     @Override
     public void processLine(String line) {
-    	long start;
+    	
 		
         if (line.equals(READY)) { //PRIMO TURNO
-        	start = System.currentTimeMillis();
+        	
             parseSetup(input);
-            //doTurn();
-            finishTurn();
-            input.clear();
-            //System.out.println(System.currentTimeMillis()-start);
-            //Game.printMap();
-        } else if (line.equals(GO)) { //TURNI SUCCESSIVI
-        	start = System.currentTimeMillis();
-            parseUpdate(input);
-            doTurn();
             finishTurn();
             input.clear();
             
-            //Game.printMap();
-            //System.out.println(System.currentTimeMillis()-start);
+        } else if (line.equals(GO)) { //TURNI SUCCESSIVI
+        	
+        	time.setTurnStartTime();
+        	
+            parseUpdate(input);
+            doTurn();
+            
+            finishTurn();
+            input.clear();
+            
+            
+            
         } else if (!line.isEmpty()) {
             input.add(line);
         }
@@ -181,7 +186,9 @@ public abstract class AbstractSystemInputParser extends AbstractSystemInputReade
                 break;
             }
         }
-        setup(loadTime, turnTime, rows, cols, turns, viewRadius2, attackRadius2, spawnRadius2);
+        this.time = new Timing(loadTime,turnTime,turns);
+        setup(rows, cols, viewRadius2, attackRadius2, spawnRadius2);
+        
     }
     
     /**
@@ -246,8 +253,7 @@ public abstract class AbstractSystemInputParser extends AbstractSystemInputReade
      * @param attackRadius2 squared attack radius of each ant
      * @param spawnRadius2 squared spawn radius of each ant
      */
-    public abstract void setup(int loadTime, int turnTime, int rows, int cols, int turns,
-            int viewRadius2, int attackRadius2, int spawnRadius2);
+    public abstract void setup(int rows, int cols, int viewRadius2, int attackRadius2, int spawnRadius2);
     
     /**
      * Enables performing actions which should take place prior to updating the game state, like

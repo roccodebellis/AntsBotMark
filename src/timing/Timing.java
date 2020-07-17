@@ -1,5 +1,11 @@
 package timing;
 
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
 public class Timing {
 	
 	private static int turnNo;
@@ -16,26 +22,38 @@ public class Timing {
 	/**
 	 * in milliseconds, time given to the bot each turn
 	 */
-	private final long turnTime;
+	private static long _turnTime;
 	
 	private static long turnStartTime;
 	
-	private long vision;
-	private long combat;
-	private long food;
-	private long defense;
-	private long exploration;
+	private static Map<Modules,Long> modulesTime;
+	private Map<Modules,Long> modulesTimeStart;
 		
 	public Timing(long loadTime, long turnTime, int turns) {
 		turnNo = 0;
 		this.loadTime = loadTime;
 		maxTurns = turns;
-		this.turnTime = turnTime;
-		vision=0;
-		combat=0;
-		food=0;
-		defense=0;
-		exploration=0;
+		_turnTime = turnTime;
+		modulesTime = new TreeMap<Modules,Long> ();
+		modulesTimeStart = new TreeMap<Modules,Long> ();
+		
+		EnumSet.allOf(Modules.class).parallelStream().forEachOrdered(v -> {modulesTime.put(v, 0L);modulesTimeStart.put(v, 0L);});
+		
+	}
+	
+	public void start(Modules module) {
+		modulesTimeStart.put(module, getCurTime());
+	}
+	public void end(Modules module) {
+		if(turnNo>1)
+			modulesTime.put(module, (long) ((getCurTime()-modulesTimeStart.get(module)) * 0.85 + modulesTime.get(module) * 0.15));
+		else
+			modulesTime.put(module, (getCurTime()-modulesTimeStart.get(module)));
+	}
+	
+	
+	public static long getCombatTimeStime(){
+		return getTimeRemaining() - modulesTime.entrySet().stream().mapToLong(Map.Entry::getValue).sum();
 	}
 
 	/**
@@ -57,7 +75,7 @@ public class Timing {
 	 * @return timeout for a single game turn, starting with turn 1
 	 */
 	public long getTurnTime() {
-		return turnTime;
+		return _turnTime;
 	}
 	
 	/**
@@ -70,6 +88,10 @@ public class Timing {
 		turnNo++;
 	}
 
+	public static int getTurnNumber() {
+		return turnNo;
+	}
+	
 	/**
 	 * Returns how much time the bot has still has to take its turn before timing
 	 * out.
@@ -77,43 +99,17 @@ public class Timing {
 	 * @return how much time the bot has still has to take its turn before timing
 	 *         out
 	 */
-	public long getTimeRemaining() {
-		return turnTime - (System.currentTimeMillis() - turnStartTime);
+	public static long getTimeRemaining() {
+		return _turnTime - (System.currentTimeMillis() - turnStartTime);
 	}
 
 	public static long getCurTime() {	
 		return System.currentTimeMillis();
 	}
 	
-	public long getVisionTime() {
-		return vision;
-	}
 	
-	public long getCombatTime() {
-		return combat;
-	}
-	
-	public long getFoodTime() {
-		return food;
-	}
 
-	public long getDefenseTime() {
-		return defense;
-	}
-
-	public long getExplorationTime() {
-		return exploration;
-	}
 	
-	public void update(long module, long start) {
-		module = (long) ((start-getCurTime()) * 0.85 + module * 0.15);
-	}
 	
-	public long getCombatTimeStime(){
-		return getTimeRemaining() - (vision+food+defense+exploration);
-	}
 	
-	public int getTurnNumber() {
-		return turnNo;
-	}
 }

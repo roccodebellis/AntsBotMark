@@ -1,6 +1,7 @@
 package defaultpackage;
 
 import game.Game;
+import timing.Modules;
 import timing.Timing;
 
 /**
@@ -13,8 +14,8 @@ public abstract class Bot extends AbstractSystemInputParser {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void setup(int loadTime, int turnTime, int rows, int cols, int turns, int viewRadius2, int attackRadius2, int spawnRadius2) {
-		setGame(new Game(loadTime, turnTime, rows, cols, turns, viewRadius2, attackRadius2, spawnRadius2));
+	public void setup(int rows, int cols, int viewRadius2, int attackRadius2, int spawnRadius2) {
+		setGame(new Game(rows, cols, viewRadius2, attackRadius2, spawnRadius2));
 	}
 
 	/**
@@ -41,6 +42,7 @@ public abstract class Bot extends AbstractSystemInputParser {
 	@Override
 	public void beforeUpdate() {
 		Timing.setTurnStartTime(); 
+		time.start(Modules.Parse);
 		state.clear();
 	}
 
@@ -90,6 +92,6 @@ public abstract class Bot extends AbstractSystemInputParser {
 	@Override
 	public void afterUpdate() {
 		state.doVision();
-		
+		time.end(Modules.Parse);
 	}
 }

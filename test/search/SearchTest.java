@@ -30,7 +30,7 @@ public class SearchTest {
 	 */
 	//@BeforeEach
 	public Game setUp() {
-		return new Game(0, 0, 20, 15, 1, 77, 5, 1);
+		return new Game(20, 15, 77, 5, 1);
 
 	}
 

@@ -1,6 +1,7 @@
 package game;
 
 import java.util.Iterator;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -67,7 +68,6 @@ public class Game {
 	 */
 	private static Vision view;
 
-	private Timing time;
 
 	/**
 	 * Insieme contenente le {@link Tile tile} su cui sono posizionati i
@@ -168,9 +168,8 @@ public class Game {
 	 * @param attackRadius2 squared attack radius of each ant
 	 * @param spawnRadius2  squared spawn radius of each ant
 	 */
-	public Game(int loadTime, int turnTime, int rows, int cols, int turns, int viewRadius2, int attackRadius2,
-			int spawnRadius2) {
-		time = new Timing(loadTime,turnTime,turns);
+	public Game(int rows, int cols, int viewRadius2, int attackRadius2, int spawnRadius2) {
+		
 
 		setRows(rows);
 		setCols(cols);
@@ -563,11 +562,10 @@ public class Game {
 	 * EQUALS TO STATIC SEARCH Calculates visible information
 	 */
 	public void doVision() {
-		long start = Timing.getCurTime();		
+		
 		view.setVision(myAnts);
-		time.update(time.getVisionTime(), start);
-
-		if(time.getTurnNumber()==1) {
+		
+		if(Timing.getTurnNumber()==1) {
 			//aggiungere hill da difendere
 			getMyHills().parallelStream().forEachOrdered(hill -> view.addHillToDefend(hill));
 		} else {
@@ -687,7 +685,7 @@ public class Game {
 
 		//System.out.println("battlesLeading: "+battlesLeading);
 
-		long timeAssigned = time.getCombatTimeStime()/battlesLeading.size();
+		long timeAssigned = Timing.getCombatTimeStime()/battlesLeading.size();
 		battlesLeading.entrySet().parallelStream().forEachOrdered(e ->
 		battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
 
