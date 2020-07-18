@@ -3,6 +3,7 @@ package game;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import search.Search;
@@ -179,7 +180,7 @@ public class Tile implements Comparable<Tile> {
 		this.row = row;
 		this.col = col;
 		type = TileTypes.UNEXPLORED;
-		neighbourTiles = new TreeMap<>();
+		neighbourTiles = new HashMap<>();
 		visible = 0;
 		occupiedByAnt = false;
 		idOwner = null;
@@ -231,7 +232,7 @@ public class Tile implements Comparable<Tile> {
 	 */
 	public void setVisible(boolean visible) {
 		if(type.equals(TileTypes.HILL))
-			this.visible = Timing.getMaxTurns();
+			this.visible = visible ? 0 : Timing.getMaxTurns();
 		else if(!type.equals(TileTypes.WATER)) 
 			this.visible = visible ? 0 : this.visible + 1;
 
@@ -392,6 +393,10 @@ public class Tile implements Comparable<Tile> {
 		neighbourTiles.put(cardinal, tile);
 	}
 
+	void crazyNeighbour(Map<Directions,Tile> newNeighbour) {
+		neighbourTiles.clear();
+		this.neighbourTiles = newNeighbour;
+	}
 	/**
 	 * Rimuove il vicino della {@link Tile tile} corrente, raggiungibile da
 	 * quest'ultima proseguendo in {@link Directions direzione} {@code cardinal},
