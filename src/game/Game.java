@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -582,6 +583,21 @@ public class Game {
 				myHillsTemp.parallelStream().forEachOrdered(hill -> view.addHillToDefend(hill));
 			}
 		}
+
+		myAnts.parallelStream().forEachOrdered(ant-> {
+			Map<Directions,Tile> newNeighbour = new HashMap<Directions,Tile>();
+			ArrayList<Tile> neighbour = new ArrayList<Tile>(ant.getNeighbour().values());
+			Map<Tile,Directions> ruobhgien = new HashMap<Tile,Directions>();
+			ant.getNeighbour().entrySet().parallelStream().forEachOrdered(e -> ruobhgien.put(e.getValue(),e.getKey()));
+			while(neighbour.size()>0) {
+				Random r = new Random(Timing.getCurTime());
+				int val = (int) (r.nextInt() * (neighbour.size())) ;
+				newNeighbour.put(ruobhgien.get(neighbour.get(val)),neighbour.remove(val));
+			}
+			ant.crazyNeighbour(newNeighbour);
+
+		});
+
 	}
 
 	/**
@@ -671,20 +687,20 @@ public class Game {
 	 * 
 	 */
 	public void doCombat() {
-		
+
 		Map<Tile,Tile> ongoingBattlesSituation = getOngoingBattlesSituation();
 
 		//System.out.println("battlesLeading: "+ongoingBattles);
 
 		if(ongoingBattlesSituation.size()!=0) {
-		/*	try {
+			/*	try {
 				if(ongoingBattlesSituation.size()>2)
 					throw new NullPointerException();*/
-				fight(ongoingBattlesSituation);
-		/*	}catch(NullPointerException e) {
+			fight(ongoingBattlesSituation);
+			/*	}catch(NullPointerException e) {
 				throw new NullPointerException("I'm in! - > " + ongoingBattlesSituation);
 			}*/
-			
+
 		}
 	}
 
@@ -696,13 +712,13 @@ public class Game {
 	 * @return
 	 */
 	private Map<Tile,Tile> getOngoingBattlesSituation(){
-		
+
 		Map<Node,Tile> enemyToAnt = getEnemyToAnt();
 		Iterator<Entry<Node, Tile>> inCombatSituationItr = enemyToAnt.entrySet().iterator();
-		
+
 		Set<Tile> myAntsInCombatSituation = new TreeSet<Tile>();
 		Map<Tile,Tile> ongoingBattles = new TreeMap<Tile,Tile>();
-		
+
 		while(inCombatSituationItr.hasNext()) {
 			Entry<Node, Tile> currPairOfOpponents = inCombatSituationItr.next();
 			Tile enemyAnt = currPairOfOpponents.getKey().getTile();
@@ -722,21 +738,21 @@ public class Game {
 			}
 
 		}
-		
-		
-		
+
+
+
 		//myAntsInCombatSituation.parallelStream().forEachOrdered(ant -> Game.myAnts.remove(ant));
-		
+
 		/*try {
 			if(ongoingBattles.size()>0)
 				throw new NullPointerException();*/
-			return ongoingBattles;
+		return ongoingBattles;
 		/*}catch(NullPointerException e) {
 			throw new NullPointerException("I'm in! - > " + ongoingBattles + "\nEnemyToAnt - >" +enemyToAnt);
 		}*/
-		
+
 	}
-	
+
 	/**
 	 * Per ogni situazione di battaglia, assegno un tempo massimo per la sua esecuzione
 	 * ed avvio una simulazione di battaglia;
@@ -746,16 +762,16 @@ public class Game {
 	private void fight(Map<Tile,Tile> ongoingBattlesSituation) {
 		Set<CombatSimulation> battles = new HashSet<CombatSimulation>();
 		long timeAssigned = Timing.getCombatTimeStime()/ongoingBattlesSituation.size();
-		
+
 		ongoingBattlesSituation.entrySet().parallelStream().forEachOrdered(e ->
-			battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
-		
-		
+		battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
+
+
 		battles.parallelStream().forEachOrdered(battle -> battle.combatResolution());
 		try {
 			if(battles.size()>1)
 				throw new NullPointerException();
-			
+
 		}catch(NullPointerException e) {
 			throw new NullPointerException("I'm in! - > " + battles +"\n\t" + getEnemyToAnt());
 		}
@@ -763,7 +779,7 @@ public class Game {
 		battles.parallelStream().forEachOrdered(battle -> movesToPerform.addAll(battle.getMoves()));
 		Game.issueOrders(movesToPerform);
 	}
-	
+
 	public void doFood() {
 		if(getMyAnts().size()>0)
 			new FoodCollection(getFoodTiles(),getMyAnts());

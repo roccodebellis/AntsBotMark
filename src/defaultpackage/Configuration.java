@@ -4,7 +4,7 @@ import game.Game;
 
 public class Configuration {
 	
-	private static final int CombatModuleMinMaxMaxDepth = 6;
+	private static final int CombatModuleMinMaxMaxDepth = 40;
 	private static final int MilSecUsedForEachAntsInCS = 10;
 	private static final int CombatModuleSearchRadius = Game.getAttackRadius2() * 9;
 	
