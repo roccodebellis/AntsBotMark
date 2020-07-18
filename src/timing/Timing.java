@@ -69,6 +69,10 @@ public class Timing {
 		return maxTurns - currentTurn;
 	}
 	
+	public static int getMaxTurns() {
+		return maxTurns;
+	}
+	
 	/**
 	 * Returns timeout for a single game turn, starting with turn 1.
 	 * 

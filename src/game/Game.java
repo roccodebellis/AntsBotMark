@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import attackdefencehills.AttackDefenceHills;
 //import attackdefensehills.AttackDefenseHills;
 import combat.CombatSimulation;
+import defaultpackage.Configuration;
 import exploration.ExplorationAndMovement;
 import gathering.FoodCollection;
 import search.Node;
@@ -704,15 +705,28 @@ public class Game {
 		
 		while(inCombatSituationItr.hasNext()) {
 			Entry<Node, Tile> currPairOfOpponents = inCombatSituationItr.next();
-			Node enemyNode = currPairOfOpponents.getKey();
+			Tile enemyAnt = currPairOfOpponents.getKey().getTile();
 			Tile myAnt = currPairOfOpponents.getValue();
 
 			//if(enemyTileAsNode.getHeuristicValue()) FIXME magari diminuire e non utilizzare il raggio di visione, utilizzando la distanza
-			if(!myAntsInCombatSituation.contains(myAnt)) {
-				ongoingBattles.put(myAnt, enemyNode.getTile());
+			if(!myAntsInCombatSituation.add(myAnt)) {
+				Iterator<Tile> setEnemyIt = ongoingBattles.keySet().iterator();
+				boolean notAddThisAnt = false;
+				while(!notAddThisAnt && setEnemyIt.hasNext()) {
+					Tile eA = setEnemyIt.next();	
+					if(Game.getDistance(myAnt,eA) < Configuration.getCombatModuleSearchRadius())
+						notAddThisAnt = true;
+				}
+				if(notAddThisAnt)
+					ongoingBattles.put(myAnt, enemyAnt);
 			}
 
 		}
+		
+		
+		
+		//myAntsInCombatSituation.parallelStream().forEachOrdered(ant -> Game.myAnts.remove(ant));
+		
 		/*try {
 			if(ongoingBattles.size()>0)
 				throw new NullPointerException();*/
@@ -743,7 +757,7 @@ public class Game {
 				throw new NullPointerException();
 			
 		}catch(NullPointerException e) {
-			throw new NullPointerException("I'm in! - > " + battles);
+			throw new NullPointerException("I'm in! - > " + battles +"\n\t" + getEnemyToAnt());
 		}
 		Set<Order> movesToPerform = new HashSet<Order>();
 		battles.parallelStream().forEachOrdered(battle -> movesToPerform.addAll(battle.getMoves()));

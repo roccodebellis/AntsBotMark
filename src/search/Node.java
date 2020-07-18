@@ -1,4 +1,5 @@
 package search;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -92,7 +93,7 @@ public class Node implements Comparable<Node>{
 
 	@Override
 	public int hashCode(){
-		return tile.getRow() * 10000 + tile.getCol() ;
+		return tile.hashCode();
 	}
 
 	/**

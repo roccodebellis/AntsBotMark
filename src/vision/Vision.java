@@ -1,5 +1,6 @@
 package vision;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -55,7 +56,7 @@ public class Vision {
 		this.mapTiles = mapTiles;
 		visionOffsets = new Offsets(viewRadius);
 		inVision = new HashSet<Tile>();
-		enemyToAnt = new TreeMap<Node,Tile>();
+		enemyToAnt = new HashMap<Node,Tile>();
 		hillDefenceTargets = new TreeMap<Tile,Set<Tile>>();
 	}
 
@@ -115,8 +116,8 @@ public class Vision {
 	//non funzia
 	private void updateEnemyToAnt(Tile enemyTile, Tile ant) {
 		Node enemyTileAsANode = new Node(enemyTile,ant);
-		if((enemyToAnt.containsKey(enemyTileAsANode) &&  Game.getDistance(ant, enemyTile) < Game.getDistance(enemyToAnt.get(enemyTileAsANode), enemyTile) || !enemyToAnt.containsKey(enemyTileAsANode))) 
-				enemyToAnt.put(enemyTileAsANode,ant);
+		if((enemyToAnt.containsKey(enemyTileAsANode) &&  Game.getDistance(ant, enemyTile) < Game.getDistance(enemyToAnt.get(enemyTileAsANode), enemyTile)) || !enemyToAnt.containsKey(enemyTileAsANode)) 
+			enemyToAnt.put(enemyTileAsANode,ant);
 		//if the distance between the ant and the enemy is lower than the distance between
 		//another ant (already contained in enemyToAnt) and the enemy
 		//we add another node with the enemy and the current ant

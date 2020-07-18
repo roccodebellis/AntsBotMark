@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import search.Search;
+import timing.Timing;
 
 //TODO rivedi tutti javadoc
 /**
@@ -229,8 +230,11 @@ public class Tile implements Comparable<Tile> {
 	 *                {@code false}, altrimenti
 	 */
 	public void setVisible(boolean visible) {
-		if(!type.equals(TileTypes.WATER)) 
+		if(type.equals(TileTypes.HILL))
+			this.visible = Timing.getMaxTurns();
+		else if(!type.equals(TileTypes.WATER)) 
 			this.visible = visible ? 0 : this.visible + 1;
+
 		else
 			this.visible --;
 

@@ -192,10 +192,10 @@ public class Assignment implements Comparable<Assignment>{
 
 			enemy.clear();
 			enemy.addAll(ants);
-			if(i-1 > 0)
-				IntStream.range(0, i-1).parallel().forEachOrdered( j -> enemy.addAll(enemyAnts.get(j+1)));
-			if(i+1 < enemyAnts.size())
-				IntStream.range(i+1, enemyAnts.size()).parallel().forEachOrdered( j -> enemy.addAll(enemyAnts.get(j+1)));
+			if(i > 0)
+				IntStream.range(0, i+1).parallel().forEachOrdered( j -> enemy.addAll(enemyAnts.get(j+1)));//FIXME
+			if(i+2 < enemyAnts.size())
+				IntStream.range(i+2, enemyAnts.size()).parallel().forEachOrdered( j -> enemy.addAll(enemyAnts.get(j+1)));
 
 			//System.out.println("* ienemySet"+ ienemySet);
 			//System.out.println("* enemy"+ enemy);
@@ -211,9 +211,9 @@ public class Assignment implements Comparable<Assignment>{
 
 			Set<Tile> deadEnemyAnts = new TreeSet<Tile>();
 
-			IntStream.range(1, enemyAnts.size()).parallel().forEachOrdered( i  -> { 
+			IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered( i  -> { 
 				int enemyLossesNumber = enemyLosses.get(i);
-				Set<Tile> ienemySet = enemyAnts.get(i);
+				Set<Tile> ienemySet = enemyAnts.get(i+1);
 
 				deadEnemyAnts.clear();
 
@@ -247,14 +247,14 @@ public class Assignment implements Comparable<Assignment>{
 
 
 		//formiche nemiche si suicidano tra di loro
-		IntStream.range(1, enemyAnts.size()).parallel().forEachOrdered(i -> { 
+		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> { 
 			Set<Tile> iremoveAnts = new TreeSet<Tile>();
-			Set<Tile> ienemyAnts = enemyAnts.get(i);
+			Set<Tile> ienemyAnts = enemyAnts.get(i+1);
 
 
 			ienemyAnts.parallelStream().forEachOrdered(ienemy -> {
 				IntStream.range(i+1, enemyAnts.size()).parallel().forEachOrdered(j -> { 
-					if(enemyAnts.get(j).remove(ienemy)){ 
+					if(enemyAnts.get(j+1).remove(ienemy)){ 
 						if(!iremoveAnts.contains(ienemy)) {
 							iremoveAnts.add(ienemy);
 							enemyLosses.set(i,enemyLosses.get(i)+1); 
@@ -269,8 +269,8 @@ public class Assignment implements Comparable<Assignment>{
 		//formiche nostre e formiche nemiche si suicidono
 		Set<Tile> antsKilled = new TreeSet<Tile>();
 		ants.parallelStream().forEachOrdered(ant -> {
-			IntStream.range(1, enemyAnts.size()).parallel().forEachOrdered(i -> { 
-				if(enemyAnts.get(i).remove(ant)){ 
+			IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> { 
+				if(enemyAnts.get(i+1).remove(ant)){ 
 					if(!antsKilled.contains(ant)) {
 						antsKilled.add(ant);
 						antsLosses++;

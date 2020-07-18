@@ -2,12 +2,9 @@ package combat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -16,10 +13,8 @@ import game.Directions;
 import game.Game;
 import game.Order;
 import game.Tile;
-import search.Node;
 import search.Search;
 import timing.Timing;
-import vision.Offset;
 
 /**
  * <p>Questo modulo processa tutte le situazioni in cui le formiche degli agenti incontrano formiche nemiche
@@ -121,7 +116,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		}*/
 		
 
-		int attackRadius = Game.getAttackRadius2() * 9;
+		int attackRadius = Configuration.getCombatModuleSearchRadius();
 		
 		//FIXME ciclare solo sulle formiche aggiunte, prendere la diffrenza tra l'intersezione e l'insisme nuovo
 		//e considerare quelle formiche per la successiva iterata aggiungendole cmq alla lista delle myAntsSet
@@ -133,7 +128,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 			Search forEnemyAnts = new Search(myAntSet, Game.getEnemyAnts(), attackRadius, false, false, false);
 			Set<Tile> newEnemyFound = forEnemyAnts.adaptiveSearch();
 
-			if(newEnemyFound.size() > (int) enemyAntSet.entrySet().parallelStream().count()) {
+			if(newEnemyFound.size() > enemyAntSet.entrySet().parallelStream().mapToInt(eASet -> eASet.getValue().size()).sum()) {
 				addedAnts = true;
 				newEnemyFound.parallelStream().forEachOrdered(eA -> {
 					enemyAntSet.get(eA.getOwner()).add(eA); }
@@ -178,12 +173,12 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	private Map<MovesModels,Set<Order>> movesGenerator(Assignment s) {
 		Map<MovesModels,Set<Order>> output = new HashMap<MovesModels,Set<Order>>();
 
-		/*output.put(MovesModels.ATTACK, attack(s));
+		output.put(MovesModels.ATTACK, attack(s));
 		output.put(MovesModels.HOLD, hold(s));
 		output.put(MovesModels.IDLE, idle(s));
 		output.put(MovesModels.NORTH, directional(s,Directions.NORTH));
 		output.put(MovesModels.SOUTH, directional(s,Directions.SOUTH));
-		output.put(MovesModels.EAST, directional(s,Directions.EAST));*/
+		output.put(MovesModels.EAST, directional(s,Directions.EAST));
 		output.put(MovesModels.WEST, directional(s,Directions.WEST));
 		
 		return output;

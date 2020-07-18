@@ -34,7 +34,7 @@ public class FoodCollection {
 		
 		
 		
-		Search s = new Search(foodTiles, myAnts, null, false, true, false);
+		Search s = new Search(foodTiles, myAnts, null, false, true,false);
 		//Search s = new Search(myAnts, foodTiles, null, false, true, true); ???
 		//Search s = new Search(foodTiles, myAnts, null, false, false, true); //questo deve andare in attack
 		//Search s = new Search(myAnts, foodTiles, null, false, false, false);
