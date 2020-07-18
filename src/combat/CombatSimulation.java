@@ -45,11 +45,11 @@ import vision.Offset;
  */
 public class CombatSimulation implements Comparable<CombatSimulation>{
 
-	Set<Tile> myAntSet;
-	Map<Integer, Set<Tile>> enemyAntSet;
-	Map<Integer, Set<Tile>> enemyHills;
-	long deadLine;
-	Assignment root;
+	private Set<Tile> myAntSet;
+	private Map<Integer, Set<Tile>> enemyAntSet;
+	private Map<Integer, Set<Tile>> enemyHills;
+	private long deadLine;
+	private Assignment root;
 
 	/**
 	 * Considero la formica e la formica nemica che hanno fatto scattare la situazione di battaglia.
@@ -107,19 +107,27 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		enemyAntSet = new HashMap<Integer, Set<Tile>>();
 
 		myAntSet.add(myAnt);
-		IntStream.range(0, Game.getNumberEnemy()).forEach(id -> enemyAntSet.put(id, new HashSet<Tile>()));
+		
+		IntStream.range(0, Game.getNumberEnemy()).forEach(id -> enemyAntSet.put(id+1, new HashSet<Tile>()));
 		//System.out.println("* "+ enemyAntSet);
 		//System.out.println("* "+ enemyAnt.getOwner());
-
-		enemyAntSet.get(enemyAnt.getOwner()-1).add(enemyAnt);
+		
+		//try {
+			enemyAntSet.get(enemyAnt.getOwner()).add(enemyAnt);
+		/*	if(true)
+				throw new NullPointerException();
+		}catch(NullPointerException e) {
+			throw new NullPointerException("\nOwner" + (enemyAnt.getOwner()) + "\nnemico "+ enemyAntSet.get(1) + "\nTile del nemico " + enemyAnt + "\nSet nemici " + enemyAntSet + "\nnumero nemici: " + Game.getNumberEnemy());
+		}*/
+		
 
 		int attackRadius = Game.getAttackRadius2() * 9;
-
+		
 		//FIXME ciclare solo sulle formiche aggiunte, prendere la diffrenza tra l'intersezione e l'insisme nuovo
 		//e considerare quelle formiche per la successiva iterata aggiungendole cmq alla lista delle myAntsSet
 
 		//FIXME controllare se funziona
-		boolean addedAnts = false;
+		boolean addedAnts = true;
 		while(addedAnts){
 			addedAnts = false;
 			Search forEnemyAnts = new Search(myAntSet, Game.getEnemyAnts(), attackRadius, false, false, false);
@@ -133,15 +141,12 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 			}
 
-
-
-
 			Set<Tile> enemyAntsSet = new HashSet<Tile>();
 			enemyAntSet.values().forEach( enemySet -> enemyAntsSet.addAll(enemySet));
 
 			Search forMyAnts = new Search(enemyAntsSet, Game.getMyAnts(), attackRadius, false, false, true);
 			Set<Tile> newMyAntsFound = forMyAnts.adaptiveSearch();
-			addedAnts =	myAntSet.addAll(newMyAntsFound);
+			addedAnts =	addedAnts || myAntSet.addAll(newMyAntsFound);
 		}
 	}
 

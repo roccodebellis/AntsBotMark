@@ -675,11 +675,11 @@ public class Game {
 		//System.out.println("battlesLeading: "+ongoingBattles);
 
 		if(ongoingBattlesSituation.size()!=0) {
-			/*try {
-				if(true)
+		/*	try {
+				if(ongoingBattlesSituation.size()>2)
 					throw new NullPointerException();*/
 				fight(ongoingBattlesSituation);
-			/*}catch(NullPointerException e) {
+		/*	}catch(NullPointerException e) {
 				throw new NullPointerException("I'm in! - > " + ongoingBattlesSituation);
 			}*/
 			
