@@ -11,7 +11,7 @@ public class Node implements Comparable<Node>{
 	private int pathCost;
 	private int heuristicValue;
 	private Tile target;
-	
+
 	/*
 	 * utilizzato per inizializzare le tile dalle sorgenti/sources
 	 */
@@ -21,7 +21,7 @@ public class Node implements Comparable<Node>{
 		assignTarget(targets);
 		//heuristicValue = Game.getDistance(enemy,ant);
 	}
-	
+
 	public Node(Tile enemy, Tile ant){
 		this.tile = enemy;
 		this.pathCost = 0;
@@ -68,7 +68,10 @@ public class Node implements Comparable<Node>{
 
 	@Override
 	public int compareTo(Node o) {
-		return Integer.compareUnsigned(pathCost + heuristicValue, o.pathCost + o.heuristicValue);//TODO what if they are equals? we lose one node...
+		int thisCompare = pathCost + heuristicValue;
+		int otheCompare = o.pathCost + o.heuristicValue;
+
+		return (thisCompare == otheCompare) ? tile.compareTo(o.tile) : Integer.compareUnsigned(thisCompare, otheCompare);
 	}
 
 	public Tile getTile() {
@@ -82,7 +85,7 @@ public class Node implements Comparable<Node>{
 	public int getPathCost() {
 		return pathCost;
 	}
-	
+
 	public int getHeuristicValue() {
 		return heuristicValue;
 	}
@@ -91,7 +94,7 @@ public class Node implements Comparable<Node>{
 	public int hashCode(){
 		return tile.getRow() * 10000 + tile.getCol() ;
 	}
-	
+
 	/**
 	 * Verifica se due ExtendedTile sono uguali anche in base al loro contenuto.
 	 */
@@ -117,8 +120,8 @@ public class Node implements Comparable<Node>{
 		return "Node [tile=" + tile + ", pathCost=" + pathCost + ", heuristicValue=" + heuristicValue + ", target="
 				+ target + "]";
 	}
-	
-	
-	
-	
+
+
+
+
 }
