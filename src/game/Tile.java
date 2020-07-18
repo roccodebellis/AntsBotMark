@@ -553,13 +553,13 @@ public class Tile implements Comparable<Tile> {
 
 	@Override
 	public String toString() {
-		return "[" + row + "," + col+"]";
+		return "[" + row + "," + col+"](hash:"+hashCode()+")";
 	}
 
 	@Override
 	public int compareTo(Tile o) {
 		// TODO Auto-generated method stub
-		return Integer.compare((((31 * (1+col) + 25523 * (1+row))*77 )* 431 * (1+col)) * 137 * (1+row) , (((31 * (1+o.col) + 25523 * (1+o.row))*77 )* 431 * (1+o.col)) * 137 * (1+o.row));
+		return Integer.compare(hashCode() , o.hashCode());
 	}
 
 
