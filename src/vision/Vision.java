@@ -53,7 +53,7 @@ public class Vision {
 
 	public Vision(Set<Tile> mapTiles, int viewRadius){
 		this.mapTiles = mapTiles;
-		visionOffsets = new Offsets((int) Math.sqrt(viewRadius));
+		visionOffsets = new Offsets(viewRadius);
 		inVision = new HashSet<Tile>();
 		enemyToAnt = new TreeMap<Node,Tile>();
 		hillDefenceTargets = new TreeMap<Tile,Set<Tile>>();
@@ -112,6 +112,7 @@ public class Vision {
 	}
 	
 	//TODO re-read it, not sure it has the behaviour we expect (see compareTo in Node)
+	//non funzia
 	private void updateEnemyToAnt(Tile enemyTile, Tile ant) {
 		Node enemyTileAsANode = new Node(enemyTile,ant);
 			if(enemyToAnt.containsKey(enemyTileAsANode) ) {

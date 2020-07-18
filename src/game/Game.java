@@ -662,41 +662,84 @@ public class Game {
 		return view.getEnemyToAnt();
 	}
 
+	/**
+	 * Considero le situazioni di battaglia in corso
+	 * se ce ne e' almeno una in corso
+	 * combatti
+	 * 
+	 */
 	public void doCombat() {
-		Map<Node,Tile> enemyToAnt = getEnemyToAnt();
-		Iterator<Entry<Node, Tile>> battlePairItr = enemyToAnt.entrySet().iterator();
-		Set<Tile> myAntsEngaged = new HashSet<Tile>();
+		
+		Map<Tile,Tile> ongoingBattlesSituation = getOngoingBattlesSituation();
 
-		Map<Tile,Tile> battlesLeading = new HashMap<Tile,Tile>();
-		Set<CombatSimulation> battles = new HashSet<CombatSimulation>();
+		//System.out.println("battlesLeading: "+ongoingBattles);
 
-
-		while(battlePairItr.hasNext()) {
-			Entry<Node, Tile> curPair = battlePairItr.next();
-			Node enemyExt = curPair.getKey();
-			Tile ant = curPair.getValue();
-
-			//if(enemyExt.getHeuristicValue()) FIXME magari diminuire e non utilizzare il raggio di visione, utilizzando la distanza
-			if(!myAntsEngaged.contains(ant)) {
-				battlesLeading.put(ant, enemyExt.getTile());
-			}
-
-		}
-
-		//System.out.println("battlesLeading: "+battlesLeading);
-
-		if(battlesLeading.size()!=0) {
-			long timeAssigned = Timing.getCombatTimeStime()/battlesLeading.size();
-			battlesLeading.entrySet().parallelStream().forEachOrdered(e ->
-			battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
-
-			battles.parallelStream().forEachOrdered(battle -> battle.combatResolution());
-			Set<Order> attack = new HashSet<Order>();
-			battles.parallelStream().forEachOrdered(battle -> attack.addAll(battle.getMoves()));
-			Game.issueOrders(attack);
+		if(ongoingBattlesSituation.size()!=0) {
+			/*try {
+				if(true)
+					throw new NullPointerException();*/
+				fight(ongoingBattlesSituation);
+			/*}catch(NullPointerException e) {
+				throw new NullPointerException("I'm in! - > " + ongoingBattlesSituation);
+			}*/
+			
 		}
 	}
 
+	/**
+	 * itero su tutti i nemici che sono in visione di una mia formica,
+	 * prendo una coppia nemico-formica per volta
+	 * se la mia formica non e' gia' coinvolta in un'altra battaglia,
+	 * inserisco la battaglia corrente tra quelle in corso
+	 * @return
+	 */
+	private Map<Tile,Tile> getOngoingBattlesSituation(){
+		
+		Map<Node,Tile> enemyToAnt = getEnemyToAnt();
+		Iterator<Entry<Node, Tile>> inCombatSituationItr = enemyToAnt.entrySet().iterator();
+		Set<Tile> myAntsInCombatSituation = new HashSet<Tile>();
+		Map<Tile,Tile> ongoingBattles = new HashMap<Tile,Tile>();
+		
+		while(inCombatSituationItr.hasNext()) {
+			Entry<Node, Tile> currPairOfOpponents = inCombatSituationItr.next();
+			Node enemyNode = currPairOfOpponents.getKey();
+			Tile myAnt = currPairOfOpponents.getValue();
+
+			//if(enemyTileAsNode.getHeuristicValue()) FIXME magari diminuire e non utilizzare il raggio di visione, utilizzando la distanza
+			if(!myAntsInCombatSituation.contains(myAnt)) {
+				ongoingBattles.put(myAnt, enemyNode.getTile());
+			}
+
+		}
+		/*try {
+			if(ongoingBattles.size()>0)
+				throw new NullPointerException();*/
+			return ongoingBattles;
+		/*}catch(NullPointerException e) {
+			throw new NullPointerException("I'm in! - > " + ongoingBattles + "\nEnemyToAnt - >" +enemyToAnt);
+		}*/
+		
+	}
+	
+	/**
+	 * Per ogni situazione di battaglia, assegno un tempo massimo per la sua esecuzione
+	 * ed avvio una simulazione di battaglia;
+	 * Per ogni battaglia
+	 * @param ongoingBattlesSituation
+	 */
+	private void fight(Map<Tile,Tile> ongoingBattlesSituation) {
+		Set<CombatSimulation> battles = new HashSet<CombatSimulation>();
+		long timeAssigned = Timing.getCombatTimeStime()/ongoingBattlesSituation.size();
+		
+		ongoingBattlesSituation.entrySet().parallelStream().forEachOrdered(e ->
+			battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
+		
+		battles.parallelStream().forEachOrdered(battle -> battle.combatResolution());
+		Set<Order> movesToPerform = new HashSet<Order>();
+		battles.parallelStream().forEachOrdered(battle -> movesToPerform.addAll(battle.getMoves()));
+		Game.issueOrders(movesToPerform);
+	}
+	
 	public void doFood() {
 		if(getMyAnts().size()>0)
 			new FoodCollection(getFoodTiles(),getMyAnts());

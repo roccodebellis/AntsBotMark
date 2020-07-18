@@ -51,6 +51,13 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	long deadLine;
 	Assignment root;
 
+	/**
+	 * Considero la formica e la formica nemica che hanno fatto scattare la situazione di battaglia.
+	 * 
+	 * @param myAnt
+	 * @param enemyAnt
+	 * @param deadLine
+	 */
 	public CombatSimulation(Tile myAnt, Tile enemyAnt, long deadLine) {
 		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(true)); //perche ' in combattimento
 		//System.out.println("- "+myAnt);
@@ -168,12 +175,12 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		Map<MovesModels,Set<Order>> output = new HashMap<MovesModels,Set<Order>>();
 
 		output.put(MovesModels.ATTACK, attack(s));
-		output.put(MovesModels.HOLD, hold(s));
+		/*output.put(MovesModels.HOLD, hold(s));
 		output.put(MovesModels.IDLE, idle(s));
 		output.put(MovesModels.NORTH, directional(s,Directions.NORTH));
 		output.put(MovesModels.SOUTH, directional(s,Directions.SOUTH));
 		output.put(MovesModels.EAST, directional(s,Directions.EAST));
-		output.put(MovesModels.WEST, directional(s,Directions.WEST));
+		output.put(MovesModels.WEST, directional(s,Directions.WEST));*/
 		
 		return output;
 	}

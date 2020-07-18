@@ -37,14 +37,14 @@ public class MyBot extends Bot {
 		//2.5\3.5 HILL ATTACK AND DEFENSE
 		//state.doDefence();
 		time.start(Modules.Defence);
-		//state.doDefenceHills();
+		state.doDefenceHills();
 		time.end(Modules.Defence);
 		//3 FOOD COLLECTION
 		time.start(Modules.Food);
 		state.doFood();
 		time.end(Modules.Food);
 		time.start(Modules.Attack);
-		//state.doAttackHills();
+		state.doAttackHills();
 		time.end(Modules.Attack);
 		//4 EXPLORATION AND MOVEMENTS
 		time.start(Modules.Exploration);

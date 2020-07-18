@@ -111,6 +111,14 @@ public class Node implements Comparable<Node>{
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "Node [tile=" + tile + ", pathCost=" + pathCost + ", heuristicValue=" + heuristicValue + ", target="
+				+ target + "]";
+	}
+	
+	
 	
 	
 }
