@@ -68,7 +68,7 @@ public class Node implements Comparable<Node>{
 
 	@Override
 	public int compareTo(Node o) {
-		return Integer.compareUnsigned(pathCost + heuristicValue, o.pathCost + o.heuristicValue);
+		return Integer.compareUnsigned(pathCost + heuristicValue, o.pathCost + o.heuristicValue);//TODO what if they are equals? we lose one node...
 	}
 
 	public Tile getTile() {

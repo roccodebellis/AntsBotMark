@@ -90,31 +90,52 @@ public class Vision {
 		visible_ants.parallelStream().forEachOrdered(ant -> inVision.addAll(Game.getTiles(ant, visionOffsets)));
 		inVision.forEach(tile ->  Game.setVisible(tile,true));
 		 */
+		
+		//for each visible ants we get the tiles in vision and we update the visibility incrementing
+		//the tile vision index of 1
 		visible_ants.parallelStream().forEachOrdered(
 				ant -> 
-				Game.getTiles(ant, visionOffsets).parallelStream().forEachOrdered(tileVisible ->{
-					Node visibleTileEx = new Node(tileVisible,ant);
-					inVision.add(tileVisible);
-					Game.setVisible(tileVisible,true);
-					if(tileVisible.isOccupiedByAnt() && tileVisible.getOwner() != 0)
-						if(enemyToAnt.containsKey(visibleTileEx) ) {
-							if(Game.getDistance(ant, tileVisible) < Game.getDistance(enemyToAnt.get(visibleTileEx), tileVisible))
-								visibleTileEx = new Node(tileVisible,ant);
-						} else 
-							enemyToAnt.put(visibleTileEx,ant);
-						
+				//for each tile in vision of the current ant, we update the vision index of the tile
+				Game.getTiles(ant, visionOffsets).parallelStream().forEachOrdered(visibleTile ->{
+					//setting the vision
+					updateVision(visibleTile);
+					
+					
+					//if the Tile (as a Node) contains an enemy, we update enemyToAnt
+					//setting the value as the Node (wich corresponds to the enemy)
+					//and (one of) its key as the ant (which it's able to see)
+					if(visibleTile.isOccupiedByAnt() && visibleTile.getOwner() != 0)
+						updateEnemyToAnt(visibleTile, ant);
 						//antToEnemy.put(ant,tileVisible);
 				}));
-
-
-
+		updateOutOfSight();		
+	}
+	
+	//TODO re-read it, not sure it has the behaviour we expect (see compareTo in Node)
+	private void updateEnemyToAnt(Tile enemyTile, Tile ant) {
+		Node enemyTileAsANode = new Node(enemyTile,ant);
+			if(enemyToAnt.containsKey(enemyTileAsANode) ) {
+				//if the distance between the ant and the enemy is lower than the distance between
+				//another ant (already contained in enemyToAnt) and the enemy
+				//we add another node with the enemy and the current ant
+				if(Game.getDistance(ant, enemyTile) < Game.getDistance(enemyToAnt.get(enemyTileAsANode), enemyTile))
+					enemyTileAsANode = new Node(enemyTile,ant);//FIXME does it work as we expect? What if the ant's distance is equal to the old one?
+			} else 
+				enemyToAnt.put(enemyTileAsANode,ant);
+	}
+	
+	private void updateOutOfSight() {
 		outOfSight = new TreeSet<Tile>(Tile.visionComparator());
 		//outOfSight = new HashSet<Tile>();
-		
 		outOfSight.addAll(Game.getMapTiles());
 		outOfSight.removeAll(inVision);
 		outOfSight.removeAll(Game.getUnexplored());
-		outOfSight.removeAll(Game.getWater());		
+		outOfSight.removeAll(Game.getWater());
+	}
+	
+	private void updateVision(Tile visibleTile) {
+		inVision.add(visibleTile);
+		Game.setVisible(visibleTile,true);
 	}
 	
 	public Map<Node,Tile> getEnemyToAnt() {
