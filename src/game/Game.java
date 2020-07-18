@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -697,8 +698,9 @@ public class Game {
 		
 		Map<Node,Tile> enemyToAnt = getEnemyToAnt();
 		Iterator<Entry<Node, Tile>> inCombatSituationItr = enemyToAnt.entrySet().iterator();
-		Set<Tile> myAntsInCombatSituation = new HashSet<Tile>();
-		Map<Tile,Tile> ongoingBattles = new HashMap<Tile,Tile>();
+		
+		Set<Tile> myAntsInCombatSituation = new TreeSet<Tile>();
+		Map<Tile,Tile> ongoingBattles = new TreeMap<Tile,Tile>();
 		
 		while(inCombatSituationItr.hasNext()) {
 			Entry<Node, Tile> currPairOfOpponents = inCombatSituationItr.next();
@@ -734,7 +736,15 @@ public class Game {
 		ongoingBattlesSituation.entrySet().parallelStream().forEachOrdered(e ->
 			battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
 		
+		
 		battles.parallelStream().forEachOrdered(battle -> battle.combatResolution());
+		try {
+			if(battles.size()>1)
+				throw new NullPointerException();
+			
+		}catch(NullPointerException e) {
+			throw new NullPointerException("I'm in! - > " + battles);
+		}
 		Set<Order> movesToPerform = new HashSet<Order>();
 		battles.parallelStream().forEachOrdered(battle -> movesToPerform.addAll(battle.getMoves()));
 		Game.issueOrders(movesToPerform);

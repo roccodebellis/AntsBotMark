@@ -66,9 +66,9 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		situationRecognition(myAnt,enemyAnt);
 		this.deadLine = deadLine;
 		enemyHills = new TreeMap<Integer, Set<Tile>>();
-		IntStream.range(0, Game.getNumberEnemy()).forEach(id -> enemyHills.put(id, new HashSet<Tile>()));
+		IntStream.range(0, Game.getNumberEnemy()).forEach(id -> enemyHills.put(id+1, new HashSet<Tile>()));
 
-		Game.getEnemyHills().forEach(eHill -> enemyHills.get(eHill.getOwner()-1).add(eHill));
+		Game.getEnemyHills().forEach(eHill -> enemyHills.get(eHill.getOwner()).add(eHill));
 
 
 	}
@@ -135,10 +135,9 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 			if(newEnemyFound.size() > (int) enemyAntSet.entrySet().parallelStream().count()) {
 				addedAnts = true;
-				newEnemyFound.parallelStream().forEachOrdered(eA ->
-					enemyAntSet.get(eA.getOwner()).add(eA)
+				newEnemyFound.parallelStream().forEachOrdered(eA -> {
+					enemyAntSet.get(eA.getOwner()).add(eA); }
 						);
-
 			}
 
 			Set<Tile> enemyAntsSet = new HashSet<Tile>();
@@ -179,13 +178,13 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	private Map<MovesModels,Set<Order>> movesGenerator(Assignment s) {
 		Map<MovesModels,Set<Order>> output = new HashMap<MovesModels,Set<Order>>();
 
-		output.put(MovesModels.ATTACK, attack(s));
-		/*output.put(MovesModels.HOLD, hold(s));
+		/*output.put(MovesModels.ATTACK, attack(s));
+		output.put(MovesModels.HOLD, hold(s));
 		output.put(MovesModels.IDLE, idle(s));
 		output.put(MovesModels.NORTH, directional(s,Directions.NORTH));
 		output.put(MovesModels.SOUTH, directional(s,Directions.SOUTH));
-		output.put(MovesModels.EAST, directional(s,Directions.EAST));
-		output.put(MovesModels.WEST, directional(s,Directions.WEST));*/
+		output.put(MovesModels.EAST, directional(s,Directions.EAST));*/
+		output.put(MovesModels.WEST, directional(s,Directions.WEST));
 		
 		return output;
 	}
@@ -289,7 +288,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 
 	private double MinMax(Assignment state, long deadLine, int depth) {
-		if(AllowExtension(deadLine, depth)) {
+		if(AllowExtension(state,deadLine, depth)) {
 
 			Map<MovesModels,Set<Order>> movesSet = movesGenerator(state);
 
@@ -311,26 +310,32 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		return state.evaluate();
 	}
 
-	boolean AllowExtension(long deadline, int depth){
-		return (depth%2 == 0) || (depth < Configuration.getCombatModuleMinMaxMaxDepth() && deadline > Timing.getCurTime()+85); //FIXME GetExtensionEstimate
+	boolean AllowExtension(Assignment state, long deadline, int depth){
+		return (depth%2 == 0) || (depth < Configuration.getCombatModuleMinMaxMaxDepth() && deadline > state.GetExtensionEstimate()); //FIXME GetExtensionEstimate
 	}
-
-
-
+	
 	private int antInvolved() {
-		return myAntSet.size() + (int) enemyAntSet.entrySet().parallelStream().count(); //TODO check deve contare il numero di formiche coinvolte
+		return myAntSet.size() + enemyAntSet.entrySet().parallelStream().mapToInt(eASet -> eASet.getValue().size()).sum(); //TODO check deve contare il numero di formiche coinvolte
 	}
 
 	@Override
 	public int compareTo(CombatSimulation o) {
-		return Integer.compare(o.antInvolved(),antInvolved());//FIXME SONO INVERTITI per ordinarli in ordine decrescente, o almeno si spera
+		int antInv = o.antInvolved();
+		int enemyInv = antInvolved();
+		return antInv==enemyInv ? -1 : Integer.compare(antInv,enemyInv);//FIXME SONO INVERTITI per ordinarli in ordine decrescente, o almeno si spera
 	}
 
 	public void combatResolution() {
 		root = new Assignment(0, myAntSet, Game.getMyHills(), enemyAntSet, enemyHills, Game.getFoodTiles(), false);
-		MinMax(root, deadLine, 0);	
+		MinMax(root, Timing.getCurTime() + deadLine, 0);	
 		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(false));
 
 	}
 
+	@Override
+	public String toString() {
+		return "CombatSimulation [root=" + root + "]";
+	}
+
+	
 }

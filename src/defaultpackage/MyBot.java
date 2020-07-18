@@ -52,6 +52,7 @@ public class MyBot extends Bot {
 		time.end(Modules.Exploration);
 		//Game.printMapVision();
 		//Game.printNeigbour();
-		state.doFood();
+		
+		//state.doFood();
 	}
 }

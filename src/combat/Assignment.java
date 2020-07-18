@@ -12,6 +12,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import defaultpackage.Configuration;
 import game.Game;
 import game.Order;
 import game.Tile;
@@ -140,9 +142,9 @@ public class Assignment implements Comparable<Assignment>{
 
 		if(isEnemyMoves)
 			moves.parallelStream().forEach(move ->{ 
-				IntStream.range(1, newEnemyAnts.size()+1).parallel().forEachOrdered( i  -> { 
-					if(newEnemyAnts.get(i).remove(move.getOrigin()))
-						newEnemyAnts.get(i).add(move.getOrderedTile());
+				IntStream.range(0, newEnemyAnts.size()).parallel().forEachOrdered( i  -> { 
+					if(newEnemyAnts.get(i+1).remove(move.getOrigin()))
+						newEnemyAnts.get(i+1).add(move.getOrderedTile());
 				});
 			});
 		else {
@@ -185,15 +187,15 @@ public class Assignment implements Comparable<Assignment>{
 		focusAttack.putAll(computeFocusAttack(ants, enemy));
 
 
-		IntStream.range(1, enemyAnts.size()).parallel().forEachOrdered( i  -> { 
-			Set<Tile> ienemySet = enemyAnts.get(i);
+		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered( i  -> { 
+			Set<Tile> ienemySet = enemyAnts.get(i+1);
 
 			enemy.clear();
 			enemy.addAll(ants);
-			if(i-1 > 1)
-				IntStream.range(1, i-1).parallel().forEachOrdered( j -> enemy.addAll(enemyAnts.get(j)));
+			if(i-1 > 0)
+				IntStream.range(0, i-1).parallel().forEachOrdered( j -> enemy.addAll(enemyAnts.get(j+1)));
 			if(i+1 < enemyAnts.size())
-				IntStream.range(i+1, enemyAnts.size()).parallel().forEachOrdered( j -> enemy.addAll(enemyAnts.get(j)));
+				IntStream.range(i+1, enemyAnts.size()).parallel().forEachOrdered( j -> enemy.addAll(enemyAnts.get(j+1)));
 
 			//System.out.println("* ienemySet"+ ienemySet);
 			//System.out.println("* enemy"+ enemy);
@@ -284,8 +286,8 @@ public class Assignment implements Comparable<Assignment>{
 		//FIXME TENERE IN CONSIDERAZIONE L'AVER MANGIATO CIBO NEL TURNO PRECEDENTE
 		Set<Tile> hillDestroyed = new TreeSet<Tile>();
 		antsHills.parallelStream().forEachOrdered(hill -> {
-			IntStream.range(1, enemyAnts.size()).parallel().forEachOrdered(i -> { 
-				if(enemyAnts.get(i).contains(hill)) {
+			IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> { 
+				if(enemyAnts.get(i+1).contains(hill)) {
 					antsHillsDestroyed++;
 					hillDestroyed.add(hill);
 				}
@@ -296,14 +298,14 @@ public class Assignment implements Comparable<Assignment>{
 
 		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> {
 			hillDestroyed.clear();
-			Set<Tile> curEnemyHills = enemyHills.get(i);
+			Set<Tile> curEnemyHills = enemyHills.get(i+1);
 			curEnemyHills.parallelStream().forEachOrdered(hill -> {
 				if(ants.contains(hill)) {
-					enemyHillsDestroyed.set(i+1, enemyHillsDestroyed.get(i+1)+1);
+					enemyHillsDestroyed.set(i, enemyHillsDestroyed.get(i)+1);
 					hillDestroyed.add(hill);
 				}
 			});
-			enemyHills.get(i).removeAll(hillDestroyed);	
+			enemyHills.get(i+1).removeAll(hillDestroyed);	
 		});
 	}
 
@@ -316,7 +318,7 @@ public class Assignment implements Comparable<Assignment>{
 		foodTiles.parallelStream().forEachOrdered(food -> {
 			int antCount = 0;
 			List<Integer> enemyCount = new ArrayList<Integer>(enemyAnts.size());
-			enemyCount.forEach(i -> i = 0);
+			IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyCount.add(0));
 
 			Set<Tile> neighbours = food.getNeighbour().entrySet().parallelStream().map(nE -> nE.getValue()).collect(Collectors.toSet());
 			Iterator<Tile> neItr = neighbours.iterator();
@@ -365,6 +367,10 @@ public class Assignment implements Comparable<Assignment>{
 		return antsMove;
 	}
 
+	long GetExtensionEstimate() {
+		return (long) (ants.size() + enemyAnts.entrySet().parallelStream().mapToInt(eASet -> eASet.getValue().size()).sum()) * Configuration.getMilSecUsedForEachAntsInCS();
+	}
+	
 	/**
 	 * 
 	 * FIXME aggiungere quando veine effettuata la traduzione che un punteggio di 1 eè assegnato se un nido
@@ -410,6 +416,12 @@ public class Assignment implements Comparable<Assignment>{
 	@Override
 	public int compareTo(Assignment o) {
 		return Double.compare(value, o.value);
+	}
+
+
+	@Override
+	public String toString() {
+		return "Assignment [ants=" + ants + ", enemyAnts=" + enemyAnts + ", value=" + value + "]";
 	}
 
 

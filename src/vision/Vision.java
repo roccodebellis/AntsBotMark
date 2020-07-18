@@ -46,9 +46,9 @@ public class Vision {
 	private Set<Tile> outOfSight;//non so se sia meglio conservarli qui o meno
 
 	private Set<Tile> mapTiles;
-	
+
 	private Map<Node,Tile> enemyToAnt;
-	
+
 	private static Map<Tile,Set<Tile>> hillDefenceTargets; 
 
 	public Vision(Set<Tile> mapTiles, int viewRadius){
@@ -58,23 +58,23 @@ public class Vision {
 		enemyToAnt = new TreeMap<Node,Tile>();
 		hillDefenceTargets = new TreeMap<Tile,Set<Tile>>();
 	}
-	
+
 	public void addHillToDefend(Tile hill) {
 		hillDefenceTargets.put(hill, Game.getTiles(hill, Offsets.getDefenceHillOffsets()));
 	}
-	
+
 	private void removeDefenceTargets(Tile hill, Tile target) {
 		hillDefenceTargets.get(hill).remove(target);
 	}
-	
+
 	public static Set<Tile> getHillDefenceTargets(Tile hill) {
 		return hillDefenceTargets.get(hill);
 	}
-	
+
 	public Set<Tile> getHillsToDefend() {
 		return hillDefenceTargets.entrySet().parallelStream().map(entry -> entry.getKey()).collect(Collectors.toSet());
 	}
-	
+
 	public void removeHillToDefend(Tile hill) {
 		hillDefenceTargets.remove(hill);
 	}
@@ -84,47 +84,45 @@ public class Vision {
 		mapTiles.parallelStream().forEachOrdered(tile -> Game.setVisible(tile,false));
 	}
 
-	public void setVision(Set<Tile> visible_ants) {
+	public void setVision(Set<Tile> myAnts_visible) {
 		inVision.clear();
 		/*
 		visible_ants.parallelStream().forEachOrdered(ant -> inVision.addAll(Game.getTiles(ant, visionOffsets)));
 		inVision.forEach(tile ->  Game.setVisible(tile,true));
 		 */
-		
+
 		//for each visible ants we get the tiles in vision and we update the visibility incrementing
 		//the tile vision index of 1
-		visible_ants.parallelStream().forEachOrdered(
+		myAnts_visible.parallelStream().forEachOrdered(
 				ant -> 
 				//for each tile in vision of the current ant, we update the vision index of the tile
 				Game.getTiles(ant, visionOffsets).parallelStream().forEachOrdered(visibleTile ->{
 					//setting the vision
 					updateVision(visibleTile);
-					
-					
+
+
 					//if the Tile (as a Node) contains an enemy, we update enemyToAnt
 					//setting the value as the Node (wich corresponds to the enemy)
 					//and (one of) its key as the ant (which it's able to see)
 					if(visibleTile.isOccupiedByAnt() && visibleTile.getOwner() != 0)
 						updateEnemyToAnt(visibleTile, ant);
-						//antToEnemy.put(ant,tileVisible);
+					//antToEnemy.put(ant,tileVisible);
 				}));
 		updateOutOfSight();		
 	}
-	
+
 	//TODO re-read it, not sure it has the behaviour we expect (see compareTo in Node)
 	//non funzia
 	private void updateEnemyToAnt(Tile enemyTile, Tile ant) {
 		Node enemyTileAsANode = new Node(enemyTile,ant);
-			if(enemyToAnt.containsKey(enemyTileAsANode) ) {
-				//if the distance between the ant and the enemy is lower than the distance between
-				//another ant (already contained in enemyToAnt) and the enemy
-				//we add another node with the enemy and the current ant
-				if(Game.getDistance(ant, enemyTile) < Game.getDistance(enemyToAnt.get(enemyTileAsANode), enemyTile))
-					enemyTileAsANode = new Node(enemyTile,ant);//FIXME does it work as we expect? What if the ant's distance is equal to the old one?
-			} else 
+		if((enemyToAnt.containsKey(enemyTileAsANode) &&  Game.getDistance(ant, enemyTile) < Game.getDistance(enemyToAnt.get(enemyTileAsANode), enemyTile) || !enemyToAnt.containsKey(enemyTileAsANode))) 
 				enemyToAnt.put(enemyTileAsANode,ant);
+		//if the distance between the ant and the enemy is lower than the distance between
+		//another ant (already contained in enemyToAnt) and the enemy
+		//we add another node with the enemy and the current ant
+
 	}
-	
+
 	private void updateOutOfSight() {
 		outOfSight = new TreeSet<Tile>(Tile.visionComparator());
 		//outOfSight = new HashSet<Tile>();
@@ -133,12 +131,12 @@ public class Vision {
 		outOfSight.removeAll(Game.getUnexplored());
 		outOfSight.removeAll(Game.getWater());
 	}
-	
+
 	private void updateVision(Tile visibleTile) {
-		inVision.add(visibleTile);
-		Game.setVisible(visibleTile,true);
+		if(inVision.add(visibleTile))
+			Game.setVisible(visibleTile,true);
 	}
-	
+
 	public Map<Node,Tile> getEnemyToAnt() {
 		return enemyToAnt;
 	}
@@ -147,5 +145,5 @@ public class Vision {
 		return outOfSight;
 	}
 
-	
+
 }
