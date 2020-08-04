@@ -788,16 +788,12 @@ public class Game {
 
 	}
 
-	public void doDefence() {
-		new AttackDefenceHills();
-	}
-
 	public void doAttackHills() {
-		new AttackDefenceHills().attack();
+		AttackDefenceHills.attack();
 	}
 
 	public void doDefenceHills() {
-		new AttackDefenceHills().defence();
+		AttackDefenceHills.defence();
 	}
 
 	public void doExploration() {
