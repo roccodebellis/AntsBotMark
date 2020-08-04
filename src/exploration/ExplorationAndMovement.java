@@ -41,12 +41,8 @@ public class ExplorationAndMovement {
 			// false);
 			Search s = new Search(Game.getMyAnts(), unexplored, null, false, false, false);
 			Set<Tile> targetCompleted = s.adaptiveSearch();
-			Set<Order> orders = s.getOrders();
 
-			Set<Order> withoutHill = doNotStepOnMyHills(orders);
-			if(!withoutHill.isEmpty())
-				Game.issueOrders(withoutHill);
-			//Game.issueOrders(orders);
+			Game.issueOrders(s.getOrders());
 
 			unexplored.removeAll(targetCompleted);
 
@@ -61,12 +57,7 @@ public class ExplorationAndMovement {
 			// true); //sembra non funzionare
 			Search s = new Search(Game.getMyAnts(), outOfSight, null, false, false, false);
 			Set<Tile> targetCompleted = s.adaptiveSearch();
-			Set<Order> orders = s.getOrders();
-
-			Set<Order> withoutHill = doNotStepOnMyHills(orders);
-			Game.issueOrders(withoutHill);
-
-			//Game.issueOrders(orders);
+			Game.issueOrders(s.getOrders());
 			outOfSight.removeAll(targetCompleted);
 		}
 		return Game.getMyAnts().isEmpty();
@@ -159,8 +150,6 @@ public class ExplorationAndMovement {
 					toIssue.add(new Order(ant, dir.getOpponent().getNext()));
 				else if(ant.getNeighbour().containsKey(dir.getOpponent().getNext().getOpponent()))
 					toIssue.add(new Order(ant, dir.getOpponent().getNext().getOpponent()));
-				//toIssue = doNotStepOnMyHills(toIssue);
-
 				Game.issueOrders(toIssue);
 			}
 
@@ -194,23 +183,10 @@ public class ExplorationAndMovement {
 				pathFounded = false;
 			else {
 				targets.removeAll(results);
-				// Game.issueOrders(orders);
-				Set<Order> withoutHill = doNotStepOnMyHills(orders);
-				Game.issueOrders(withoutHill);
+				Game.issueOrders(orders);
 			}
 		}
 		return pathFounded;
-	}
-
-	private Set<Order> doNotStepOnMyHills(Set<Order> orders) {
-		Set<Order> withoutHill = new HashSet<Order>();
-		orders.parallelStream().forEachOrdered(o -> {
-			if (!Game.getMyHills().contains(o.getOrderedTile())) {
-				withoutHill.add(o);
-			}
-		});
-
-		return withoutHill;
 	}
 
 }

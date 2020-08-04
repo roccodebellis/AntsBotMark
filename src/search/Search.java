@@ -447,8 +447,17 @@ public class Search {
 
 				//neighbourTile.isSuitable() &&
 				//if( !visited.containsKey(neighbourTile) || !visited.get(neighbourTile).contains(curTileSource)) {
-				if( ((one_target_per_source || reverse) && !pathSources.containsKey(neighbourTile)) ^ (!(one_target_per_source ^ reverse) && (!visited.containsKey(neighbourTile) || !visited.get(neighbourTile).contains(curTileSource)))) {
-
+				
+				/*try {
+					if(!neighbourTile.isSuitable())
+						throw new NullPointerException();
+				}catch(NullPointerException e) {
+					throw new NullPointerException("\nIs suitable: " + neighbourTile.isSuitable() + "\nTileType: " + neighbourTile.getType() + "\nNeigh:" + neighbourTile + "\nMy grandMother: " + curTileSource +"\nMy mother: " + curTile + "\nMyHills: " + Game.getMyHills());
+				}*/
+				
+				if(((!neighbourTile.isSuitable() && targets.contains(neighbourTile)) || neighbourTile.isSuitable()) && (((one_target_per_source || reverse) && !pathSources.containsKey(neighbourTile)) ^ (!(one_target_per_source ^ reverse) && (!visited.containsKey(neighbourTile) || !visited.get(neighbourTile).contains(curTileSource))))) {
+					
+					
 					pathSources.put(neighbourTile,curTileSource);
 
 

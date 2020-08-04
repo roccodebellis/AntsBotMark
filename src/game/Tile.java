@@ -257,7 +257,7 @@ public class Tile implements Comparable<Tile> {
 	 * 
 	 * @return {@link #type}
 	 */
-	private TileTypes getType() {// TODO non utilizzata??
+	public TileTypes getType() {// TODO non utilizzata??
 		return type;
 	}
 

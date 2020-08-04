@@ -1,39 +1,26 @@
 package attackdefencehills;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-
-import game.Directions;
 import game.Game;
-import game.Order;
 import game.Tile;
 import search.Node;
 import search.Search;
-import vision.Offsets;
 import vision.Vision;
 
 public class AttackDefenceHills {
 
-	public AttackDefenceHills() {
-		//defence();
-		//attack();
-	}
-
-	// c'e' qualcosa che non va
-	// entrano in difesa anche se non ci sono formiche nemiche in vista
-	// da controllare
 	public static void defence() {
 		int avaiableAnts = Game.getMyAnts().size();
 
 		Map<Tile, TreeSet<Node>> enemiesForHills = new HashMap<Tile,TreeSet<Node>>();
 
 		Set<Tile> defender = new TreeSet<Tile>();
-
+//TODO cancella eccezione
 		try {
 			Game.getMyHills().forEach(curHill -> {
 				Set<Tile> tempSet = new TreeSet<Tile>();
@@ -106,18 +93,17 @@ public class AttackDefenceHills {
 			 */
 
 		}
-		//Set<Order> withoutHill = null;
+
 		if(!defender.isEmpty()) {
+			Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(true));
 			Search s = new Search(defender, Game.getMyAnts(), null, false, true, false);
 			s.adaptiveSearch();
-
+			Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(false));
 
 			//Game.issueOrders(s.getOrders()); // FIXME controllare se sta cosa funziona, nel caso da l'ordine al
 			// contrario
 
-			//withoutHill = doNotStepOnMyHills(s.getOrders()); //TODO
 			Game.issueOrders(s.getOrders());//
-			//Game.issueOrders(withoutHill);
 		}
 
 		/*
@@ -138,21 +124,7 @@ public class AttackDefenceHills {
 		// questa ricerca e' giusta
 		Search s = new Search(Game.getEnemyHills(), Game.getMyAnts(), null, false, false, true);
 		s.adaptiveSearch();
-		//Set<Order> withoutHill = doNotStepOnMyHills(s.getOrders());
-		//Game.issueOrders(withoutHill);
 		Game.issueOrders(s.getOrders());
-	}
-
-	//TODO magari da rimuovere
-	private Set<Order> doNotStepOnMyHills(Set<Order> orders) {
-		Set<Order> withoutHill = new HashSet<Order>();
-		orders.parallelStream().forEachOrdered(o -> {
-			if (!Game.getMyHills().contains(o.getOrderedTile())) {
-				withoutHill.add(o);
-			}
-		});
-
-		return withoutHill;
 	}
 
 	/*

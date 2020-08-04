@@ -33,7 +33,7 @@ public class MyBot extends Bot {
 
 		//1 VISION MODULE
 		//2 COMBAT SIMULATION
-		state.doCombat();
+		//state.doCombat();
 		//2.5\3.5 HILL ATTACK AND DEFENSE
 		//state.doDefence();
 		time.start(Modules.Defence);

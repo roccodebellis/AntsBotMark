@@ -215,8 +215,11 @@ public class Game {
 
 		for (int r = 0; r < rows; r++) {
 			ArrayList<Tile> tempRow = new ArrayList<>();
-			for (int c = 0; c < cols; c++)
-				tempRow.add(new Tile(r, c));
+			for (int c = 0; c < cols; c++) {
+				Tile t = new Tile(r,c);
+				t.setSuitable(true);
+				tempRow.add(t);
+			}
 			// if(r == 0 || r == rows-1 || c == 0 || c == cols-1)
 			// borders.add(t);
 			output.add(tempRow);
