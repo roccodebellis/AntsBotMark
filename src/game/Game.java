@@ -14,6 +14,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import attackdefencehills.AttackDefenceHills;
@@ -36,8 +37,6 @@ import vision.Vision;
  */
 public class Game {
 
-
-
 	/**
 	 * Numero di righe della mappa del gioco.
 	 */
@@ -47,7 +46,6 @@ public class Game {
 	 * Numero di colonne della mappa del gioco.
 	 */
 	private static int cols;
-
 
 	/**
 	 * Raggio di visione delle formiche al quadrato.
@@ -60,17 +58,15 @@ public class Game {
 	private static int attackRadius2;
 
 	/**
-	 * Raggio di visione delle formiche per la raccolta del cibo al quadrato. 
+	 * Raggio di visione delle formiche per la raccolta del cibo al quadrato.
 	 */
 	private static int spawnRadius2;
 
 	/**
-	 * TODO vd 405 416
-	 * {@link Offsets} 
+	 * TODO vd 405 416 {@link Offsets}
 	 * 
 	 */
 	private static Vision view;
-
 
 	/**
 	 * Insieme contenente le {@link Tile tile} su cui sono posizionati i
@@ -85,14 +81,14 @@ public class Game {
 	private static Set<Tile> enemyHills;
 
 	/**
-	 * Insieme contentente le {@link Tile tile} su cui sono posizionate
-	 * le formiche dell'agente nel turno corrente.
+	 * Insieme contentente le {@link Tile tile} su cui sono posizionate le formiche
+	 * dell'agente nel turno corrente.
 	 */
 	private static Set<Tile> myAnts;
 
 	/**
-	 * Insieme contentente le {@link Tile tile} su cui sono posizionate
-	 * le formiche nemiche viste dalle {@link #myAnts formiche dell'agente} nel turno corrente.
+	 * Insieme contentente le {@link Tile tile} su cui sono posizionate le formiche
+	 * nemiche viste dalle {@link #myAnts formiche dell'agente} nel turno corrente.
 	 */
 	private static Set<Tile> enemyAnts;
 
@@ -102,12 +98,14 @@ public class Game {
 	private static Set<Tile> orderlyAnts;
 
 	/**
-	 * Insieme contentente le {@link Tile tile} su cui e' posizionato il cibo nel turno corrente.
+	 * Insieme contentente le {@link Tile tile} su cui e' posizionato il cibo nel
+	 * turno corrente.
 	 */
 	private static Set<Tile> food;
 
 	/**
-	 * Insieme di {@link Orders ordini} assegnati ad una o piu' {@link #myAnts formiche} dell'agente.
+	 * Insieme di {@link Orders ordini} assegnati ad una o piu' {@link #myAnts
+	 * formiche} dell'agente.
 	 */
 	private static Set<Order> orders;
 
@@ -129,7 +127,7 @@ public class Game {
 	/**
 	 * Tile che sono al di fuori della vista delle formiche.
 	 */
-	//private static Set<Tile> outOfSight;
+	// private static Set<Tile> outOfSight;
 
 	/**
 	 * Mappa del gioco.
@@ -141,7 +139,7 @@ public class Game {
 	/**
 	 * 
 	 */
-	//private static Set<Tile> borders;
+	// private static Set<Tile> borders;
 
 	/**
 	 * Returns all orders sent so far.
@@ -173,7 +171,6 @@ public class Game {
 	 */
 	public Game(int rows, int cols, int viewRadius2, int attackRadius2, int spawnRadius2) {
 
-
 		setRows(rows);
 		setCols(cols);
 
@@ -192,8 +189,9 @@ public class Game {
 		ordersTarget = new TreeSet<Tile>();
 		unexplored = new TreeSet<Tile>();
 		water = new HashSet<Tile>();
-		//outOfSight = new TreeSet<Tile>(Tile.visionComparator());//TODO check if comparator
-		//borders = new TreeSet<Tile>();
+		// outOfSight = new TreeSet<Tile>(Tile.visionComparator());//TODO check if
+		// comparator
+		// borders = new TreeSet<Tile>();
 		setTiles = new TreeSet<Tile>();
 		map = initGameMap();
 
@@ -217,14 +215,16 @@ public class Game {
 
 		for (int r = 0; r < rows; r++) {
 			ArrayList<Tile> tempRow = new ArrayList<>();
-			for (int c = 0; c < cols; c++) 
+			for (int c = 0; c < cols; c++)
 				tempRow.add(new Tile(r, c));
-			//if(r == 0 || r == rows-1 || c == 0 || c == cols-1)
-			//borders.add(t);
+			// if(r == 0 || r == rows-1 || c == 0 || c == cols-1)
+			// borders.add(t);
 			output.add(tempRow);
-			//setTiles.addAll(tempRow.parallelStream().collect(Collectors.toCollection(()->new TreeSet<Tile>(Tile.tileComparator()))));
+			// setTiles.addAll(tempRow.parallelStream().collect(Collectors.toCollection(()->new
+			// TreeSet<Tile>(Tile.tileComparator()))));
 			setTiles.addAll(tempRow);
-			//unexplored.addAll(tempRow.parallelStream().collect( Collectors.toCollection(() -> new TreeSet<Tile>(Tile.visionComparator()))));
+			// unexplored.addAll(tempRow.parallelStream().collect(
+			// Collectors.toCollection(() -> new TreeSet<Tile>(Tile.visionComparator()))));
 			unexplored.addAll(tempRow);
 		}
 
@@ -283,7 +283,6 @@ public class Game {
 				UP_prev_Tile = UP_cur_Tile;
 			}
 
-
 			DOWN_prev_Tile.addNeighbour(Directions.EAST, firstColTile);
 			firstColTile.addNeighbour(Directions.WEST, DOWN_prev_Tile);
 
@@ -301,31 +300,28 @@ public class Game {
 			UP_cur_Tile.addNeighbour(Directions.NORTH, DOWN_cur_Tile);
 		}
 
-
 		/*
-		// ADD "EXTERNAL" NEIGHBOUR
-		// Iterator<Tile> firstRowIt = output.getFirst().iterator();
-		// Iterator<Tile> lastRowIt = output.getLast().iterator();
-		Iterator<Tile> firstRowIt = output.get(0).iterator();
-		Iterator<Tile> lastRowIt = output.get(rows-1).iterator();
-
-		while (firstRowIt.hasNext() && lastRowIt.hasNext()) {
-			Tile DOWN = lastRowIt.next();
-			Tile UP = firstRowIt.next();
-
-			UP.addNeighbour(Directions.NORTH, DOWN);
-			DOWN.addNeighbour(Directions.SOUTH, UP);
-		}
-
+		 * // ADD "EXTERNAL" NEIGHBOUR // Iterator<Tile> firstRowIt =
+		 * output.getFirst().iterator(); // Iterator<Tile> lastRowIt =
+		 * output.getLast().iterator(); Iterator<Tile> firstRowIt =
+		 * output.get(0).iterator(); Iterator<Tile> lastRowIt =
+		 * output.get(rows-1).iterator();
+		 * 
+		 * while (firstRowIt.hasNext() && lastRowIt.hasNext()) { Tile DOWN =
+		 * lastRowIt.next(); Tile UP = firstRowIt.next();
+		 * 
+		 * UP.addNeighbour(Directions.NORTH, DOWN); DOWN.addNeighbour(Directions.SOUTH,
+		 * UP); }
+		 * 
 		 */
 
-
-		//setTiles.forEach(s -> System.out.println(s+" -> "+s.getNeighbour()));
-		//output.forEach(l -> l.forEach(s -> System.out.println(s+" -> "+s.getNeighbour())));
+		// setTiles.forEach(s -> System.out.println(s+" -> "+s.getNeighbour()));
+		// output.forEach(l -> l.forEach(s -> System.out.println(s+" ->
+		// "+s.getNeighbour())));
 		return output;
 	}
 
-	public static List<List<Tile>> getMap(){
+	public static List<List<Tile>> getMap() {
 		return map;
 	}
 
@@ -361,11 +357,11 @@ public class Game {
 		return unexplored;
 	}
 
-	/*public static Set<Tile> getBorders(){
-		return borders;
-	}*/
+	/*
+	 * public static Set<Tile> getBorders(){ return borders; }
+	 */
 
-	public static Set<Tile> getFoodTiles(){
+	public static Set<Tile> getFoodTiles() {
 		return food;
 	}
 
@@ -386,13 +382,12 @@ public class Game {
 	}
 
 	public static Set<Tile> getOutOfSight() {
-		return view.getOutOfSight(); 
+		return view.getOutOfSight();
 	}
 
 	public static int getNumberEnemy() {
 		return numberEnemy;
 	}
-
 
 	public void clear() {
 		clearMyAnts();
@@ -400,7 +395,7 @@ public class Game {
 		clearMyHills();
 		clearEnemyHills();
 		clearFood();
-		view.clearAllVision();//TODO
+		view.clearAllVision();// TODO
 		orders.clear();
 		ordersTarget.clear();
 	}
@@ -455,7 +450,7 @@ public class Game {
 	 */
 
 	public static void setVisible(Tile tile, boolean visible) {
-		if(visible)
+		if (visible)
 			unexplored.remove(tile);
 		tile.setVisible(visible);
 	}
@@ -473,15 +468,12 @@ public class Game {
 
 		curTile.placeAnt(owner);
 
-
-
-
 		if (owner == 0) {
 			myAnts.add(curTile);
 			// setVision(curTile); richiamato da Bot.afterUpdate() con setVision()
 		} else {
 			enemyAnts.add(curTile);
-			if(owner > numberEnemy)
+			if (owner > numberEnemy)
 				Game.numberEnemy = owner;
 		}
 
@@ -521,13 +513,10 @@ public class Game {
 		else
 			enemyHills.add(curTile);
 
-		if(owner > numberEnemy)
+		if (owner > numberEnemy)
 			Game.numberEnemy = owner;
 
-
 	}
-
-
 
 	/**
 	 * Returns location with the specified offset from the specified location.
@@ -558,7 +547,44 @@ public class Game {
 	 * @return
 	 */
 	public static Set<Tile> getTiles(Tile tile, Offsets offsets) {
-		return offsets.parallelStream().map(offset -> getTile(tile, offset)).filter(t -> t.isAccessible()).collect(Collectors.toCollection(HashSet<Tile>::new));
+		return offsets.parallelStream().map(offset -> getTile(tile, offset)).filter(t -> t.isAccessible())
+				.collect(Collectors.toCollection(HashSet<Tile>::new));
+	}
+
+	private void setHillsToDefend() {
+		if (Timing.getTurnNumber() == 1) {
+			// aggiungere hill da difendere
+			getMyHills().parallelStream().forEachOrdered(hill -> view.addHillToDefend(hill));
+		} else {
+			// rimuovi hills distrutti
+			Set<Tile> hillsDown = new TreeSet<Tile>(view.getHillsToDefend());
+			Set<Tile> myHillsTemp = new TreeSet<Tile>(getMyHills());
+			if (hillsDown.size() > myHillsTemp.size()) {
+				hillsDown.removeAll(myHillsTemp);
+				hillsDown.parallelStream().forEachOrdered(hill -> view.removeHillToDefend(hill));
+			} else if (hillsDown.size() < getMyHills().size()) {
+				myHillsTemp.removeAll(hillsDown);
+				myHillsTemp.parallelStream().forEachOrdered(hill -> view.addHillToDefend(hill));
+			}
+		}
+	}
+
+	private void generateCrazyNeighbours() {
+		myAnts.parallelStream().forEachOrdered(ant -> {
+			Map<Directions, Tile> reorderedNeigh = new HashMap<Directions, Tile>();
+			ArrayList<Tile> neighAsList = new ArrayList<Tile>(ant.getNeighbour().values());
+			Map<Tile, Directions> tempNeigh = new HashMap<Tile, Directions>();
+			ant.getNeighbour().entrySet().parallelStream().forEachOrdered(e -> tempNeigh.put(e.getValue(), e.getKey()));
+			while (neighAsList.size() > 0) {
+				/*Random r = new Random(Timing.getCurTime());
+				int val = (int) (r.nextInt() * (neighbour.size()));*/
+				ThreadLocalRandom current = ThreadLocalRandom.current();
+				//int val = (int) Math.random() * (neighbour.size());
+				int val = current.nextInt((neighAsList.size()));
+				reorderedNeigh.put(tempNeigh.get(neighAsList.get(val)), neighAsList.remove(val));
+			}
+			ant.crazyNeighbour(reorderedNeigh);
+		});
 	}
 
 	/**
@@ -568,35 +594,9 @@ public class Game {
 
 		view.setVision(myAnts);
 
-		if(Timing.getTurnNumber()==1) {
-			//aggiungere hill da difendere
-			getMyHills().parallelStream().forEachOrdered(hill -> view.addHillToDefend(hill));
-		} else {
-			//rimuovi hills distrutti
-			Set<Tile> hillsDown = new TreeSet<Tile>(view.getHillsToDefend());
-			Set<Tile> myHillsTemp = new TreeSet<Tile>(getMyHills());
-			if(hillsDown.size() > myHillsTemp.size()) {
-				hillsDown.removeAll(myHillsTemp);
-				hillsDown.parallelStream().forEachOrdered(hill -> view.removeHillToDefend(hill));
-			} else if(hillsDown.size() < getMyHills().size()) {
-				myHillsTemp.removeAll(hillsDown);
-				myHillsTemp.parallelStream().forEachOrdered(hill -> view.addHillToDefend(hill));
-			}
-		}
+		setHillsToDefend();
 
-		myAnts.parallelStream().forEachOrdered(ant-> {
-			Map<Directions,Tile> newNeighbour = new HashMap<Directions,Tile>();
-			ArrayList<Tile> neighbour = new ArrayList<Tile>(ant.getNeighbour().values());
-			Map<Tile,Directions> ruobhgien = new HashMap<Tile,Directions>();
-			ant.getNeighbour().entrySet().parallelStream().forEachOrdered(e -> ruobhgien.put(e.getValue(),e.getKey()));
-			while(neighbour.size()>0) {
-				Random r = new Random(Timing.getCurTime());
-				int val = (int) (r.nextInt() * (neighbour.size())) ;
-				newNeighbour.put(ruobhgien.get(neighbour.get(val)),neighbour.remove(val));
-			}
-			ant.crazyNeighbour(newNeighbour);
-
-		});
+		generateCrazyNeighbours();
 
 	}
 
@@ -612,7 +612,7 @@ public class Game {
 
 		Tile dest = o_ant.getNeighbour().get(o_dir);
 
-		if(!ordersTarget.contains(dest)) {
+		if (!ordersTarget.contains(dest)) {
 			ordersTarget.add(dest);
 			myAnts.remove(o_ant);
 			orderlyAnts.add(o_ant);
@@ -624,8 +624,9 @@ public class Game {
 	}
 
 	/**
-	 * Per ogni @link Order ordine} assegnato alle formiche
-	 * viene mandato l'ordine al System Output tramite {@link #issueOrder(Order)}.
+	 * Per ogni @link Order ordine} assegnato alle formiche viene mandato l'ordine
+	 * al System Output tramite {@link #issueOrder(Order)}.
+	 * 
 	 * @param orders insieme di ordini da eseguire
 	 */
 	static public void issueOrders(Set<Order> orders) {
@@ -654,14 +655,14 @@ public class Game {
 
 		int difRow = t1.getRow() - t2.getRow();
 		int difCol = t1.getCol() - t2.getCol();
-		int deltaRow = (difRow<0) ? Math.abs(difRow)-rows : difRow;
-		int deltaCol = (difCol<0) ? Math.abs(difCol)-cols : difCol;
+		int deltaRow = (difRow < 0) ? Math.abs(difRow) - rows : difRow;
+		int deltaCol = (difCol < 0) ? Math.abs(difCol) - cols : difCol;
 
-		if(deltaRow>0 && deltaCol<=deltaRow && (-deltaCol> deltaRow || deltaCol > -deltaRow))
+		if (deltaRow > 0 && deltaCol <= deltaRow && (-deltaCol > deltaRow || deltaCol > -deltaRow))
 			output = Directions.NORTH;
-		else if(deltaRow<0 && deltaCol<=-deltaRow && (-deltaCol> deltaRow || deltaCol > -deltaRow))
+		else if (deltaRow < 0 && deltaCol <= -deltaRow && (-deltaCol > deltaRow || deltaCol > -deltaRow))
 			output = Directions.SOUTH;
-		else if(deltaCol>0)
+		else if (deltaCol > 0)
 			output = Directions.EAST;
 		else
 			output = Directions.WEST;
@@ -673,7 +674,7 @@ public class Game {
 	}
 
 	public static Set<Tile> getMapTiles() {
-		return setTiles;	
+		return setTiles;
 	}
 
 	public static Map<Node, Tile> getEnemyToAnt() {
@@ -681,99 +682,100 @@ public class Game {
 	}
 
 	/**
-	 * Considero le situazioni di battaglia in corso
-	 * se ce ne e' almeno una in corso
+	 * Considero le situazioni di battaglia in corso se ce ne e' almeno una in corso
 	 * combatti
 	 * 
 	 */
 	public void doCombat() {
 
-		Map<Tile,Tile> ongoingBattlesSituation = getOngoingBattlesSituation();
+		Map<Tile, Tile> ongoingBattlesSituation = getOngoingBattlesSituation();
 
-		//System.out.println("battlesLeading: "+ongoingBattles);
+		// System.out.println("battlesLeading: "+ongoingBattles);
 
-		if(ongoingBattlesSituation.size()!=0) {
-			/*	try {
-				if(ongoingBattlesSituation.size()>2)
-					throw new NullPointerException();*/
+		if (ongoingBattlesSituation.size() != 0) {
+			/*
+			 * try { if(ongoingBattlesSituation.size()>2) throw new NullPointerException();
+			 */
 			fight(ongoingBattlesSituation);
-			/*	}catch(NullPointerException e) {
-				throw new NullPointerException("I'm in! - > " + ongoingBattlesSituation);
-			}*/
+			/*
+			 * }catch(NullPointerException e) { throw new
+			 * NullPointerException("I'm in! - > " + ongoingBattlesSituation); }
+			 */
 
 		}
 	}
 
 	/**
-	 * itero su tutti i nemici che sono in visione di una mia formica,
-	 * prendo una coppia nemico-formica per volta
-	 * se la mia formica non e' gia' coinvolta in un'altra battaglia,
-	 * inserisco la battaglia corrente tra quelle in corso
+	 * itero su tutti i nemici che sono in visione di una mia formica, prendo una
+	 * coppia nemico-formica per volta se la mia formica non e' gia' coinvolta in
+	 * un'altra battaglia, inserisco la battaglia corrente tra quelle in corso
+	 * 
 	 * @return
 	 */
-	private Map<Tile,Tile> getOngoingBattlesSituation(){
+	private Map<Tile, Tile> getOngoingBattlesSituation() {
 
-		Map<Node,Tile> enemyToAnt = getEnemyToAnt();
+		Map<Node, Tile> enemyToAnt = getEnemyToAnt();
 		Iterator<Entry<Node, Tile>> inCombatSituationItr = enemyToAnt.entrySet().iterator();
 
 		Set<Tile> myAntsInCombatSituation = new TreeSet<Tile>();
-		Map<Tile,Tile> ongoingBattles = new TreeMap<Tile,Tile>();
+		Map<Tile, Tile> ongoingBattles = new TreeMap<Tile, Tile>();
 
-		while(inCombatSituationItr.hasNext()) {
+		while (inCombatSituationItr.hasNext()) {
 			Entry<Node, Tile> currPairOfOpponents = inCombatSituationItr.next();
 			Tile enemyAnt = currPairOfOpponents.getKey().getTile();
 			Tile myAnt = currPairOfOpponents.getValue();
 
-			//if(enemyTileAsNode.getHeuristicValue()) FIXME magari diminuire e non utilizzare il raggio di visione, utilizzando la distanza
-			if(!myAntsInCombatSituation.add(myAnt)) {
+			// if(enemyTileAsNode.getHeuristicValue()) FIXME magari diminuire e non
+			// utilizzare il raggio di visione, utilizzando la distanza
+			if (!myAntsInCombatSituation.add(myAnt)) {
 				Iterator<Tile> setEnemyIt = ongoingBattles.keySet().iterator();
 				boolean notAddThisAnt = false;
-				while(!notAddThisAnt && setEnemyIt.hasNext()) {
-					Tile eA = setEnemyIt.next();	
-					if(Game.getDistance(myAnt,eA) < Configuration.getCombatModuleSearchRadius())
+				while (!notAddThisAnt && setEnemyIt.hasNext()) {
+					Tile eA = setEnemyIt.next();
+					if (Game.getDistance(myAnt, eA) < Configuration.getCombatModuleSearchRadius())
 						notAddThisAnt = true;
 				}
-				if(notAddThisAnt)
+				if (notAddThisAnt)
 					ongoingBattles.put(myAnt, enemyAnt);
 			}
 
 		}
 
+		// myAntsInCombatSituation.parallelStream().forEachOrdered(ant ->
+		// Game.myAnts.remove(ant));
 
-
-		//myAntsInCombatSituation.parallelStream().forEachOrdered(ant -> Game.myAnts.remove(ant));
-
-		/*try {
-			if(ongoingBattles.size()>0)
-				throw new NullPointerException();*/
+		/*
+		 * try { if(ongoingBattles.size()>0) throw new NullPointerException();
+		 */
 		return ongoingBattles;
-		/*}catch(NullPointerException e) {
-			throw new NullPointerException("I'm in! - > " + ongoingBattles + "\nEnemyToAnt - >" +enemyToAnt);
-		}*/
+		/*
+		 * }catch(NullPointerException e) { throw new
+		 * NullPointerException("I'm in! - > " + ongoingBattles + "\nEnemyToAnt - >"
+		 * +enemyToAnt); }
+		 */
 
 	}
 
 	/**
-	 * Per ogni situazione di battaglia, assegno un tempo massimo per la sua esecuzione
-	 * ed avvio una simulazione di battaglia;
-	 * Per ogni battaglia
+	 * Per ogni situazione di battaglia, assegno un tempo massimo per la sua
+	 * esecuzione ed avvio una simulazione di battaglia; Per ogni battaglia
+	 * 
 	 * @param ongoingBattlesSituation
 	 */
-	private void fight(Map<Tile,Tile> ongoingBattlesSituation) {
+	private void fight(Map<Tile, Tile> ongoingBattlesSituation) {
 		Set<CombatSimulation> battles = new HashSet<CombatSimulation>();
-		long timeAssigned = Timing.getCombatTimeStime()/ongoingBattlesSituation.size();
+		long timeAssigned = Timing.getCombatTimeStime() / ongoingBattlesSituation.size();
 
-		ongoingBattlesSituation.entrySet().parallelStream().forEachOrdered(e ->
-		battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
-
+		ongoingBattlesSituation.entrySet().parallelStream()
+				.forEachOrdered(e -> battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
 
 		battles.parallelStream().forEachOrdered(battle -> battle.combatResolution());
 		try {
-			if(battles.size()>1)
+			if (battles.size() > 1)
 				throw new NullPointerException();
 
-		}catch(NullPointerException e) {
-			throw new NullPointerException("I'm in! - > " + battles +"\n\t" + getEnemyToAnt());
+		} catch (NullPointerException e) {
+			throw new NullPointerException("I'm in! - > " + battles + "\n\t" + getEnemyToAnt());
 		}
 		Set<Order> movesToPerform = new HashSet<Order>();
 		battles.parallelStream().forEachOrdered(battle -> movesToPerform.addAll(battle.getMoves()));
@@ -781,35 +783,34 @@ public class Game {
 	}
 
 	public void doFood() {
-		if(getMyAnts().size()>0)
-			new FoodCollection(getFoodTiles(),getMyAnts());
+		if (getMyAnts().size() > 0)
+			new FoodCollection(getFoodTiles(), getMyAnts());
 
 	}
 
 	public void doDefence() {
 		new AttackDefenceHills();
 	}
+
 	public void doAttackHills() {
 		new AttackDefenceHills().attack();
 	}
+
 	public void doDefenceHills() {
 		new AttackDefenceHills().defence();
 	}
-
 
 	public void doExploration() {
 		new ExplorationAndMovement();
 
 	}
 
-
-
 	public static void printMap() {
 		Iterator<List<Tile>> rowIt = map.iterator();
-		while(rowIt.hasNext()) {
+		while (rowIt.hasNext()) {
 			Iterator<Tile> colIt = rowIt.next().iterator();
-			while(colIt.hasNext()) {
-				System.out.print(!colIt.next().isAccessible()? 'x': 'o');
+			while (colIt.hasNext()) {
+				System.out.print(!colIt.next().isAccessible() ? 'x' : 'o');
 			}
 			System.out.print('\n');
 		}
@@ -817,9 +818,9 @@ public class Game {
 
 	public static void printMapVision() {
 		Iterator<List<Tile>> rowIt = map.iterator();
-		while(rowIt.hasNext()) {
+		while (rowIt.hasNext()) {
 			Iterator<Tile> colIt = rowIt.next().iterator();
-			while(colIt.hasNext()) {
+			while (colIt.hasNext()) {
 				System.out.print(colIt.next().getVisible());
 			}
 			System.out.print('\n');
@@ -828,15 +829,14 @@ public class Game {
 
 	public static void printNeighbour() {
 		Iterator<List<Tile>> rowIt = map.iterator();
-		while(rowIt.hasNext()) {
+		while (rowIt.hasNext()) {
 			Iterator<Tile> colIt = rowIt.next().iterator();
-			while(colIt.hasNext()) {
+			while (colIt.hasNext()) {
 				Tile tile = colIt.next();
-				System.out.println(tile + " ->  " +tile.getNeighbour());
+				System.out.println(tile + " ->  " + tile.getNeighbour());
 			}
 
 		}
 	}
-
 
 }
