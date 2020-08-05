@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -26,11 +28,11 @@ public class ExplorationAndMovement {
 	
 	public ExplorationAndMovement() {// TODO ?
 		if(!toUnexploredArea(Game.getUnexplored()))
-			if(!toInvisibleArea(Game.getOutOfSight())) {
-				if (!toPriorityTarget()) {
+			//if(!toInvisibleArea(Game.getOutOfSight())) {
+				//if (!toPriorityTarget()) {
 					spreadOut(Game.getOrderlyAnts());
-				}
-			}
+				//}
+			//}
 	}
 
 	public static boolean toUnexploredArea(Set<Tile> unexplored) {
@@ -47,7 +49,7 @@ public class ExplorationAndMovement {
 			Set<Tile> targetCompleted = s.adaptiveSearch();
 
 			Set<Order> orders = s.getOrders();
-			issueAndRemoveTarget(orders, unexplored);
+			issueAndRemoveOrders(orders, unexplored);
 			//Game.issueOrders(s.getOrders());
 
 		}
@@ -65,7 +67,7 @@ public class ExplorationAndMovement {
 			//Game.issueOrders(s.getOrders());
 			Set<Order> orders = s.getOrders();
 			
-			issueAndRemoveTarget(orders, outOfSight);
+			issueAndRemoveOrders(orders, outOfSight);
 			//outOfSight.removeAll(targetCompleted);
 		}
 		return Game.getMyAnts().isEmpty();
@@ -123,14 +125,17 @@ public class ExplorationAndMovement {
 
 
 		
-		Set<Tile> myAnts = Game.getMyAnts();
+		List<Tile> myAnts = new ArrayList<>(Game.getMyAnts());
 		Set<Tile> targets = new TreeSet<Tile>();
 
 		targets.addAll(myAnts);
 		targets.addAll(orderlyAnts);
-
-		for (Iterator<Tile> it = myAnts.iterator(); it.hasNext();) {
-			Tile ant = it.next();
+		
+		//Tile ant = null;
+		
+		int i = 0;
+		while(i<myAnts.size()) {
+			Tile ant = myAnts.get(i);
 		//for(Tile ant : myAnts) {
 			Set<Tile> targetsWithoutAnt = targets.parallelStream().filter(curAnt -> !curAnt.equals(ant)).collect(Collectors.toSet());
 
@@ -158,6 +163,7 @@ public class ExplorationAndMovement {
 					toIssue.add(new Order(ant, dir.getOpponent().getNext().getOpponent(), Game.getTile(ant, dir.getOpponent().getNext().getOpponent().getOffset())));
 				Game.issueOrders(toIssue);
 			}
+			i++;
 		}
 
 		
@@ -207,6 +213,7 @@ public class ExplorationAndMovement {
 
 			// targets.add(ant);
 		}*/
+
 	}
 
 	/*
@@ -235,7 +242,7 @@ public class ExplorationAndMovement {
 			if (orders.isEmpty())
 				pathFounded = false;
 			else
-				issueAndRemoveTarget(orders, targets);
+				issueAndRemoveOrders(orders, targets);
 				/*targets.removeAll(results);
 				Game.issueOrders(orders);*/
 			
@@ -243,7 +250,7 @@ public class ExplorationAndMovement {
 		return pathFounded;
 	}
 
-	private static void issueAndRemoveTarget(Set<Order> orders, Set<Tile> targets) {
+	private static void issueAndRemoveOrders(Set<Order> orders, Set<Tile> targets) {
 		orders.parallelStream().forEachOrdered(o -> {if(Game.issueOrder(o)) {targets.remove(o.getTarget());}});
 	}
 	
