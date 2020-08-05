@@ -409,8 +409,10 @@ public class Game {
 	private void clearMyAnts() {
 		myAnts.parallelStream().forEachOrdered(ant -> ant.removeAnt());
 		myAnts.clear();
+		orderlyAnts.parallelStream().forEachOrdered(ant -> ant.removeAnt());
+		orderlyAnts.clear();
 	}
-
+	
 	/**
 	 * Clears game state information about enemy ants locations.
 	 */
@@ -461,7 +463,7 @@ public class Game {
 	public void setWater(int row, int col) {
 		Tile curTile = getTile(row, col);
 		curTile.setTypeWater();
-
+		
 		water.add(curTile);
 
 	}
@@ -609,7 +611,7 @@ public class Game {
 	 * @param myAnt     map tile with my ant
 	 * @param direction direction in which to move my ant
 	 */
-	static public void issueOrder(Order order) {
+	static public boolean issueOrder(Order order) {
 		Tile o_ant = order.getOrigin();
 		Directions o_dir = order.getDirection();
 
@@ -623,7 +625,11 @@ public class Game {
 			orders.add(order);
 			if (!order.getDirection().equals(Directions.STAYSTILL))
 				System.out.println(order);
-		}
+			return true;
+		}  else return false;/*else {
+			HashSet<Tile> vattin = new HashSet<Tile>();
+			vattin.add(o_ant);
+			return ExplorationAndMovement.toUnexploredArea(vattin);}*/
 	}
 
 	/**

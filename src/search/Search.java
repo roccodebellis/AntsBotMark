@@ -75,6 +75,8 @@ public class Search {
 	 * 
 	 */
 	private Map<Tile, Tile> pathSources;
+	
+	private Set<Tile> completedSources;
 
 	/**
 	 * 
@@ -96,7 +98,7 @@ public class Search {
 	public Search(final Set<Tile> sources, final Set<Tile> targets, Integer radius, Boolean heuristic, Boolean search_from_one_source, Boolean reverse) {
 		this.sources = new HashSet<Tile>(sources);
 		this.targets = new HashSet<Tile>(targets);
-
+		this.completedSources = new HashSet<>();
 		this.orderTile = new HashSet<Tile>();
 
 		this.radius = radius;
@@ -185,12 +187,11 @@ public class Search {
 
 
 
-		Order o = new Order(origin, direction);
+		Order o = new Order(origin, direction, target);
 
-		if(orderTile.add(o.getOrderedTile())) {
-			this.orders.add(o);
-			return true;
-		} else
+		if(orderTile.add(o.getOrderedTile()))
+			return this.orders.add(o);
+		 else
 			return false;
 	}
 
@@ -216,8 +217,8 @@ public class Search {
 		return orders;
 	}
 
-	private Map<Tile,Tile> getPathSources(){
-		return this.pathSources;
+	public Set<Tile> getCompletedSources(){
+		return completedSources;
 	}
 
 	private Set<Tile> targets() {
@@ -410,7 +411,7 @@ public class Search {
 
 
 		Queue<Tile> frontier = new LinkedList<Tile>();
-		Set<Tile> completedSources = new HashSet<>();
+		
 		//Set<Tile> visited = new TreeSet<>(Tile.tileComparator());
 		Map<Tile,Set<Tile>>  visited =new HashMap<>();
 		Map<Tile,Set<Tile>> closedList = new HashMap<>();
@@ -438,8 +439,9 @@ public class Search {
 			if( completedSources.contains(curTileSource))
 				continue;//continue while
 
-
+try {
 			Iterator<Entry<Directions, Tile>> neighboursIt = curTile.getNeighbour().entrySet().iterator();
+
 			while(neighboursIt.hasNext()) {
 				Entry<Directions, Tile> neighbourEntry= neighboursIt.next();
 				Tile neighbourTile = neighbourEntry.getValue();
@@ -522,7 +524,10 @@ public class Search {
 				}
 			}
 		}
-
+		catch(NullPointerException e) {
+			
+			throw new NullPointerException("\nSorgenti: " + sources + "\nCurTile: " + curTile + "\nCurTileSource: " + curTileSource +"\nNeigh: " + curTile.getNeighbour());
+		}}
 		//sources.forEach(s -> System.out.println(s +" -> " +directionFromSource.get(s)));
 		//return result, pathSources, directionFromSource, directionFromTarget; //TODO
 		//computeOrders(); cambiare in base a come vengono impostati target e source

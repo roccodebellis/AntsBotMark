@@ -291,6 +291,9 @@ public class Tile implements Comparable<Tile> {
 		idOwner = null;
 		containsFood = false;
 		isSuitable = false;
+		Game.getUnexplored().remove(this);
+		//visibile?
+		
 
 	}
 

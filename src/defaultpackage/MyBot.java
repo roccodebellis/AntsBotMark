@@ -30,26 +30,27 @@ public class MyBot extends Bot {
 	@Override //DA FARW
 	public void doTurn() {
 		Game state = getGame();
-
+		while(Game.getMyAnts().size()>0) {
 		//1 VISION MODULE
 		//2 COMBAT SIMULATION
 		//state.doCombat();
 		//2.5\3.5 HILL ATTACK AND DEFENSE
 		//state.doDefence();
-		time.start(Modules.Defence);
+		/*time.start(Modules.Defence);
 		state.doDefenceHills();
 		time.end(Modules.Defence);
 		//3 FOOD COLLECTION
-		time.start(Modules.Food);
-		state.doFood();
-		time.end(Modules.Food);
+		
 		time.start(Modules.Attack);
 		state.doAttackHills();
-		time.end(Modules.Attack);
-		//4 EXPLORATION AND MOVEMENTS
+		time.end(Modules.Attack);*/
+		time.start(Modules.Food);
+		state.doFood();
+		time.end(Modules.Food);//4 EXPLORATION AND MOVEMENTS
 		time.start(Modules.Exploration);
 		state.doExploration();
 		time.end(Modules.Exploration);
+		}
 		//Game.printMapVision();
 		//Game.printNeigbour();
 		

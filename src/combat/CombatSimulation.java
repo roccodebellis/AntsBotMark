@@ -234,7 +234,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		Order order;
 
 		if(distance != targetDistance) {
-			order = new Order(ant, dir);
+			order = new Order(ant, dir, enemy);
 			/*
 			if(ordersAssigned.contains(order) || !Game.getTile(ant, dir.getOffset()).isAccessible()) {
 				order = new Order(ant,dir.getNext());
@@ -246,13 +246,13 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 			} 
 			 */
 
-		} else order = new Order(ant, Directions.STAYSTILL);
+		} else order = new Order(ant, Directions.STAYSTILL, ant);
 		return order;
 	}
 
 
 	private Set<Order> idle(Assignment s) {
-		return s.getAnts().parallelStream().map(ant -> new Order(ant,Directions.STAYSTILL)).collect(Collectors.toSet());
+		return s.getAnts().parallelStream().map(ant -> new Order(ant,Directions.STAYSTILL, ant)).collect(Collectors.toSet());
 	}
 
 	private Set<Order> directional(Assignment s, Directions m) {
@@ -262,9 +262,9 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 			Tile target = a.getNeighbour().get(m);
 
 			if(target==null) //acqua
-				orders.add(new Order(a,Directions.STAYSTILL)); //FIXME
+				orders.add(new Order(a,Directions.STAYSTILL, a)); //FIXME
 			else {
-				Order o = new Order(a,m);
+				Order o = new Order(a,m, target);
 				/*
 				if(orders.contains(o)) 
 					o = new Order(a,m.getNext());
