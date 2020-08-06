@@ -320,7 +320,7 @@ public class Assignment implements Comparable<Assignment>{
 			List<Integer> enemyCount = new ArrayList<Integer>(enemyAnts.size());
 			IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyCount.add(0));
 
-			Set<Tile> neighbours = food.getNeighbour().entrySet().parallelStream().map(nE -> nE.getValue()).collect(Collectors.toSet());
+			Set<Tile> neighbours = food.getNeighbours().parallelStream().map(nDir -> food.getNeighbourTile(nDir)).collect(Collectors.toSet());
 			Iterator<Tile> neItr = neighbours.iterator();
 			while(neItr.hasNext()) {
 				Tile neighbour = neItr.next();

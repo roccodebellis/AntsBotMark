@@ -1,10 +1,14 @@
 package game;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 import search.Search;
 import timing.Timing;
@@ -418,8 +422,29 @@ public class Tile implements Comparable<Tile> {
 	 * 
 	 * @return {@link #neighbourTiles}
 	 */
-	public Map<Directions, Tile> getNeighbour() {
+	private Map<Directions, Tile> getNeighbour() {
 		return neighbourTiles;
+		//return generateCrazyNeighbours();
+	}
+	
+	public List<Directions> getNeighbours() {
+		List<Directions> reorderedNeigh = new ArrayList<Directions>();
+		ArrayList<Tile> neighAsList = new ArrayList<Tile>(getNeighbour().values());
+		Map<Tile, Directions> tempNeigh = new HashMap<Tile, Directions>();
+		getNeighbour().entrySet().parallelStream().forEachOrdered(e -> tempNeigh.put(e.getValue(), e.getKey()));
+		while (neighAsList.size() > 0) {
+			Random r = new Random();//Random r = new Random(Timing.getCurTime());
+			int val = (int) r.nextInt(neighAsList.size());
+			//ThreadLocalRandom current = ThreadLocalRandom.current();
+			//int val = current.nextInt((neighAsList.size()));
+			reorderedNeigh.add(tempNeigh.get(neighAsList.remove(val)));
+		}
+		return reorderedNeigh;
+	}
+	
+	public Tile getNeighbourTile(Directions dir) {
+		return neighbourTiles.get(dir);
+		//return generateCrazyNeighbours();
 	}
 
 	/**

@@ -151,11 +151,11 @@ public class ExplorationAndMovement {
 				Order o = orderIt.next();
 				Directions dir = o.getDirection();
 				//TODO da controllare ma penso stia bene
-				if (ant.getNeighbour().containsKey(dir.getOpponent()))
+				if (ant.getNeighbours().contains(dir.getOpponent()))
 					toIssue.add(o.withOpponentDirection());
-				else if(ant.getNeighbour().containsKey(dir.getOpponent().getNext()))
+				else if(ant.getNeighbours().contains(dir.getOpponent().getNext()))
 					toIssue.add(new Order(ant, dir.getOpponent().getNext(), Game.getTile(ant, dir.getOpponent().getNext().getOffset())));
-				else if(ant.getNeighbour().containsKey(dir.getOpponent().getNext().getOpponent()))
+				else if(ant.getNeighbours().contains(dir.getOpponent().getNext().getOpponent()))
 					toIssue.add(new Order(ant, dir.getOpponent().getNext().getOpponent(), Game.getTile(ant, dir.getOpponent().getNext().getOpponent().getOffset())));
 				Game.issueOrders(toIssue);
 			}

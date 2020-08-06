@@ -30,6 +30,7 @@ public class MyBot extends Bot {
 	@Override //DA FARW
 	public void doTurn() {
 		Game state = getGame();
+		
 		while(Game.getMyAnts().size()>0) {
 		//1 VISION MODULE
 		//2 COMBAT SIMULATION

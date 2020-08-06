@@ -259,7 +259,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		Set<Order> orders = new HashSet<Order>();
 
 		s.getAnts().forEach(a -> {
-			Tile target = a.getNeighbour().get(m);
+			Tile target = a.getNeighbourTile(m);
 
 			if(target==null) //acqua
 				orders.add(new Order(a,Directions.STAYSTILL, a)); //FIXME

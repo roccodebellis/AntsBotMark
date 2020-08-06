@@ -308,9 +308,11 @@ public class Search {
 			 * 
 			 * }
 			 */
-			for (Entry<Directions, Tile> neighbourEntry : curTile.getTile().getNeighbour().entrySet()) {
-				Tile neighbourTile = neighbourEntry.getValue();
-				Directions neighborDirection = neighbourEntry.getKey();
+			Iterator<Directions> neighboursIt = curTile.getTile().getNeighbours().iterator();
+
+			while (neighboursIt.hasNext()) {
+				Directions neighbourDirection = neighboursIt.next();
+				Tile neighbourTile = curTile.getTile().getNeighbourTile(neighbourDirection);
 				Node neighbour = new Node(neighbourTile, curTileSource.getTarget(), curTile.getPathCost());
 
 				if (!neighbourTile.isSuitable() || expandedTile.contains(neighbour))
@@ -328,10 +330,10 @@ public class Search {
 
 					tileSources.put(neighbour, curTileSource);
 
-					directionFromSource.put(curTile.getTile(), neighborDirection);// TODO FIXME
+					directionFromSource.put(curTile.getTile(), neighbourDirection);// TODO FIXME
 					// directionFromSource.put(neighbourTile,directionFromSource.containsKey(curTile.getTile())
 					// ? directionFromSource.get(curTile.getTile()) : neighborDirection);
-					directionFromTarget.put(neighbourTile, neighborDirection.getOpponent());
+					directionFromTarget.put(neighbourTile, neighbourDirection.getOpponent());
 
 					frontier.add(neighbour);
 				}
@@ -432,12 +434,12 @@ public class Search {
 				continue;// continue while
 
 			try {
-				Iterator<Entry<Directions, Tile>> neighboursIt = curTile.getNeighbour().entrySet().iterator();
+				Iterator<Directions> neighboursIt = curTile.getNeighbours().iterator();
 
 				while (neighboursIt.hasNext()) {
-					Entry<Directions, Tile> neighbourEntry = neighboursIt.next();
-					Tile neighbourTile = neighbourEntry.getValue();
-					Directions neighbourDirection = neighbourEntry.getKey();
+					Directions neighbourDirection = neighboursIt.next();
+					Tile neighbourTile = curTile.getNeighbourTile(neighbourDirection);
+					
 
 					// neighbourTile.isSuitable() &&
 					// if( !visited.containsKey(neighbourTile) ||
@@ -455,7 +457,7 @@ public class Search {
 								|| (!neighbourTile.isSuitable() && curTile.getNeighbour().size() == 1))
 								&& !pathSources.containsKey(neighbourTile))*/
 					if (((!neighbourTile.isSuitable() && targets.contains(neighbourTile)) || neighbourTile.isSuitable()
-							|| (!neighbourTile.isSuitable() && curTile.getNeighbour().size() == 1))
+							|| (!neighbourTile.isSuitable() && curTile.getNeighbours().size() == 1))
 							&& (((one_target_per_source || reverse) && !pathSources.containsKey(neighbourTile))
 									^ (!(one_target_per_source ^ reverse) && (!visited.containsKey(neighbourTile)
 											|| !visited.get(neighbourTile).contains(curTileSource))))) {
@@ -529,7 +531,7 @@ public class Search {
 			} catch (NullPointerException e) {
 
 				throw new NullPointerException("\nSorgenti: " + sources + "\nCurTile: " + curTile + "\nCurTileSource: "
-						+ curTileSource + "\nNeigh: " + curTile.getNeighbour());
+						+ curTileSource + "\nNeigh: " + curTile.getNeighbours());
 			}
 		}
 		// sources.forEach(s -> System.out.println(s +" -> "

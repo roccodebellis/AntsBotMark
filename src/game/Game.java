@@ -574,23 +574,7 @@ public class Game {
 		}
 	}
 
-	private void generateCrazyNeighbours() {
-		myAnts.parallelStream().forEachOrdered(ant -> {
-			Map<Directions, Tile> reorderedNeigh = new HashMap<Directions, Tile>();
-			ArrayList<Tile> neighAsList = new ArrayList<Tile>(ant.getNeighbour().values());
-			Map<Tile, Directions> tempNeigh = new HashMap<Tile, Directions>();
-			ant.getNeighbour().entrySet().parallelStream().forEachOrdered(e -> tempNeigh.put(e.getValue(), e.getKey()));
-			while (neighAsList.size() > 0) {
-				/*Random r = new Random(Timing.getCurTime());
-				int val = (int) (r.nextInt() * (neighbour.size()));*/
-				ThreadLocalRandom current = ThreadLocalRandom.current();
-				//int val = (int) Math.random() * (neighbour.size());
-				int val = current.nextInt((neighAsList.size()));
-				reorderedNeigh.put(tempNeigh.get(neighAsList.get(val)), neighAsList.remove(val));
-			}
-			ant.crazyNeighbour(reorderedNeigh);
-		});
-	}
+	
 
 	/**
 	 * EQUALS TO STATIC SEARCH Calculates visible information
@@ -600,8 +584,6 @@ public class Game {
 		view.setVision(myAnts);
 
 		setHillsToDefend();
-
-		generateCrazyNeighbours();
 
 	}
 
@@ -615,7 +597,7 @@ public class Game {
 		Tile o_ant = order.getOrigin();
 		Directions o_dir = order.getDirection();
 
-		Tile dest = o_ant.getNeighbour().get(o_dir);
+		Tile dest = o_ant.getNeighbourTile(o_dir);
 
 		if (!ordersTarget.contains(dest)) {
 			ordersTarget.add(dest);
@@ -838,7 +820,7 @@ public class Game {
 			Iterator<Tile> colIt = rowIt.next().iterator();
 			while (colIt.hasNext()) {
 				Tile tile = colIt.next();
-				System.out.println(tile + " ->  " + tile.getNeighbour());
+				System.out.println(tile + " ->  " + tile.getNeighbours());
 			}
 
 		}
