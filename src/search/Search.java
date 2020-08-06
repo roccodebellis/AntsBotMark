@@ -1,11 +1,10 @@
 package search;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import vision.Offset;
 import vision.Offsets;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -18,6 +17,7 @@ import game.Game;
 import game.Order;
 import game.Tile;
 import java.util.HashMap;
+
 /**
  * 
  * @author Debellis, Lorusso
@@ -59,8 +59,8 @@ public class Search {
 	 * Se limitare la ricerca ed includere solo un {@link #targets} per ogni tile di
 	 * partenza {@link #source}.<br>
 	 * Impostato a true se si vuole effettuare una ricerca a partire da un singolo
-	 * tile di cibo verso la formica piu' vicina o quando si vuole cercare un'unica formica
-	 * piu' vicina ad un nemico. //TODO
+	 * tile di cibo verso la formica piu' vicina o quando si vuole cercare un'unica
+	 * formica piu' vicina ad un nemico. //TODO
 	 */
 	private Boolean one_target_per_source;
 
@@ -75,7 +75,7 @@ public class Search {
 	 * 
 	 */
 	private Map<Tile, Tile> pathSources;
-	
+
 	private Set<Tile> completedSources;
 
 	/**
@@ -95,7 +95,8 @@ public class Search {
 
 	private HashSet<Tile> orderTile;
 
-	public Search(final Set<Tile> sources, final Set<Tile> targets, Integer radius, Boolean heuristic, Boolean search_from_one_source, Boolean reverse) {
+	public Search(final Set<Tile> sources, final Set<Tile> targets, Integer radius, Boolean heuristic,
+			Boolean search_from_one_source, Boolean reverse) {
 		this.sources = new HashSet<Tile>(sources);
 		this.targets = new HashSet<Tile>(targets);
 		this.completedSources = new HashSet<>();
@@ -106,13 +107,12 @@ public class Search {
 		this.one_target_per_source = search_from_one_source;
 		this.reverse = reverse;
 
-		//Init results
+		// Init results
 		results = new HashSet<Tile>();
 		pathSources = new HashMap<Tile, Tile>();
 		directionFromSource = new HashMap<Tile, Directions>();
 		directionFromTarget = new HashMap<Tile, Directions>();
 		orders = new HashSet<Order>();
-
 
 	}
 
@@ -133,10 +133,12 @@ public class Search {
 	public Set<Tile> adaptiveSearch() {
 		if (radius != null)
 			return staticSearch();
-		else if (heuristic)//se i target sono tutti di un certo tipo 
+		else if (heuristic)// se i target sono tutti di un certo tipo
 			return extendedAStar();
-		else 			
-			return extendedBFS();
+		else return extendedBFS();
+			// return bfs();
+		
+
 	}
 
 	/**
@@ -152,78 +154,70 @@ public class Search {
 	 * @param opposite la direzione inversa con cui il percorso arriva al target
 	 *                 {@code t}
 	 */
-	//TODO secondo me questa e' callback ed e' da integrare nelle ricerche se one_target_per_source e' true
-	private boolean createOneOrder (Tile origin, Tile target, Directions direction) {
-		//if(one_target_per_source)
-		//	this.targets.remove(target);
+	// TODO secondo me questa e' callback ed e' da integrare nelle ricerche se
+	// one_target_per_source e' true
+	private boolean createOneOrder(Tile origin, Tile target, Directions direction) {
+		// if(one_target_per_source)
+		// this.targets.remove(target);
 
-		//if( this.orders.add(new Order(origin, direction))) {
-		//	if(one_target_per_source || reverse)
-		//		orderTile.add(target);
-		//	else
-		//		orderTile.add(origin);*/
-		//	return true;
+		// if( this.orders.add(new Order(origin, direction))) {
+		// if(one_target_per_source || reverse)
+		// orderTile.add(target);
+		// else
+		// orderTile.add(origin);*/
+		// return true;
 
-		//}else if( this.orders.add(new Order(origin, direction.getOpponent().getNext()))) {
-		/*if(one_target_per_source || reverse)
-				orderTile.add(target);
-			else
-				orderTile.add(origin);*/
-		//	return true;
+		// }else if( this.orders.add(new Order(origin,
+		// direction.getOpponent().getNext()))) {
+		/*
+		 * if(one_target_per_source || reverse) orderTile.add(target); else
+		 * orderTile.add(origin);
+		 */
+		// return true;
 
-		//}else if( this.orders.add(new Order(origin, direction.getNext()))) {
-		/*if(one_target_per_source || reverse)
-				orderTile.add(target);
-			else
-				orderTile.add(origin);*/
-		//	return true;
+		// }else if( this.orders.add(new Order(origin, direction.getNext()))) {
+		/*
+		 * if(one_target_per_source || reverse) orderTile.add(target); else
+		 * orderTile.add(origin);
+		 */
+		// return true;
 
-		//} else if( this.orders.add(new Order(origin, direction.getOpponent()))) {
-		//	return true;
-		//}else
-		//	return false;
+		// } else if( this.orders.add(new Order(origin, direction.getOpponent()))) {
+		// return true;
+		// }else
+		// return false;
 
-		//System.out.println("o:" +origin +" ->t:"+target+" "+direction);
-
-
+		// System.out.println("o:" +origin +" ->t:"+target+" "+direction);
 
 		Order o = new Order(origin, direction, target);
 
-		if(orderTile.add(o.getOrderedTile()))
+		if (orderTile.add(o.getOrderedTile()))
 			return this.orders.add(o);
-		 else
+		else
 			return false;
 	}
 
-
-
-
 	/*
-	//TODO controllare
-	private void computeOrders () {
-		Iterator<Tile> itRes = results.iterator();
-		while(itRes.hasNext()) {
-			Tile res = itRes.next();
-			Tile seed = pathSources.get(res);
-			Order newOrder;
-			if(one_target_per_source)
-				newOrder = computeOneOrder(res, seed, directionFromSource.get(seed), directionFromTarget.get(seed));
-			else newOrder = computeOneOrder(seed, res, directionFromSource.get(seed), directionFromTarget.get(seed));
-			orders.add(newOrder);
-		}
-	}*/
+	 * //TODO controllare private void computeOrders () { Iterator<Tile> itRes =
+	 * results.iterator(); while(itRes.hasNext()) { Tile res = itRes.next(); Tile
+	 * seed = pathSources.get(res); Order newOrder; if(one_target_per_source)
+	 * newOrder = computeOneOrder(res, seed, directionFromSource.get(seed),
+	 * directionFromTarget.get(seed)); else newOrder = computeOneOrder(seed, res,
+	 * directionFromSource.get(seed), directionFromTarget.get(seed));
+	 * orders.add(newOrder); } }
+	 */
 
-	public Set<Order> getOrders(){
+	public Set<Order> getOrders() {
 		return orders;
 	}
 
-	public Set<Tile> getCompletedSources(){
+	public Set<Tile> getCompletedSources() {
 		return completedSources;
 	}
 
-	private Set<Tile> targets() {
-		return this.targets;
-	}
+	/*
+	 * private Set<Tile> targets() { return this.targets; }
+	 */
 
 	/**
 	 * <p>
@@ -241,193 +235,192 @@ public class Search {
 	 * @param targets
 	 * @return
 	 */
-	// TODO in teoria no param
 	private Set<Tile> staticSearch() {
 
 		Offsets offsets = new Offsets(radius);
-		
-		//System.out.println("***Offsets("+radius+"):"+offsets);
-/*
-		sources.parallelStream().forEachOrdered(
-				source -> offsets.parallelStream().forEachOrdered(
-						offset -> {
-							Tile curTile = Game.getTile(source, offset);
-							if (targets.contains(curTile)) {
-								results.add(curTile);
-								System.out.println("SS:"+curTile);
-							}
-						})
-				);
-				
-				*/
-		//System.out.println("SS: source"+sources+" targets"+targets);
-		/* la sorgente è una se viene passata piu di una sorgente il risultato non è quello desiderato*/
-		Set<Tile> ciao = sources.parallelStream().map(source -> Game.getTiles(source, offsets)).flatMap(set -> set.parallelStream()).filter(x -> targets.contains(x)).collect(Collectors.toCollection(TreeSet<Tile>::new));
-	
-		//System.out.println("SS: "+ciao);
+
+		// System.out.println("***Offsets("+radius+"):"+offsets);
+		/*
+		 * sources.parallelStream().forEachOrdered( source ->
+		 * offsets.parallelStream().forEachOrdered( offset -> { Tile curTile =
+		 * Game.getTile(source, offset); if (targets.contains(curTile)) {
+		 * results.add(curTile); System.out.println("SS:"+curTile); } }) );
+		 * 
+		 */
+		// System.out.println("SS: source"+sources+" targets"+targets);
+		/*
+		 * la sorgente è una se viene passata piu di una sorgente il risultato non è
+		 * quello desiderato
+		 */
+		Set<Tile> ciao = sources.parallelStream().map(source -> Game.getTiles(source, offsets))
+				.flatMap(set -> set.parallelStream()).filter(x -> targets.contains(x))
+				.collect(Collectors.toCollection(TreeSet<Tile>::new));
+
+		// System.out.println("SS: "+ciao);
 		return ciao;
 	}
 
 	private Set<Tile> extendedAStar() {
 		PriorityQueue<Node> frontier = new PriorityQueue<Node>();
 		Set<Node> expandedTile = new HashSet<>();
-		Map<Node,Node> tileSources = new TreeMap<>();// is pathSources but with Node (Tile extended) instead of Tile
+		Map<Node, Node> tileSources = new TreeMap<>();// is pathSources but with Node (Tile extended) instead of Tile
 		Set<Tile> completedSources = new HashSet<>();
 
-		//assegnare targhet ad ogni sorgente
-		//il targhet piu vicino
+		// assegnare targhet ad ogni sorgente
+		// il targhet piu vicino
 
 		sources.forEach(source -> {
-			Node curSource = new Node(source,targets);
+			Node curSource = new Node(source, targets);
 			frontier.add(curSource);
-			tileSources.put(curSource,curSource);
+			tileSources.put(curSource, curSource);
 		});
 
-		while(!frontier.isEmpty()) {
+		while (!frontier.isEmpty()) {
 
 			Node curTile = frontier.poll();
 			Node curTileSource = tileSources.get(curTile);
 
-			expandedTile.add(curTile);//FIXME
+			expandedTile.add(curTile);// FIXME
 
-			if(one_target_per_source && completedSources.contains(curTileSource.getTile()))//FIXME
-				continue;//continue while
+			if (one_target_per_source && completedSources.contains(curTileSource.getTile()))// FIXME
+				continue;// continue while
 
-			if(targets.contains(curTile.getTile())) {
+			if (targets.contains(curTile.getTile())) {
 				results.add(curTile.getTile());
-				if(one_target_per_source) {
+				if (one_target_per_source) {
 					completedSources.add(curTileSource.getTile());
-					createOneOrder(curTile.getTile(), curTileSource.getTile(), directionFromTarget.get(curTile.getTile()));
-				}else { 
-					if(reverse)
-						createOneOrder(curTile.getTile(), curTileSource.getTile(), directionFromTarget.get(curTile.getTile()));
+					createOneOrder(curTile.getTile(), curTileSource.getTile(),
+							directionFromTarget.get(curTile.getTile()));
+				} else {
+					if (reverse)
+						createOneOrder(curTile.getTile(), curTileSource.getTile(),
+								directionFromTarget.get(curTile.getTile()));
 					else
-						createOneOrder(curTileSource.getTile(), curTile.getTile(), directionFromSource.get(curTileSource.getTile()));}
+						createOneOrder(curTileSource.getTile(), curTile.getTile(),
+								directionFromSource.get(curTileSource.getTile()));
+				}
 			}
 
-			/*TODO change for to iterator 
-			Iterator<Map.Entry<Directions, Tile>> itNeigh = curTile.getTile().getNeighbour().entrySet().iterator();
-			Entry<Directions, Tile> neighbourEntry;
-			while(it.hasNext()) {
-
-			}*/
-			for(Entry<Directions, Tile> neighbourEntry : curTile.getTile().getNeighbour().entrySet()) {
+			/*
+			 * TODO change for to iterator Iterator<Map.Entry<Directions, Tile>> itNeigh =
+			 * curTile.getTile().getNeighbour().entrySet().iterator(); Entry<Directions,
+			 * Tile> neighbourEntry; while(it.hasNext()) {
+			 * 
+			 * }
+			 */
+			for (Entry<Directions, Tile> neighbourEntry : curTile.getTile().getNeighbour().entrySet()) {
 				Tile neighbourTile = neighbourEntry.getValue();
 				Directions neighborDirection = neighbourEntry.getKey();
-				Node neighbour = new Node(neighbourTile,curTileSource.getTarget(),curTile.getPathCost());		
+				Node neighbour = new Node(neighbourTile, curTileSource.getTarget(), curTile.getPathCost());
 
-				if(!neighbourTile.isSuitable() || expandedTile.contains(neighbour))
+				if (!neighbourTile.isSuitable() || expandedTile.contains(neighbour))
 					continue;
-				//DA CONTROLLARE TODO
-				if(!tileSources.containsKey(neighbour) || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())){	
+				// DA CONTROLLARE TODO
+				if (!tileSources.containsKey(neighbour) || expandedTile.parallelStream()
+						.filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost() + 1 < x.getPathCost())) {
 
-					//if( !tileSources.containsKey(neighbour) || expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x -> curTile.getPathCost()+1 < x.getPathCost())) {//FIXME
-					//TileExtended neighbour = new TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost()); //FIXME altrimenti curTileSource.getTarget()
+					// if( !tileSources.containsKey(neighbour) ||
+					// expandedTile.parallelStream().filter(x -> x.equals(neighbour)).allMatch(x ->
+					// curTile.getPathCost()+1 < x.getPathCost())) {//FIXME
+					// TileExtended neighbour = new
+					// TileExtended(neighbourTile,curTileSource.getTarget(),curTile.getPathCost());
+					// //FIXME altrimenti curTileSource.getTarget()
 
-					tileSources.put(neighbour,curTileSource);
+					tileSources.put(neighbour, curTileSource);
 
-					directionFromSource.put(curTile.getTile(), neighborDirection);//TODO FIXME
-					//directionFromSource.put(neighbourTile,directionFromSource.containsKey(curTile.getTile()) ? directionFromSource.get(curTile.getTile()) : neighborDirection);
+					directionFromSource.put(curTile.getTile(), neighborDirection);// TODO FIXME
+					// directionFromSource.put(neighbourTile,directionFromSource.containsKey(curTile.getTile())
+					// ? directionFromSource.get(curTile.getTile()) : neighborDirection);
 					directionFromTarget.put(neighbourTile, neighborDirection.getOpponent());
 
 					frontier.add(neighbour);
 				}
 			}
 		}
-		this.pathSources = new TreeMap<Tile,Tile>();
-		this.pathSources.putAll(tileSources.entrySet().parallelStream().collect(Collectors.toMap(e -> e.getKey().getTile(), e -> e.getValue().getTile())));
-		//computeOrders(); TODO
+		this.pathSources = new TreeMap<Tile, Tile>();
+		this.pathSources.putAll(tileSources.entrySet().parallelStream()
+				.collect(Collectors.toMap(e -> e.getKey().getTile(), e -> e.getValue().getTile())));
+		// computeOrders(); TODO
 		return this.results;
-		//return results, tileSources, directionFromSource, directionFromTarget;
+		// return results, tileSources, directionFromSource, directionFromTarget;
 	}
 
 	/**
-	 * one_target_per_source trova per ogni sorgente il targhet più vicino e te li restituisce
-	 * altrimenti per ogni source invia tutti i targhet vicini verso quelle sorgenti (sicuramente
-	 * i più vicini ad ogni sorgente)
+	 * one_target_per_source trova per ogni sorgente il targhet più vicino e te li
+	 * restituisce altrimenti per ogni source invia tutti i targhet vicini verso
+	 * quelle sorgenti (sicuramente i più vicini ad ogni sorgente)
 	 * 
 	 * @return
 	 */
 	private Set<Tile> extendedBFS() {
 		/*
-		Queue<Tile> frontier = new LinkedList<Tile>();
-		Set<Tile> completedSources = new HashSet<>();
-
-		sources.parallelStream().forEachOrdered(source -> {
-			frontier.add(source);
-			pathSources.put(source,source);
-		});
-
-		while(!frontier.isEmpty()) {
-			Tile curTile = frontier.poll();
-
-			Tile curTileSource = pathSources.get(curTile);
-			if(one_target_per_source && completedSources.contains(curTileSource))
-				continue;//continue while
-
+		 * Queue<Tile> frontier = new LinkedList<Tile>(); Set<Tile> completedSources =
+		 * new HashSet<>();
+		 * 
+		 * sources.parallelStream().forEachOrdered(source -> { frontier.add(source);
+		 * pathSources.put(source,source); });
+		 * 
+		 * while(!frontier.isEmpty()) { Tile curTile = frontier.poll();
+		 * 
+		 * Tile curTileSource = pathSources.get(curTile); if(one_target_per_source &&
+		 * completedSources.contains(curTileSource)) continue;//continue while
 		 **
-		 * for(Entry<Directions, Tile> neighborEntry : curTile.getNeighbour().entrySet()) {
-				Tile neighborTile = neighborEntry.getValue();
-				Directions neighborDirection = neighborEntry.getKey();
+		 * 
+		 * for(Entry<Directions, Tile> neighborEntry :
+		 * curTile.getNeighbour().entrySet()) { Tile neighborTile =
+		 * neighborEntry.getValue(); Directions neighborDirection =
+		 * neighborEntry.getKey();
 		 *
-
-			curTile.getNeighbour().entrySet().parallelStream().forEachOrdered(
-					neighbourEntry -> { 
-						Tile neighbourTile = neighbourEntry.getValue();
-						Directions neighbourDirection = neighbourEntry.getKey();
-
-						if(!neighbourTile.isSuitable() || !pathSources.containsKey(neighbourTile)) {
-
-							pathSources.put(neighbourTile,curTileSource);
-
-							directionFromSource.put(curTile, neighbourDirection);/*
-							if(directionFromSource.containsKey(curTile))
-								directionFromSource.put(neighbourTile, directionFromSource.get(curTile));
-							else
-								directionFromSource.put(neighbourTile, neighbourDirection);*
-
-							directionFromTarget.put(neighbourTile, neighbourDirection.getOpponent());
-
-							if(targets.contains(neighbourTile)) {
-								results.add(neighbourTile);
-								if(one_target_per_source) {//FIXME
-									completedSources.add(curTileSource);
-									createOneOrder(curTile, curTileSource, directionFromTarget.get(curTile));
-								}else createOneOrder(curTileSource, curTile, directionFromSource.get(curTileSource));
-								//TODO: di regola non bisogna rimuovere il targhet
-								//ma se viene rieseguita la ricerca, è necessario rimuoverlo
-							}//*else*
-
-							frontier.add(neighbourTile);
-						}//continue for
-					});
-		}
-		//return result, pathSources, directionFromSource, directionFromTarget; //TODO
-		//computeOrders(); cambiare in base a come vengono impostati target e source
-		return this.results;
+		 * 
+		 * curTile.getNeighbour().entrySet().parallelStream().forEachOrdered(
+		 * neighbourEntry -> { Tile neighbourTile = neighbourEntry.getValue();
+		 * Directions neighbourDirection = neighbourEntry.getKey();
+		 * 
+		 * if(!neighbourTile.isSuitable() || !pathSources.containsKey(neighbourTile)) {
+		 * 
+		 * pathSources.put(neighbourTile,curTileSource);
+		 * 
+		 * directionFromSource.put(curTile, neighbourDirection);/*
+		 * if(directionFromSource.containsKey(curTile))
+		 * directionFromSource.put(neighbourTile, directionFromSource.get(curTile));
+		 * else directionFromSource.put(neighbourTile, neighbourDirection);*
+		 * 
+		 * directionFromTarget.put(neighbourTile, neighbourDirection.getOpponent());
+		 * 
+		 * if(targets.contains(neighbourTile)) { results.add(neighbourTile);
+		 * if(one_target_per_source) {//FIXME completedSources.add(curTileSource);
+		 * createOneOrder(curTile, curTileSource, directionFromTarget.get(curTile));
+		 * }else createOneOrder(curTileSource, curTile,
+		 * directionFromSource.get(curTileSource)); //TODO: di regola non bisogna
+		 * rimuovere il targhet //ma se viene rieseguita la ricerca, è necessario
+		 * rimuoverlo }//*else*
+		 * 
+		 * frontier.add(neighbourTile); }//continue for }); } //return result,
+		 * pathSources, directionFromSource, directionFromTarget; //TODO
+		 * //computeOrders(); cambiare in base a come vengono impostati target e source
+		 * return this.results;
 		 */
 
-
-
-
 		Queue<Tile> frontier = new LinkedList<Tile>();
-		
-		//Set<Tile> visited = new TreeSet<>(Tile.tileComparator());
-		Map<Tile,Set<Tile>>  visited =new HashMap<>();
-		Map<Tile,Set<Tile>> closedList = new HashMap<>();
+
+		// Set<Tile> visited = new TreeSet<>(Tile.tileComparator());
+		Map<Tile, Set<Tile>> visited = new HashMap<>();
+		Map<Tile, Set<Tile>> closedList = new HashMap<>();
 
 		sources.parallelStream().forEachOrdered(source -> {
 			frontier.add(source);
-			pathSources.put(source,source);
-			//visited.add(source);
+			pathSources.put(source, source);
+			// visited.add(source);
 			Set<Tile> expanded = new HashSet<Tile>();
 			expanded.add(source);
 			visited.put(source, expanded);
 			closedList.put(source, expanded);
 		});
 
-		//while(!frontier.isEmpty() || !(!(results.containsAll(targets) || targets.isEmpty()) || orderTile.containsAll(sources))) { //FIXME togliere targhets
-		while(!frontier.isEmpty()) {
+		// while(!frontier.isEmpty() || !(!(results.containsAll(targets) ||
+		// targets.isEmpty()) || orderTile.containsAll(sources))) { //FIXME togliere
+		// targhets
+		while (!frontier.isEmpty()) {
 			Tile curTile = frontier.poll();
 
 			Tile curTileSource = pathSources.get(curTile);
@@ -435,108 +428,119 @@ public class Search {
 			Set<Tile> expanded = closedList.get(curTileSource);
 			expanded.remove(curTile);
 
+			if (completedSources.contains(curTileSource))
+				continue;// continue while
 
-			if( completedSources.contains(curTileSource))
-				continue;//continue while
+			try {
+				Iterator<Entry<Directions, Tile>> neighboursIt = curTile.getNeighbour().entrySet().iterator();
 
-try {
-			Iterator<Entry<Directions, Tile>> neighboursIt = curTile.getNeighbour().entrySet().iterator();
+				while (neighboursIt.hasNext()) {
+					Entry<Directions, Tile> neighbourEntry = neighboursIt.next();
+					Tile neighbourTile = neighbourEntry.getValue();
+					Directions neighbourDirection = neighbourEntry.getKey();
 
-			while(neighboursIt.hasNext()) {
-				Entry<Directions, Tile> neighbourEntry= neighboursIt.next();
-				Tile neighbourTile = neighbourEntry.getValue();
-				Directions neighbourDirection = neighbourEntry.getKey();
+					// neighbourTile.isSuitable() &&
+					// if( !visited.containsKey(neighbourTile) ||
+					// !visited.get(neighbourTile).contains(curTileSource)) {
 
-				//neighbourTile.isSuitable() &&
-				//if( !visited.containsKey(neighbourTile) || !visited.get(neighbourTile).contains(curTileSource)) {
-				
-				/*try {
-					if(!neighbourTile.isSuitable())
-						throw new NullPointerException();
-				}catch(NullPointerException e) {
-					throw new NullPointerException("\nIs suitable: " + neighbourTile.isSuitable() + "\nTileType: " + neighbourTile.getType() + "\nNeigh:" + neighbourTile + "\nMy grandMother: " + curTileSource +"\nMy mother: " + curTile + "\nMyHills: " + Game.getMyHills());
-				}*/
-				
-				if(((!neighbourTile.isSuitable() && targets.contains(neighbourTile)) || neighbourTile.isSuitable()) && (((one_target_per_source || reverse) && !pathSources.containsKey(neighbourTile)) ^ (!(one_target_per_source ^ reverse) && (!visited.containsKey(neighbourTile) || !visited.get(neighbourTile).contains(curTileSource))))) {
-					
-					
-					pathSources.put(neighbourTile,curTileSource);
+					/*
+					 * try { if(!neighbourTile.isSuitable()) throw new NullPointerException();
+					 * }catch(NullPointerException e) { throw new
+					 * NullPointerException("\nIs suitable: " + neighbourTile.isSuitable() +
+					 * "\nTileType: " + neighbourTile.getType() + "\nNeigh:" + neighbourTile +
+					 * "\nMy grandMother: " + curTileSource +"\nMy mother: " + curTile +
+					 * "\nMyHills: " + Game.getMyHills()); }
+					 */
+					/*if (((!neighbourTile.isSuitable() && targets.contains(neighbourTile)) || neighbourTile.isSuitable()
+								|| (!neighbourTile.isSuitable() && curTile.getNeighbour().size() == 1))
+								&& !pathSources.containsKey(neighbourTile))*/
+					if (((!neighbourTile.isSuitable() && targets.contains(neighbourTile)) || neighbourTile.isSuitable()
+							|| (!neighbourTile.isSuitable() && curTile.getNeighbour().size() == 1))
+							&& (((one_target_per_source || reverse) && !pathSources.containsKey(neighbourTile))
+									^ (!(one_target_per_source ^ reverse) && (!visited.containsKey(neighbourTile)
+											|| !visited.get(neighbourTile).contains(curTileSource))))) {
+						pathSources.put(neighbourTile, curTileSource);
 
+						if (!(one_target_per_source ^ reverse))
+							directionFromSource.put(neighbourTile,
+									directionFromSource.containsKey(curTile) ? directionFromSource.get(curTile)
+											: neighbourDirection);
+						else
+							directionFromSource.put(curTile, neighbourDirection);
+						directionFromTarget.put(neighbourTile, neighbourDirection.getOpponent());
 
+						if (targets.contains(neighbourTile)) {
+							// System.out.println("cur"+curTile + " nei"+neighbourTile
+							// +"("+neighbourDirection+") " + "sourc" + curTileSource);
 
-					if(!(one_target_per_source ^ reverse))
-						directionFromSource.put(neighbourTile, directionFromSource.containsKey(curTile) ? directionFromSource.get(curTile) : neighbourDirection);
-					else 
-						directionFromSource.put(curTile, neighbourDirection);
-					directionFromTarget.put(neighbourTile, neighbourDirection.getOpponent());
+							boolean checkOrder = false;
+							// TODO aggiungere solo se create one order ha restituito true
+							if (one_target_per_source) {// FIXME
 
-					if(targets.contains(neighbourTile)) {
-						//System.out.println("cur"+curTile + " nei"+neighbourTile +"("+neighbourDirection+") " + "sourc" + curTileSource);
-
-						boolean checkOrder = false;
-						//TODO aggiungere solo se create one order ha restituito true
-						if(one_target_per_source) {//FIXME
-
-							checkOrder = createOneOrder(neighbourTile, curTileSource, directionFromTarget.get(neighbourTile));
-							if(checkOrder) {
-								targets.remove(neighbourTile);
-								completedSources.add(curTileSource);
-							}
-						}else {
-							if(reverse)
-								checkOrder = createOneOrder(neighbourTile, curTileSource, directionFromTarget.get(neighbourTile));
-							else {
-								checkOrder = createOneOrder(curTileSource, neighbourTile, directionFromSource.get(neighbourTile));
-								//checkOrder = createOneOrder(curTileSource, neighbourTile, directionFromSource.get(curTileSource));
-								completedSources.add(curTileSource);
-							}
-						}
-
-
-						if(checkOrder) {
-							results.add(neighbourTile);
-							//frontier.removeAll(expanded);
-
-						}	
-
-						break;
-					} else {
-
-
-						if(!visited.containsKey(neighbourTile) || !visited.get(neighbourTile).contains(curTileSource)) {
-
-							if(!visited.containsKey(neighbourTile)) {
-								Set<Tile> set = new HashSet<Tile>();
-								set.add(curTileSource);
-								visited.put(neighbourTile, set);
+								checkOrder = createOneOrder(neighbourTile, curTileSource,
+										directionFromTarget.get(neighbourTile));
+								if (checkOrder) {
+									targets.remove(neighbourTile);
+									completedSources.add(curTileSource);
+								}
 							} else {
-								Set<Tile> set = visited.get(neighbourTile);
-								set.add(curTileSource);
-								visited.put(neighbourTile, set);
+								if (reverse)
+									checkOrder = createOneOrder(neighbourTile, curTileSource,
+											directionFromTarget.get(neighbourTile));
+								else {
+									checkOrder = createOneOrder(curTileSource, neighbourTile,
+											directionFromSource.get(neighbourTile));
+									// checkOrder = createOneOrder(curTileSource, neighbourTile,
+									// directionFromSource.get(curTileSource));
+									
+								}
 							}
-							frontier.add(neighbourTile);
-							expanded.add(neighbourTile);
-						}
 
+							if (checkOrder) {
+								completedSources.add(curTileSource);
+								results.add(neighbourTile);
+								// frontier.removeAll(expanded);
+
+							}
+
+							break;
+						} else {
+
+							if (!visited.containsKey(neighbourTile)
+									|| !visited.get(neighbourTile).contains(curTileSource)) {
+
+								if (!visited.containsKey(neighbourTile)) {
+									Set<Tile> set = new HashSet<Tile>();
+									set.add(curTileSource);
+									visited.put(neighbourTile, set);
+								} else {
+									Set<Tile> set = visited.get(neighbourTile);
+									set.add(curTileSource);
+									visited.put(neighbourTile, set);
+								}
+								frontier.add(neighbourTile);
+								expanded.add(neighbourTile);
+							}
+
+						}
 
 					}
-
 				}
+			} catch (NullPointerException e) {
+
+				throw new NullPointerException("\nSorgenti: " + sources + "\nCurTile: " + curTile + "\nCurTileSource: "
+						+ curTileSource + "\nNeigh: " + curTile.getNeighbour());
 			}
 		}
-		catch(NullPointerException e) {
-			
-			throw new NullPointerException("\nSorgenti: " + sources + "\nCurTile: " + curTile + "\nCurTileSource: " + curTileSource +"\nNeigh: " + curTile.getNeighbour());
-		}}
-		//sources.forEach(s -> System.out.println(s +" -> " +directionFromSource.get(s)));
-		//return result, pathSources, directionFromSource, directionFromTarget; //TODO
-		//computeOrders(); cambiare in base a come vengono impostati target e source
+		// sources.forEach(s -> System.out.println(s +" -> "
+		// +directionFromSource.get(s)));
+		// return result, pathSources, directionFromSource, directionFromTarget; //TODO
+		// computeOrders(); cambiare in base a come vengono impostati target e source
 		return this.results;
 	}
-	
-	public HashSet<Tile> getOrderTile() {
+
+	private HashSet<Tile> getOrderTile() {
 		return orderTile;
 	}
 
 }
-

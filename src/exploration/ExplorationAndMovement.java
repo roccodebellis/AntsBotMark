@@ -1,21 +1,17 @@
 package exploration;
 
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-
 import game.Directions;
 import game.Game;
 import game.Order;
 import game.Tile;
 import search.Search;
-import vision.Offsets;
 
 public class ExplorationAndMovement {
 
@@ -28,25 +24,25 @@ public class ExplorationAndMovement {
 	
 	public ExplorationAndMovement() {// TODO ?
 		if(!toUnexploredArea(Game.getUnexplored()))
-			//if(!toInvisibleArea(Game.getOutOfSight())) {
-				//if (!toPriorityTarget()) {
+			if(!toInvisibleArea(Game.getOutOfSight())) {
+				if (!toPriorityTarget()) {
 					spreadOut(Game.getOrderlyAnts());
-				//}
-			//}
+				}
+			}
 	}
 
-	public static boolean toUnexploredArea(Set<Tile> unexplored) {
+	private boolean toUnexploredArea(Set<Tile> unexplored) {
 		if (!unexplored.isEmpty()) {
 			// Search s = new Search(unexplored, Game.getMyAnts(), null, false, false,
 			// true); //non utilizzare perche manda le formiche tutte ad uno stesso tile
 			// inexplorato
-			// Search s = new Search(unexplored, Game.getMyAnts(), null, false, true,
-			// false);
 			
-			Search s = new Search(unexplored, Game.getMyAnts(),  null, false, true, false);
-			
+			Search s = new Search(Game.getMyAnts(), unexplored, null, false, false, false);
+			//da valutare, il problema e' che all'inizio le tile inesplorate sono tantissime
+			//ma sarebbe meglio mandare solo una formica ad un'unica tile inesplorata
 			//Search s = new Search(unexplored, Game.getMyAnts(), null, false, true, false);
-			Set<Tile> targetCompleted = s.adaptiveSearch();
+			
+			s.adaptiveSearch();
 
 			Set<Order> orders = s.getOrders();
 			issueAndRemoveOrders(orders, unexplored);
@@ -234,7 +230,7 @@ public class ExplorationAndMovement {
 			// Search s = new Search(targets, Game.getMyAnts(), null, false, false, true);
 			//non va bene quella di sopra, se dobbiamo utilizzare quella dobbiamo farci restituire
 			//le tile di order
-			Set<Tile> results = s.adaptiveSearch();
+			s.adaptiveSearch();
 			/*s.adaptiveSearch();
 			Set<Tile> results = s.getOrderTile(); */
 
@@ -250,7 +246,7 @@ public class ExplorationAndMovement {
 		return pathFounded;
 	}
 
-	private static void issueAndRemoveOrders(Set<Order> orders, Set<Tile> targets) {
+	private void issueAndRemoveOrders(Set<Order> orders, Set<Tile> targets) {
 		orders.parallelStream().forEachOrdered(o -> {if(Game.issueOrder(o)) {targets.remove(o.getTarget());}});
 	}
 	
