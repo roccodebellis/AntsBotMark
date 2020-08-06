@@ -15,12 +15,14 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import attackdefencehills.AttackDefenceHills;
 //import attackdefensehills.AttackDefenseHills;
 import combat.CombatSimulation;
 import defaultpackage.Configuration;
+import defaultpackage.MyBot;
 import exploration.ExplorationAndMovement;
 import gathering.FoodCollection;
 import search.Node;
@@ -36,6 +38,9 @@ import vision.Vision;
  *
  */
 public class Game {
+	
+	private static Logger LOGGER = Logger.getLogger( Game.class.getName() );
+
 
 	/**
 	 * Numero di righe della mappa del gioco.
@@ -596,17 +601,25 @@ public class Game {
 	static public boolean issueOrder(Order order) {
 		Tile o_ant = order.getOrigin();
 		Directions o_dir = order.getDirection();
+		
+		LOGGER.info(order.toStringExtended());
 
-		Tile dest = o_ant.getNeighbourTile(o_dir);
-
-		if (!ordersTarget.contains(dest)) {
+		Tile dest = o_ant.getNeighbourTile(o_dir); //Maybe null if staystill
+		
+		if(order.getDirection().equals(Directions.STAYSTILL)) {
+			ordersTarget.add(o_ant);
+			myAnts.remove(o_ant);
+			orderlyAnts.add(o_ant);
+			orders.add(order);
+			return true;
+			
+		}else if ( !ordersTarget.contains(dest)) {
 			ordersTarget.add(dest);
 			myAnts.remove(o_ant);
 			orderlyAnts.add(o_ant);
-
 			orders.add(order);
-			if (!order.getDirection().equals(Directions.STAYSTILL))
-				System.out.println(order);
+			
+			System.out.println(order);
 			return true;
 		}  else return false;/*else {
 			HashSet<Tile> vattin = new HashSet<Tile>();

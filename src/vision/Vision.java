@@ -64,10 +64,6 @@ public class Vision {
 		hillDefenceTargets.put(hill, Game.getTiles(hill, Offsets.getDefenceHillOffsets()));
 	}
 
-	private void removeDefenceTargets(Tile hill, Tile target) {
-		hillDefenceTargets.get(hill).remove(target);
-	}
-
 	public static Set<Tile> getHillDefenceTargets(Tile hill) {
 		return hillDefenceTargets.get(hill);
 	}

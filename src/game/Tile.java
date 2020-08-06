@@ -433,7 +433,7 @@ public class Tile implements Comparable<Tile> {
 		Map<Tile, Directions> tempNeigh = new HashMap<Tile, Directions>();
 		getNeighbour().entrySet().parallelStream().forEachOrdered(e -> tempNeigh.put(e.getValue(), e.getKey()));
 		while (neighAsList.size() > 0) {
-			Random r = new Random();//Random r = new Random(Timing.getCurTime());
+			Random r = new Random(Timing.getCurTime());
 			int val = (int) r.nextInt(neighAsList.size());
 			//ThreadLocalRandom current = ThreadLocalRandom.current();
 			//int val = current.nextInt((neighAsList.size()));
@@ -575,6 +575,12 @@ public class Tile implements Comparable<Tile> {
 
 	public void setSuitable(boolean suitable) {
 		this.isSuitable = suitable;
+	}
+	
+	public void setSuitableSuperSpecial(boolean suitable) {
+		this.isSuitable = suitable;
+		/*getNeighbour().entrySet().stream().forEachOrdered(
+			vicino -> {vicino.getValue().isSuitable = suitable;});*/
 	}
 
 	public static final Comparator<Tile> visionComparator() {

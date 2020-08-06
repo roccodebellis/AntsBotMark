@@ -31,9 +31,7 @@ public class Order implements Comparable<Order>{
 		this.tile = t;
 
 	}
-
-
-
+	
 	/**
 	 * <p>Genera la stringa contenente l'ordine da mandare al System Output.<br>
 	 * La stringa avra' il seguente aspetto: "{@code o }{@link #row} {@link #col} {@link #direction}" 
@@ -45,6 +43,10 @@ public class Order implements Comparable<Order>{
 		return "o " + getRow() + " " + getCol() + " " + direction;// + "\nOrigin: " + tile + "\nTarget: " + target + "\nOrdered Tile: " + getOrderedTile();
 	}
 
+	public String toStringExtended() {
+		return "o " + getRow() + " " + getCol() + " " + direction + "("+getOrderedTile()+") [O: " + tile + " | T: " + target + " ]";
+	}
+	
 	private int getCol() {
 		return tile.getCol();
 	}

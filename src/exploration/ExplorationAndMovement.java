@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import game.Directions;
 import game.Game;
@@ -20,15 +21,27 @@ public class ExplorationAndMovement {
 	// in aree gia esplorate per minimizzare la distanza media dal cibo e mantenere
 	// un'area di visione
 
-	
+	private static Logger LOGGER = Logger.getLogger( ExplorationAndMovement.class.getName() );
 	
 	public ExplorationAndMovement() {// TODO ?
-		if(!toUnexploredArea(Game.getUnexplored()))
+		LOGGER.info("ExplorationAndMovement()");
+		LOGGER.info("ExplorationAndMovement():toUnexploredArea()");
+		if(!toUnexploredArea(Game.getUnexplored())) {
+			LOGGER.info("~ExplorationAndMovement():toUnexploredArea()");
+			LOGGER.info("ExplorationAndMovement():toInvisibleArea()");
 			if(!toInvisibleArea(Game.getOutOfSight())) {
+				LOGGER.info("~ExplorationAndMovement():toInvisibleArea()");
+				LOGGER.info("ExplorationAndMovement():toPriorityTarget()");
 				if (!toPriorityTarget()) {
+					LOGGER.info("~ExplorationAndMovement():toPriorityTarget()");
+					LOGGER.info("ExplorationAndMovement():spreadOut()");
 					spreadOut(Game.getOrderlyAnts());
+					LOGGER.info("~ExplorationAndMovement():spreadOut()");
 				}
+				
 			}
+		}
+		LOGGER.info("~ExplorationAndMovement()");
 	}
 
 	private boolean toUnexploredArea(Set<Tile> unexplored) {
@@ -37,17 +50,18 @@ public class ExplorationAndMovement {
 			// true); //non utilizzare perche manda le formiche tutte ad uno stesso tile
 			// inexplorato
 			
-			Search s = new Search(Game.getMyAnts(), unexplored, null, false, false, false);
+			//Search s = new Search(Game.getMyAnts(), unexplored, null, false, false, false);
 			//da valutare, il problema e' che all'inizio le tile inesplorate sono tantissime
 			//ma sarebbe meglio mandare solo una formica ad un'unica tile inesplorata
-			//Search s = new Search(unexplored, Game.getMyAnts(), null, false, true, false);
+			Search s = new Search(unexplored, Game.getMyAnts(), null, false, true, false);
 			
-			s.adaptiveSearch();
+			Set<Tile> results = s.adaptiveSearch();
 
 			Set<Order> orders = s.getOrders();
-			issueAndRemoveOrders(orders, unexplored);
-			//Game.issueOrders(s.getOrders());
-
+			//issueAndRemoveOrders(orders, unexplored);
+			
+			Game.issueOrders(orders);
+			unexplored.removeAll(results);
 		}
 		return Game.getMyAnts().isEmpty();
 	}
@@ -59,12 +73,13 @@ public class ExplorationAndMovement {
 			// true); //sembra non funzionare
 			
 			Search s = new Search(outOfSight, Game.getMyAnts(), null, false, true, false);
-			s.adaptiveSearch();
-			//Game.issueOrders(s.getOrders());
+			Set<Tile> results = s.adaptiveSearch();
+			
 			Set<Order> orders = s.getOrders();
 			
-			issueAndRemoveOrders(orders, outOfSight);
-			//outOfSight.removeAll(targetCompleted);
+			//issueAndRemoveOrders(orders, outOfSight);
+			outOfSight.removeAll(results);
+			Game.issueOrders(orders);
 		}
 		return Game.getMyAnts().isEmpty();
 	}
@@ -230,7 +245,7 @@ public class ExplorationAndMovement {
 			// Search s = new Search(targets, Game.getMyAnts(), null, false, false, true);
 			//non va bene quella di sopra, se dobbiamo utilizzare quella dobbiamo farci restituire
 			//le tile di order
-			s.adaptiveSearch();
+			Set<Tile> results = s.adaptiveSearch();
 			/*s.adaptiveSearch();
 			Set<Tile> results = s.getOrderTile(); */
 
@@ -238,17 +253,20 @@ public class ExplorationAndMovement {
 			if (orders.isEmpty())
 				pathFounded = false;
 			else
-				issueAndRemoveOrders(orders, targets);
-				/*targets.removeAll(results);
-				Game.issueOrders(orders);*/
+				//issueAndRemoveOrders(orders, targets);
+				targets.removeAll(results);
+				Game.issueOrders(orders);
 			
 		}
 		return pathFounded;
 	}
-
-	private void issueAndRemoveOrders(Set<Order> orders, Set<Tile> targets) {
-		orders.parallelStream().forEachOrdered(o -> {if(Game.issueOrder(o)) {targets.remove(o.getTarget());}});
-	}
+/*
+	private boolean issueAndRemoveOrders(Set<Order> orders, Set<Tile> targets) {
+		4orders.parallelStream().forEachOrdered(o -> {
+			if(Game.issueOrder(o)) 
+				targets.remove(o.getTarget());
+			});
+	}*/
 	
 	
 }

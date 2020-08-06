@@ -4,6 +4,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import attackdefencehills.AttackDefenceHills;
 //import attackdefensehills.AttackDefenseHills;
@@ -16,6 +20,31 @@ import timing.Modules;
 
 public class MyBot extends Bot {
 
+	private static Logger LOGGER = Logger.getLogger( MyBot.class.getName() );
+
+	private static void logger(String[] args) {
+		FileHandler fh; 
+		System.setProperty("java.util.logging.SimpleFormatter.format", "\t[%4$-7s] %5$s %n");
+		try {  
+
+			// This block configure the logger with handler and formatter  
+			fh = new FileHandler(MyBot.class.getProtectionDomain().getCodeSource().getLocation()+"MyLogFile.log");  
+			LOGGER.addHandler(fh);
+			SimpleFormatter formatter = new SimpleFormatter();  
+			fh.setFormatter(formatter);   
+
+		} catch (SecurityException e) {  
+			e.printStackTrace();  
+		} catch (IOException e) {  
+			e.printStackTrace();  
+		}  
+		LOGGER.log(Level.INFO, "HELLO LOG");
+	}
+
+
+
+
+
 	/**
 	 * Main method executed by the game engine for starting the bot.
 	 * 
@@ -24,37 +53,46 @@ public class MyBot extends Bot {
 	 * @throws IOException if an I/O error occurs
 	 */
 	public static void main(String[] args) throws IOException {
+		logger(args);
 		new MyBot().readSystemInput();
 	}
 
 	@Override //DA FARW
 	public void doTurn() {
 		Game state = getGame();
-		
-		while(Game.getMyAnts().size()>0) {
+
+
 		//1 VISION MODULE
 		//2 COMBAT SIMULATION
 		//state.doCombat();
 		//2.5\3.5 HILL ATTACK AND DEFENSE
-		//state.doDefence();
-		/*time.start(Modules.Defence);
+		time.start(Modules.Defence);
+		LOGGER.info("state.doDefenceHills()");
 		state.doDefenceHills();
-		time.end(Modules.Defence);*/
+		LOGGER.info("~state.doDefenceHills()");
+		time.end(Modules.Defence);
 		//3 FOOD COLLECTION
 		time.start(Modules.Food);
+		LOGGER.info("state.doFood()");
 		state.doFood();
+		LOGGER.info("~state.doFood()");
 		time.end(Modules.Food);
 		/*time.start(Modules.Attack);
 		state.doAttackHills();
 		time.end(Modules.Attack);*/
 		//4 EXPLORATION AND MOVEMENTS
 		time.start(Modules.Exploration);
+		LOGGER.info("state.doExploration()");
 		state.doExploration();
+		LOGGER.info("~state.doExploration()");
 		time.end(Modules.Exploration);
-		}
+
+		
+		
+		LOGGER.info("Available Ants: "+ Game.getMyAnts());
 		//Game.printMapVision();
 		//Game.printNeigbour();
-		
+
 		//state.doFood();
 	}
 }

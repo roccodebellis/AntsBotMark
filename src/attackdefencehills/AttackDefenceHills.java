@@ -1,6 +1,7 @@
 package attackdefencehills;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -10,6 +11,7 @@ import game.Game;
 import game.Tile;
 import search.Node;
 import search.Search;
+import vision.Offsets;
 import vision.Vision;
 
 public class AttackDefenceHills {
@@ -20,7 +22,7 @@ public class AttackDefenceHills {
 		Map<Tile, TreeSet<Node>> enemiesForHills = new HashMap<Tile,TreeSet<Node>>();
 
 		Set<Tile> defender = new TreeSet<Tile>();
-//TODO cancella eccezione
+		//TODO cancella eccezione
 		try {
 			Game.getMyHills().forEach(curHill -> {
 				Set<Tile> tempSet = new TreeSet<Tile>();
@@ -51,36 +53,45 @@ public class AttackDefenceHills {
 						if(defIt.hasNext())
 							defender.add(defIt.next());
 
-						int minDist = enemies.first().getHeuristicValue();
-						if(defIt.hasNext() && antsForHill >= 4 && minDist < Math.sqrt(Game.getViewRadius2()))//PARAMETER
-							defender.add(defIt.next());
-						if (defIt.hasNext() && antsForHill >= 3 && minDist < Math.sqrt(Game.getAttackRadius2())+3)
-							defender.add(defIt.next());
-						if (defIt.hasNext() && antsForHill >= 2 && minDist < Math.sqrt(Game.getAttackRadius2()))
-							defender.add(defIt.next());
-
+						Set<Tile> myAntsNearHill = new HashSet<Tile>(Game.getMyAnts());
+						myAntsNearHill.addAll(Game.getOrderlyAnts());
+						myAntsNearHill.retainAll(Game.getTiles(hill, new Offsets(Game.getAttackRadius2()*2)));
+						
+						if(myAntsNearHill.size()>2) {
+							int minDist = enemies.first().getHeuristicValue(); 
+							if(defIt.hasNext() && antsForHill >= 4 && minDist < Math.sqrt(Game.getViewRadius2()))//PARAMETER
+								defender.add(defIt.next());
+							if (defIt.hasNext() && antsForHill >= 3 && minDist < Math.sqrt(Game.getAttackRadius2())+3)
+								defender.add(defIt.next());
+							if (defIt.hasNext() && antsForHill >= 2 && minDist < Math.sqrt(Game.getAttackRadius2()))
+								defender.add(defIt.next());
+						}
 					}
 				});
 			} else if (avaiableAnts > 0) {	
 				TreeSet<Node> enemiesNearHills = new TreeSet<Node>();
 				enemiesForHills.values().forEach(enemiesNearHills::addAll);
-				
+
 				Iterator<Node> enemiesNearHillsIt = enemiesNearHills.iterator();
-				
+
 				int assignedAnts = 0;
 				while(enemiesNearHillsIt.hasNext() && assignedAnts<avaiableAnts) {
 					Tile hill = enemiesNearHillsIt.next().getTarget();
 					Set<Tile> defendHillTile = Vision.getHillDefenceTargets(hill);
-					
+
 					Iterator<Tile> defIt = defendHillTile.iterator();
 					if(defIt.hasNext()) {
 						Tile tileToDefend = defIt.next();
-						if(!defender.add(tileToDefend) && defIt.hasNext())
+						if(!defender.add(tileToDefend) && defIt.hasNext()) {
+							assignedAnts++;
 							if(!defender.add(defIt.next()) && defIt.hasNext())
-								defender.add(defIt.next());
+								assignedAnts++;
+							if(defender.add(defIt.next()))
+								assignedAnts++;
+						}
 					}
 				}
-				
+
 			}
 
 			/*
@@ -95,10 +106,10 @@ public class AttackDefenceHills {
 		}
 
 		if(!defender.isEmpty()) {
-			Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(true));
+			Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitableSuperSpecial(true));
 			Search s = new Search(defender, Game.getMyAnts(), null, false, true, false);
 			s.adaptiveSearch();
-			Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(false));
+			Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitableSuperSpecial(false));
 
 			//Game.issueOrders(s.getOrders()); // FIXME controllare se sta cosa funziona, nel caso da l'ordine al
 			// contrario

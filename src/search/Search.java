@@ -89,10 +89,13 @@ public class Search {
 	private Map<Tile, Directions> directionFromTarget;
 
 	/**
-	 * 
+	 * set ordini
 	 */
 	private Set<Order> orders;
 
+	/**
+	 * tile obiettivo
+	 */
 	private HashSet<Tile> orderTile;
 
 	public Search(final Set<Tile> sources, final Set<Tile> targets, Integer radius, Boolean heuristic,
@@ -136,8 +139,8 @@ public class Search {
 		else if (heuristic)// se i target sono tutti di un certo tipo
 			return extendedAStar();
 		else return extendedBFS();
-			// return bfs();
-		
+		// return bfs();
+
 
 	}
 
@@ -410,14 +413,25 @@ public class Search {
 		Map<Tile, Set<Tile>> closedList = new HashMap<>();
 
 		sources.parallelStream().forEachOrdered(source -> {
-			frontier.add(source);
-			pathSources.put(source, source);
-			// visited.add(source);
-			Set<Tile> expanded = new HashSet<Tile>();
-			expanded.add(source);
-			visited.put(source, expanded);
-			closedList.put(source, expanded);
+			if(targets.contains(source)) {
+				if (createOneOrder(source, source, Directions.STAYSTILL)) {
+					targets.remove(source);
+					completedSources.add(source);
+					results.add(source);
+				}
+			} else {
+				frontier.add(source);
+				pathSources.put(source, source);
+				// visited.add(source);
+				Set<Tile> expanded = new HashSet<Tile>();
+				expanded.add(source);
+				visited.put(source, expanded);
+				closedList.put(source, expanded);
+
+			}
 		});
+
+
 
 		// while(!frontier.isEmpty() || !(!(results.containsAll(targets) ||
 		// targets.isEmpty()) || orderTile.containsAll(sources))) { //FIXME togliere
@@ -433,13 +447,14 @@ public class Search {
 			if (completedSources.contains(curTileSource))
 				continue;// continue while
 
+
 			try {
 				Iterator<Directions> neighboursIt = curTile.getNeighbours().iterator();
 
 				while (neighboursIt.hasNext()) {
 					Directions neighbourDirection = neighboursIt.next();
 					Tile neighbourTile = curTile.getNeighbourTile(neighbourDirection);
-					
+
 
 					// neighbourTile.isSuitable() &&
 					// if( !visited.containsKey(neighbourTile) ||
@@ -494,7 +509,7 @@ public class Search {
 											directionFromSource.get(neighbourTile));
 									// checkOrder = createOneOrder(curTileSource, neighbourTile,
 									// directionFromSource.get(curTileSource));
-									
+
 								}
 							}
 
@@ -533,6 +548,7 @@ public class Search {
 				throw new NullPointerException("\nSorgenti: " + sources + "\nCurTile: " + curTile + "\nCurTileSource: "
 						+ curTileSource + "\nNeigh: " + curTile.getNeighbours());
 			}
+
 		}
 		// sources.forEach(s -> System.out.println(s +" -> "
 		// +directionFromSource.get(s)));
