@@ -16,6 +16,8 @@ import game.Directions;
 import game.Game;
 import game.Order;
 import game.Tile;
+
+import java.nio.file.Path;
 import java.util.HashMap;
 
 /**
@@ -115,7 +117,7 @@ public class Search {
 		pathSources = new HashMap<Tile, Tile>();
 		directionFromSource = new HashMap<Tile, Directions>();
 		directionFromTarget = new HashMap<Tile, Directions>();
-		orders = new HashSet<Order>();
+		orders = new TreeSet<Order>();
 
 	}
 
@@ -140,8 +142,14 @@ public class Search {
 			return extendedAStar();
 		else return extendedBFS();
 		// return bfs();
+	}
 
+	public Set<Tile> AStarSearch() {
+		return AStar();
+	}
 
+	public Set<Tile> EAStarSearch() {
+		return eAStar();
 	}
 
 	/**
@@ -160,43 +168,12 @@ public class Search {
 	// TODO secondo me questa e' callback ed e' da integrare nelle ricerche se
 	// one_target_per_source e' true
 	private boolean createOneOrder(Tile origin, Tile target, Directions direction) {
-		// if(one_target_per_source)
-		// this.targets.remove(target);
-
-		// if( this.orders.add(new Order(origin, direction))) {
-		// if(one_target_per_source || reverse)
-		// orderTile.add(target);
-		// else
-		// orderTile.add(origin);*/
-		// return true;
-
-		// }else if( this.orders.add(new Order(origin,
-		// direction.getOpponent().getNext()))) {
-		/*
-		 * if(one_target_per_source || reverse) orderTile.add(target); else
-		 * orderTile.add(origin);
-		 */
-		// return true;
-
-		// }else if( this.orders.add(new Order(origin, direction.getNext()))) {
-		/*
-		 * if(one_target_per_source || reverse) orderTile.add(target); else
-		 * orderTile.add(origin);
-		 */
-		// return true;
-
-		// } else if( this.orders.add(new Order(origin, direction.getOpponent()))) {
-		// return true;
-		// }else
-		// return false;
-
-		// System.out.println("o:" +origin +" ->t:"+target+" "+direction);
-
 		Order o = new Order(origin, direction, target);
 
-		if (orderTile.add(o.getOrderedTile()))
-			return this.orders.add(o);
-		else
+		if (orderTile.add(o.getOrderedTile())) { // se viene modificato perche non funziona
+			// avere la decenza di utilizzare hashMap o treeMap
+			return this.orders.add(o);	     //K tile arrivo V order
+		} else
 			return false;
 	}
 
@@ -255,12 +232,204 @@ public class Search {
 		 * la sorgente è una se viene passata piu di una sorgente il risultato non è
 		 * quello desiderato
 		 */
-		Set<Tile> ciao = sources.parallelStream().map(source -> Game.getTiles(source, offsets))
+		Set<Tile> output = sources.parallelStream().map(source -> Game.getTiles(source, offsets))
 				.flatMap(set -> set.parallelStream()).filter(x -> targets.contains(x))
 				.collect(Collectors.toCollection(TreeSet<Tile>::new));
 
-		// System.out.println("SS: "+ciao);
-		return ciao;
+		return output;
+	}
+
+	/**
+	 * souces
+	 * targets
+	 * 
+	 * 
+	 * 
+	 * @return
+	 */
+	private Set<Tile> AStar() {
+		PriorityQueue<Node> frontier = new PriorityQueue<Node>();
+		Set<Node> closedSet = new HashSet<>();
+
+		Tile source = sources.iterator().next();
+		Node curSource = new Node(source, targets); //controllare se funziona con equals
+		frontier.add(curSource);
+
+		//directionFromSource.put(curSource.getTile(), Directions.STAYSTILL);
+		//directionFromTarget.put(curSource.getTarget(), Directions.STAYSTILL);
+
+		while(!frontier.isEmpty()) {
+			//System.out.println("AStar:while");
+			Node cur = frontier.poll();
+			Tile curTile = cur.getTile();
+			closedSet.add(cur);
+
+			if(targets.contains(curTile)) {
+				//createOneOrder(source, curTile, directionFromSource.get(source));
+				Order o = new Order(source, directionFromSource.get(source), curTile);
+
+				orderTile.add(o.getOrderedTile());
+				orders.add(o);
+
+				results.add(curTile);
+				return results;
+
+			} else for(Directions dirNeighbours :curTile.getNeighbours()) {
+
+				Tile neighbour = curTile.getNeighbourTile(dirNeighbours);
+
+				if((!neighbour.isSuitable() && (targets.contains(neighbour)||curTile.getNeighbours().size() == 1)) || neighbour.isSuitable()) {
+					Node neighbourNode = new Node(neighbour, targets);//, cur.getPathCost());
+					neighbourNode.setPathCost(cur.getPathCost());
+					//Node neighbourNode = new Node(neighbour, cur.getTarget(), cur.getPathCost());
+
+					//System.out.println(" - " + neighbourNode);
+					if(!closedSet.contains(neighbourNode) ||
+							closedSet.parallelStream().filter(x -> x.equals(neighbourNode)).allMatch(x -> neighbourNode.getPathCost() < x.getPathCost())){
+						closedSet.add(neighbourNode);
+						frontier.add(neighbourNode);
+						if(!directionFromSource.containsKey(curTile))
+							directionFromSource.put(curTile, dirNeighbours);
+						directionFromTarget.put(neighbour, dirNeighbours.getOpponent());
+					}
+
+				}
+
+			}
+		}
+		if(frontier.isEmpty()) //no path exists
+			return new HashSet<Tile>();
+
+		return null; //unreachable
+	}
+
+	private Set<Tile> eAStar() {
+		PriorityQueue<Node> frontier = new PriorityQueue<Node>();
+		Set<Node> closedSet = new HashSet<>();
+		//pathSources = new HashMap<Tile, Tile>()
+		//results = new HashSet<Tile>();
+		//directionFromSource = new HashMap<Tile, Directions>();
+		//directionFromTarget = new HashMap<Tile, Directions>();
+		//completedSources = new HashSet<>();
+
+		Iterator<Tile> sourcesIt = sources.iterator();
+		while(sourcesIt.hasNext()) {
+			Tile curSource = sourcesIt.next();
+			Node curSourceN = new Node(curSource, targets);
+			frontier.add(curSourceN);
+			pathSources.put(curSource, curSource);
+		}
+		//System.out.println(frontier);
+
+		while(!frontier.isEmpty()) {
+			//System.out.println(frontier);
+			Node curN = frontier.poll();
+			Tile curT = curN.getTile();
+			Tile curSource = pathSources.get(curT);
+
+			
+
+			if(completedSources.contains(curSource))
+				continue;
+
+			if(targets.contains(curT)) {
+				
+				//System.out.println("ciaooooo");
+				results.add(curT);
+				Order o;
+				
+				if(!reverse)
+					completedSources.add(curSource);
+				if(one_target_per_source || reverse) {
+					if(one_target_per_source) 
+						targets.remove(curT);
+					
+					System.out.println("\nDFT:" + directionFromTarget+'\n');
+					System.out.println("DFS:" + directionFromSource+'\n');
+					
+					Tile tempT = curSource;
+					Directions tempDir = null;
+					while(tempT != curT) {
+						tempDir = directionFromSource.get(tempT);
+						tempT = tempT.getNeighbourTile(tempDir);
+					};
+
+					o = new Order(curT, tempDir, curSource);
+					
+					//o = new Order(curT, directionFromTarget.get(curT), curSource);
+					
+					//System.out.println("o"+o);
+				} else {
+					/*
+					Tile tempT = curT;
+					Directions tempDir = null;
+					while(tempT != curSource) {
+						tempDir = directionFromTarget.get(tempT);
+						tempT = tempT.getNeighbourTile(tempDir);
+					}
+					o = new Order(curSource, tempDir.getOpponent(), curT);
+					*/
+					
+			
+
+					o = new Order(curSource, directionFromSource.get(curSource), curT);
+				}
+				System.out.println("1\t" + o.toStringExtended());
+			}
+
+
+			for(Directions dirNeighbours : curT.getNeighbours()) {
+				//System.out.println("dirNeighbours:"+dirNeighbours+" curN:" +curN);
+				Tile neighbourT = curT.getNeighbourTile(dirNeighbours);
+
+				if((!neighbourT.isSuitable() && (targets.contains(neighbourT) || curT.getNeighbours().size() == 1)) || neighbourT.isSuitable()) {
+					//Node neighbourNode = new Node(neighbourT, curN.getTarget(), curN.getPathCost());
+					Node neighbourNode = new Node(neighbourT, targets);//, cur.getPathCost());
+					neighbourNode.setPathCost(curN.getPathCost());
+
+					//System.out.println(" - " + neighbourNode);
+					if(!closedSet.contains(neighbourNode) || closedSet.parallelStream().filter(x -> x.equals(neighbourNode)).allMatch(x -> neighbourNode.getPathCost() < x.getPathCost()) //missed !pathSource.containsKey(neighbourT)
+							|| !pathSources.containsKey(neighbourT) ){ //FIXME
+						
+						frontier.add(neighbourNode);
+						pathSources.put(neighbourT, curSource);
+
+						//if(!directionFromSource.containsKey(curT))
+							directionFromSource.put(curT, dirNeighbours);
+
+						directionFromTarget.put(neighbourT, dirNeighbours.getOpponent());
+						
+					}
+				}
+			}	
+			closedSet.add(curN);
+		}
+
+		/*
+		Map<Tile, Directions> findPath = one_target_per_source || reverse ? directionFromSource : directionFromTarget;
+
+		for(Tile result: results) {
+			Tile source = pathSources.get(result);
+			Tile cur = one_target_per_source || reverse ? source : result;
+			Directions nextDir = findPath.get(cur);
+			Tile curTile = cur.getNeighbourTile(nextDir);
+
+			while(curTile != (one_target_per_source || reverse ? result : source)) {
+				nextDir = findPath.get(curTile);
+				curTile = curTile.getNeighbourTile(nextDir);
+			}
+
+			//createOneOrder((one_target_per_source || reverse ? result : source), curTile, nextDir);
+			Order o = new Order((one_target_per_source || reverse ? result : source), (one_target_per_source || reverse) ?  nextDir : nextDir.getOpponent()
+					,(one_target_per_source || reverse ? curTile : result));
+			System.out.println("2\t" + o.toStringExtended());
+		}
+		*/
+		System.out.println("\nDFT:" + directionFromTarget+'\n');
+		System.out.println("DFS:" + directionFromSource+'\n');
+		System.out.println("results; "+results);
+
+		return null;
 	}
 
 	private Set<Tile> extendedAStar() {
@@ -471,8 +640,7 @@ public class Search {
 					/*if (((!neighbourTile.isSuitable() && targets.contains(neighbourTile)) || neighbourTile.isSuitable()
 								|| (!neighbourTile.isSuitable() && curTile.getNeighbour().size() == 1))
 								&& !pathSources.containsKey(neighbourTile))*/
-					if (((!neighbourTile.isSuitable() && targets.contains(neighbourTile)) || neighbourTile.isSuitable()
-							|| (!neighbourTile.isSuitable() && curTile.getNeighbours().size() == 1))
+					if (((!neighbourTile.isSuitable() && (targets.contains(neighbourTile)||curTile.getNeighbours().size() == 1)) || neighbourTile.isSuitable())
 							&& (((one_target_per_source || reverse) && !pathSources.containsKey(neighbourTile))
 									^ (!(one_target_per_source ^ reverse) && (!visited.containsKey(neighbourTile)
 											|| !visited.get(neighbourTile).contains(curTileSource))))) {
@@ -561,4 +729,13 @@ public class Search {
 		return orderTile;
 	}
 
+	public Map<Tile, Directions> getDirectionFromSource() {
+		return directionFromSource;
+	}
+
+	public Map<Tile, Directions> getDirectionFromTarget() {
+		return directionFromTarget;
+	}
+
 }
+

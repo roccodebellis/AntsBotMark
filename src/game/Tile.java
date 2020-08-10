@@ -554,7 +554,7 @@ public class Tile implements Comparable<Tile> {
 	 * @return
 	 */
 	public boolean isSuitable() {// TODO da cancellare?? riguarda solo acqua??? bohboh
-
+//return true;
 		return this.isSuitable;
 		// return (occupiedByAnt || (type.equals(TileTypes.HILL) && idOwner==0 )) ?
 		// false : true;
