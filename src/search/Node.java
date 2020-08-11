@@ -42,7 +42,7 @@ public class Node implements Comparable<Node>{
 		this.target =  target;
 		heuristicValue = Game.getDistance(target,neighbourTile);
 	}
-	
+
 	public void setPathCost(int oldPathCost) {
 		this.pathCost = oldPathCost + 1;
 	}
@@ -134,13 +134,17 @@ public class Node implements Comparable<Node>{
 		return new Comparator<Node>() {
 			@Override
 			public int compare(Node o1, Node o2){
-				return Integer.compare(o1.getTile().hashCode(), o2.getTile().hashCode());
+
+				int compareTile = Integer.compare(o1.getTile().hashCode(), o2.getTile().hashCode());
+				return compareTile==0 ? Integer.compare(o1.getTarget().hashCode(), o2.getTarget().hashCode()) : compareTile;
+
+
 			}
 		};
 		//return (Tile o1, Tile o2) -> (Integer.compare(o1.getVisible(), o2.getVisible()));
 	}
 	public static final Comparator<Node> nodeComparator2() {
-		 return (Node o1, Node o2) -> (Integer.compare(o1.getTile().hashCode(), o2.getTile().hashCode()));
+		return (Node o1, Node o2) -> (Integer.compare(o1.getTile().hashCode(), o2.getTile().hashCode()));
 	}
 
 }
