@@ -304,54 +304,47 @@ public class Search {
 	}
 
 	private Set<Tile> eAStar() {
-		try {
-			PriorityQueue<Node> frontier = new PriorityQueue<Node>();
-			Set<Node> closedSet = new TreeSet<>(Node.nodeComparator());
-			//pathSources = new HashMap<Tile, Tile>()
-			//results = new HashSet<Tile>();
-			//directionFromSource = new HashMap<Tile, Directions>();
-			//directionFromTarget = new HashMap<Tile, Directions>();
-			//completedSources = new HashSet<>();
 
-			Iterator<Tile> sourcesIt = sources.iterator();
-			while(sourcesIt.hasNext()) {
+		PriorityQueue<Node> frontier = new PriorityQueue<Node>();
+		Set<Node> closedSet = new TreeSet<>(Node.nodeComparator());
+		//pathSources = new HashMap<Tile, Tile>()
+		//results = new HashSet<Tile>();
+		//directionFromSource = new HashMap<Tile, Directions>();
+		//directionFromTarget = new HashMap<Tile, Directions>();
+		//completedSources = new HashSet<>();
 
-				Tile curSource = sourcesIt.next();
-				Node curSourceN = new Node(curSource, targets);
-				frontier.add(curSourceN);
-				closedSet.add(curSourceN);
-				pathSources.put(curSource, curSource);
-			}
-			//System.out.println(frontier);
+		Iterator<Tile> sourcesIt = sources.iterator();
+		while(sourcesIt.hasNext()) {
 
-			while(!frontier.isEmpty()) {
-				
-				//System.out.println(frontier);
-				Node curN = frontier.poll();
-				Tile curT = curN.getTile();
-				Tile curSource = pathSources.get(curT);
+			Tile curSource = sourcesIt.next();
+			Node curSourceN = new Node(curSource, targets);
+			frontier.add(curSourceN);
+			closedSet.add(curSourceN);
+			pathSources.put(curSource, curSource);
+		}
 
-				closedSet.add(curN);
+		while(!frontier.isEmpty()) {
 
-				if(completedSources.contains(curSource))
-					continue;
-				
+			Node curN = frontier.poll();
+			Tile curT = curN.getTile();
+			Tile curSource = pathSources.get(curT);
 
-				if(targets.contains(curT)) {
+			closedSet.add(curN);
 
-					//System.out.println("ciaooooo");
-					results.add(curT);
-					Order o;
+			if(completedSources.contains(curSource))
+				continue;
 
-					if(!reverse)
-						completedSources.add(curSource);
-					if(one_target_per_source || reverse) {
-						if(one_target_per_source) 
-							targets.remove(curT);
+			if(targets.contains(curT)) {
+				results.add(curT);
+				//Order o;
 
-						System.out.println("\nDFT:" + directionFromTarget+'\n');
-						System.out.println("DFS:" + directionFromSource+'\n');
-						/*
+				if(!reverse)
+					completedSources.add(curSource);
+				if(one_target_per_source || reverse) {
+					if(one_target_per_source) 
+						targets.remove(curT);
+
+					/*
 					Tile tempT = curSource;
 					Directions tempDir = null;
 					while(tempT != curT) {
@@ -360,95 +353,62 @@ public class Search {
 					};
 
 					o = new Order(curT, tempDir, curSource);
-						 */
-						o = new Order(curT, directionFromTarget.get(curT), curSource);
-						
-						curT.getNeighbourTile(directionFromTarget.get(curT)).setSuitable(false);
-						//System.out.println("o"+o);
-					} else {
+					 */
+					createOneOrder(curT, curSource, directionFromTarget.get(curT)); //o = new Order(curT, directionFromTarget.get(curT), curSource);
 
-						Tile tempT = curT;
-						Directions tempDir = null;
-						while(tempT != curSource) {
-							tempDir = directionFromTarget.get(tempT);
-							tempT = tempT.getNeighbourTile(tempDir);
-						}
-						o = new Order(curSource, tempDir.getOpponent(), curT);
-						
-						pathSources.remove(curT);
-						closedSet.remove(curN);
-						curSource.getNeighbourTile(tempDir.getOpponent()).setSuitable(false);
+					curT.getNeighbourTile(directionFromTarget.get(curT)).setSuitable(false);
 
-						//o = new Order(curSource, directionFromSource.get(curSource), curT);
-					}
-					System.out.println("1\t" + o.toStringExtended());
-					//System.out.println(frontier);
 				} else {
 
+					Tile tempT = curT;
+					Directions tempDir = null;
+					while(tempT != curSource) {
+						tempDir = directionFromTarget.get(tempT);
+						tempT = tempT.getNeighbourTile(tempDir);
+					}
 
-					for(Directions dirNeighbours : curT.getNeighbours()) {
-						//System.out.println("dirNeighbours:"+dirNeighbours+" curN:" +curN);
-						Tile neighbourT = curT.getNeighbourTile(dirNeighbours);
-						
-						if(((!neighbourT.isSuitable() && (targets.contains(neighbourT) || curT.getNeighbours().size() == 1)) || neighbourT.isSuitable()) && !targets.isEmpty()) {
-							//Node neighbourNode = new Node(neighbourT, curN.getTarget(), curN.getPathCost());
-							
-							Node neighbourNode = new Node(neighbourT, targets);//, cur.getPathCost());
-							neighbourNode.setPathCost(curN.getPathCost());
- 
-							//System.out.println(" nn " + neighbourNode);
-							if(!closedSet.contains(neighbourNode) || closedSet.parallelStream().filter(x -> x.equals(neighbourNode)).allMatch(x -> neighbourNode.getPathCost() < x.getPathCost()) //missed !pathSource.containsKey(neighbourT)
-									|| !pathSources.containsKey(neighbourT) ){ //FIXME
+					createOneOrder(curSource, curT, tempDir.getOpponent()); //o = new Order(curSource, tempDir.getOpponent(), curT);
 
-								frontier.add(neighbourNode);
-								pathSources.put(neighbourT, curSource);
+					pathSources.remove(curT);
+					closedSet.remove(curN);
+					curSource.getNeighbourTile(tempDir.getOpponent()).setSuitable(false);
 
-								//if(!directionFromSource.containsKey(curT))
-								directionFromSource.put(curT, dirNeighbours);
+					//o = new Order(curSource, directionFromSource.get(curSource), curT);
+				}
 
-								directionFromTarget.put(neighbourT, dirNeighbours.getOpponent());
+			} else {
 
-							} else {
-								//System.out.println("nN:"+ neighbourNode);
-								//System.out.println("cs: "+closedSet);
-							}
+
+				for(Directions dirNeighbours : curT.getNeighbours()) {
+					Tile neighbourT = curT.getNeighbourTile(dirNeighbours);
+
+					if(((!neighbourT.isSuitable() && (targets.contains(neighbourT) || curT.getNeighbours().size() == 1)) || neighbourT.isSuitable()) && !targets.isEmpty()) {
+						//Node neighbourNode = new Node(neighbourT, curN.getTarget(), curN.getPathCost());
+
+						Node neighbourNode = new Node(neighbourT, targets);//, cur.getPathCost());
+						neighbourNode.setPathCost(curN.getPathCost());
+
+						if(!closedSet.contains(neighbourNode) || closedSet.parallelStream().filter(x -> x.equals(neighbourNode)).allMatch(x -> neighbourNode.getPathCost() < x.getPathCost()) //missed !pathSource.containsKey(neighbourT)
+								|| !pathSources.containsKey(neighbourT) ){ //FIXME
+
+							frontier.add(neighbourNode);
+							pathSources.put(neighbourT, curSource);
+
+							//if(!directionFromSource.containsKey(curT))
+							directionFromSource.put(curT, dirNeighbours);
+
+							directionFromTarget.put(neighbourT, dirNeighbours.getOpponent());
+
+
 						}
 					}	
 
 				}
 			}
 
-			/*
-		Map<Tile, Directions> findPath = one_target_per_source || reverse ? directionFromSource : directionFromTarget;
-
-		for(Tile result: results) {
-			Tile source = pathSources.get(result);
-			Tile cur = one_target_per_source || reverse ? source : result;
-			Directions nextDir = findPath.get(cur);
-			Tile curTile = cur.getNeighbourTile(nextDir);
-
-			while(curTile != (one_target_per_source || reverse ? result : source)) {
-				nextDir = findPath.get(curTile);
-				curTile = curTile.getNeighbourTile(nextDir);
-			}
-
-			//createOneOrder((one_target_per_source || reverse ? result : source), curTile, nextDir);
-			Order o = new Order((one_target_per_source || reverse ? result : source), (one_target_per_source || reverse) ?  nextDir : nextDir.getOpponent()
-					,(one_target_per_source || reverse ? curTile : result));
-			System.out.println("2\t" + o.toStringExtended());
 		}
-			 */
-			System.out.println("\n-DFT:" + directionFromTarget+'\n');
-			System.out.println("-DFS:" + directionFromSource+'\n');
-			System.out.println("results; "+results);
 
-			
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-		}
-		
-		return null;
+		return results;
 	}
 
 	private Set<Tile> extendedAStar() {
