@@ -375,10 +375,15 @@ public class SearchTest {
 	boolean testEAStarSearch() {
 		System.out.println("testEAStar()");
 		Game g = setUp();
-		g.setAnt(10, 3, 0);//g.setAnt(13, 6, 0);
+		//g.setAnt(10, 3, 0);//g.setAnt(13, 6, 0);
 		//g.setFood(17, 13);g.setFood(7, 9);g.setFood(4, 3);
-		g.setFood(6, 5);g.setAnt(10, 7, 0);
+		g.setFood(5, 5);
+		//g.setFood(6, 5);//g.setAnt(10, 7, 0);
 		g.setWater(0, 1);g.setWater(0, 14);
+		
+		g.setWater(7, 4);g.setWater(6, 3);g.setWater(5, 4);g.setWater(4, 5);g.setWater(5, 6);g.setWater(6, 7);g.setWater(7, 6);
+		
+		g.setAnt(6, 4, 0);g.setAnt(6, 6, 0);
 		
 		g.setWater(1, 1);g.setWater(1, 14);
 		g.setWater(2, 1);g.setWater(2, 14);
@@ -403,9 +408,9 @@ public class SearchTest {
 		//g.setFood(0, 0);//g.setFood(2, 0);g.setFood(5, 0);g.setFood(10, 0);
 		
 																        // A*  , OTPS, rever 
-		Search s = new Search(Game.getMyAnts(), Game.getFoodTiles(), null, true, false, false); // A*
+		//Search s = new Search(Game.getMyAnts(), Game.getFoodTiles(), null, true, false, false); // A*
 		//Search s = new Search(Game.getFoodTiles(), Game.getMyAnts(), null, true, false, true); // A* reverse
-		//Search s = new Search(Game.getFoodTiles(), Game.getMyAnts(), null, true, true, false); // OTPS
+		Search s = new Search(Game.getFoodTiles(), Game.getMyAnts(), null, true, true, false); // OTPS
 		Tile result = s.EAStarSearch().iterator().next();
 		Set<Order> orders = s.getOrders();
 		System.out.println("orders:"+ orders.iterator().next().toStringExtended());
