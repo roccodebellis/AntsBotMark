@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
+
 import vision.Offsets;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -12,6 +14,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+
+import defaultpackage.MyBot;
 import game.Directions;
 import game.Game;
 import game.Order;
@@ -26,6 +30,9 @@ import java.util.HashMap;
  *
  */
 public class Search {
+	
+	private static Logger LOGGER = Logger.getLogger( Search.class.getName() );
+
 	/**
 	 * Una o piu' posizioni di partenza da cui far partire la ricerca
 	 */
@@ -304,7 +311,8 @@ public class Search {
 	}
 
 	private Set<Tile> eAStar() {
-
+		Set<Tile> exposed = new HashSet<Tile>();
+		
 		PriorityQueue<Node> frontier = new PriorityQueue<Node>();
 		Set<Node> closedSet = new TreeSet<>(Node.nodeComparator());
 		//pathSources = new HashMap<Tile, Tile>()
@@ -324,11 +332,22 @@ public class Search {
 		}
 
 		while(!frontier.isEmpty()) {
-
+			//LOGGER.warning("Frontier:\n"+ frontier);
+			
+			/*
+			if((one_target_per_source|| reverse) && targets.isEmpty())
+				break;
+			if(!one_target_per_source && !reverse && completedSources.containsAll(sources))
+				break;
+			*/
+			
 			Node curN = frontier.poll();
 			Tile curT = curN.getTile();
 			Tile curSource = pathSources.get(curT);
-
+			
+			//LOGGER.warning("curN:"+curN + " curSource"+curSource);
+			//LOGGER.warning("completedSources:\n"+completedSources);
+			//LOGGER.warning("targets:\n"+targets);
 			closedSet.add(curN);
 
 			if(completedSources.contains(curSource))
@@ -355,8 +374,9 @@ public class Search {
 					o = new Order(curT, tempDir, curSource);
 					 */
 					createOneOrder(curT, curSource, directionFromTarget.get(curT)); //o = new Order(curT, directionFromTarget.get(curT), curSource);
-
-					curT.getNeighbourTile(directionFromTarget.get(curT)).setSuitable(false);
+					Tile tExposed = curT.getNeighbourTile(directionFromTarget.get(curT));
+					exposed.add(tExposed);
+					tExposed.setSuitable(false);
 
 				} else {
 
@@ -366,12 +386,14 @@ public class Search {
 						tempDir = directionFromTarget.get(tempT);
 						tempT = tempT.getNeighbourTile(tempDir);
 					}
-
+					//LOGGER.warning("curSource"+curSource +" D:" +tempDir.getOpponent()+ " curT"+curT);
 					createOneOrder(curSource, curT, tempDir.getOpponent()); //o = new Order(curSource, tempDir.getOpponent(), curT);
 
-					pathSources.remove(curT);
+					//pathSources.remove(curT);
 					closedSet.remove(curN);
-					curSource.getNeighbourTile(tempDir.getOpponent()).setSuitable(false);
+					Tile tExposed = curSource.getNeighbourTile(tempDir.getOpponent());
+					tExposed.setSuitable(false);
+					exposed.add(tExposed);
 
 					//o = new Order(curSource, directionFromSource.get(curSource), curT);
 				}
@@ -407,6 +429,8 @@ public class Search {
 			}
 
 		}
+		
+		exposed.parallelStream().forEachOrdered(tile -> tile.setSuitable(true));
 
 		return results;
 	}

@@ -1,4 +1,5 @@
 package defaultpackage;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,7 +29,12 @@ public class MyBot extends Bot {
 		try {  
 
 			// This block configure the logger with handler and formatter  
-			fh = new FileHandler(MyBot.class.getProtectionDomain().getCodeSource().getLocation()+"MyLogFile.log");  
+			String filePath = MyBot.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+			filePath = filePath.replaceAll("%20"," ");
+			filePath = filePath.substring(0, filePath.length()-4).concat("_logger.log");
+			File file = new File(filePath);
+			file.getParentFile().mkdirs();
+			fh = new FileHandler(file.getAbsolutePath(),true);  
 			LOGGER.addHandler(fh);
 			SimpleFormatter formatter = new SimpleFormatter();  
 			fh.setFormatter(formatter);   
@@ -65,27 +71,32 @@ public class MyBot extends Bot {
 		//1 VISION MODULE
 		//2 COMBAT SIMULATION
 		//state.doCombat();
-		//2.5\3.5 HILL ATTACK AND DEFENSE
-		time.start(Modules.Defence);
-		LOGGER.info("state.doDefenceHills()");
+		
+		//2.5 HILL DEFENSE
+			time.start(Modules.Defence);
+			LOGGER.info("state.doDefenceHills()");
 		state.doDefenceHills();
-		LOGGER.info("~state.doDefenceHills()");
-		time.end(Modules.Defence);
+			LOGGER.info("~state.doDefenceHills()");
+			time.end(Modules.Defence);
+		
 		//3 FOOD COLLECTION
-		time.start(Modules.Food);
-		LOGGER.info("state.doFood()");
+			time.start(Modules.Food);
+			LOGGER.info("state.doFood()");
 		state.doFood();
-		LOGGER.info("~state.doFood()");
-		time.end(Modules.Food);
-		/*time.start(Modules.Attack);
+			LOGGER.info("~state.doFood()");
+			time.end(Modules.Food);
+		
+		//3.5 HILL ATTACK
+			/*time.start(Modules.Attack);
 		state.doAttackHills();
-		time.end(Modules.Attack);*/
+			time.end(Modules.Attack);*/
+		
 		//4 EXPLORATION AND MOVEMENTS
-		time.start(Modules.Exploration);
-		LOGGER.info("state.doExploration()");
+			time.start(Modules.Exploration);
+			LOGGER.info("state.doExploration()");
 		state.doExploration();
-		LOGGER.info("~state.doExploration()");
-		time.end(Modules.Exploration);
+			LOGGER.info("~state.doExploration()");
+			time.end(Modules.Exploration);
 
 		
 		

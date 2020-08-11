@@ -22,7 +22,7 @@ public class ExplorationAndMovement {
 	// un'area di visione
 
 	private static Logger LOGGER = Logger.getLogger( ExplorationAndMovement.class.getName() );
-	
+
 	public ExplorationAndMovement() {// TODO ?
 		LOGGER.info("ExplorationAndMovement()");
 		LOGGER.info("ExplorationAndMovement():toUnexploredArea()");
@@ -38,28 +38,45 @@ public class ExplorationAndMovement {
 					spreadOut(Game.getOrderlyAnts());
 					LOGGER.info("~ExplorationAndMovement():spreadOut()");
 				}
-				
+
 			}
 		}
 		LOGGER.info("~ExplorationAndMovement()");
 	}
 
 	private boolean toUnexploredArea(Set<Tile> unexplored) {
-		if (!unexplored.isEmpty()) {
+
+		//LOGGER.info("unexplored: " + unexplored); 
+
+
+		if (unexplored!=null && !unexplored.isEmpty() && !Game.getMyAnts().isEmpty()) {
+			//LOGGER.info( " MyAnts: " +  Game.getMyAnts());
 			// Search s = new Search(unexplored, Game.getMyAnts(), null, false, false,
 			// true); //non utilizzare perche manda le formiche tutte ad uno stesso tile
 			// inexplorato
-			
+
 			//Search s = new Search(Game.getMyAnts(), unexplored, null, false, false, false);
 			//da valutare, il problema e' che all'inizio le tile inesplorate sono tantissime
 			//ma sarebbe meglio mandare solo una formica ad un'unica tile inesplorata
-			Search s = new Search(unexplored, Game.getMyAnts(), null, false, true, false);
+
+			//BFS
+			//Search s = new Search( unexplored, Game.getMyAnts(), null, false, true, false);
+			//Set<Tile> results =  s.adaptiveSearch(); 
+			Search s;
+			Set<Tile> results;
+			if(unexplored.size()<15) {
+				s = new Search( unexplored, Game.getMyAnts(), null, true, false, true);
+				results = s.EAStarSearch();
+			} else {
+				//s = new Search( Game.getMyAnts(),unexplored, null, true, false, false);
+				s = new Search( Game.getMyAnts(),unexplored, null, false, false, false);
+				results =  s.adaptiveSearch();
+			}
 			
-			Set<Tile> results = s.adaptiveSearch();
 
 			Set<Order> orders = s.getOrders();
 			//issueAndRemoveOrders(orders, unexplored);
-			
+			LOGGER.info("results: " + results); 
 			Game.issueOrders(orders);
 			unexplored.removeAll(results);
 		}
@@ -71,12 +88,12 @@ public class ExplorationAndMovement {
 			// Search s = new Search(myAnts, outOfSight, null, false, false, false);
 			// Search s = new Search(outOfSight, Game.getMyAnts(), null, false, false,
 			// true); //sembra non funzionare
-			
+
 			Search s = new Search(outOfSight, Game.getMyAnts(), null, false, true, false);
 			Set<Tile> results = s.adaptiveSearch();
-			
+
 			Set<Order> orders = s.getOrders();
-			
+
 			//issueAndRemoveOrders(orders, outOfSight);
 			outOfSight.removeAll(results);
 			Game.issueOrders(orders);
@@ -135,19 +152,19 @@ public class ExplorationAndMovement {
 		// E' uguale a CombatSimulation.Hold
 
 
-		
+
 		List<Tile> myAnts = new ArrayList<>(Game.getMyAnts());
 		Set<Tile> targets = new TreeSet<Tile>();
 
 		targets.addAll(myAnts);
 		targets.addAll(orderlyAnts);
-		
+
 		//Tile ant = null;
-		
+
 		int i = 0;
 		while(i<myAnts.size()) {
 			Tile ant = myAnts.get(i);
-		//for(Tile ant : myAnts) {
+			//for(Tile ant : myAnts) {
 			Set<Tile> targetsWithoutAnt = targets.parallelStream().filter(curAnt -> !curAnt.equals(ant)).collect(Collectors.toSet());
 
 			Set<Tile> singoletto = new TreeSet<Tile>();
@@ -177,9 +194,9 @@ public class ExplorationAndMovement {
 			i++;
 		}
 
-		
-		
-		
+
+
+
 		/*Iterator<Tile> antsItr = myAnts.iterator();
 		while (antsItr.hasNext()) {
 
@@ -193,8 +210,8 @@ public class ExplorationAndMovement {
 				if(!t.equals(ant))
 					targetsWithoutAnt.add(t);
 			}*
-			
-			
+
+
 			Set<Tile> targetsWithoutAnt = targets.parallelStream().filter(curAnt -> !curAnt.equals(ant)).collect(Collectors.toSet());
 
 			Set<Tile> singoletto = new TreeSet<Tile>();
@@ -255,18 +272,18 @@ public class ExplorationAndMovement {
 			else
 				//issueAndRemoveOrders(orders, targets);
 				targets.removeAll(results);
-				Game.issueOrders(orders);
-			
+			Game.issueOrders(orders);
+
 		}
 		return pathFounded;
 	}
-/*
+	/*
 	private boolean issueAndRemoveOrders(Set<Order> orders, Set<Tile> targets) {
 		4orders.parallelStream().forEachOrdered(o -> {
 			if(Game.issueOrder(o)) 
 				targets.remove(o.getTarget());
 			});
 	}*/
-	
-	
+
+
 }
