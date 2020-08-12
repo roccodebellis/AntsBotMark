@@ -443,7 +443,8 @@ public class Tile implements Comparable<Tile> {
 	}
 	
 	public Tile getNeighbourTile(Directions dir) {
-		return neighbourTiles.get(dir);
+		
+		return dir.equals(Directions.STAYSTILL) ? this : neighbourTiles.get(dir);
 		//return generateCrazyNeighbours();
 	}
 
