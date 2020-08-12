@@ -255,35 +255,67 @@ public class ExplorationAndMovement {
 		while (!Game.getMyAnts().isEmpty() && !targets.isEmpty() && pathFounded) {
 
 			// io gli farei fare un A* quindi heuristic = true, che dici?
-			//Search s = new Search(Game.getMyAnts(), targets, null, true, false, false);
+			
 
 			//Search s = new Search(targets,Game.getMyAnts(),  null, false, true, false);
-			Search s = new Search(Game.getMyAnts(), targets, null, false, false, false);//questo funziona bene
+			
 			// Search s = new Search(targets, Game.getMyAnts(), null, false, false, true);
 			//non va bene quella di sopra, se dobbiamo utilizzare quella dobbiamo farci restituire
 			//le tile di order
-			Set<Tile> results = s.adaptiveSearch();
+			
+			//Set<Tile> results = s.EAStarSearch();
 			/*s.adaptiveSearch();
 			Set<Tile> results = s.getOrderTile(); */
-
+			
+			//A* non funziona, va in timeout for no reason
+			
+			//A* normale
+			/*Search s = new Search(Game.getMyAnts(), targets, null, true, false, false);
+			Set<Tile> results = s.EAStarSearch();
+			*/
+			
+			//A* otps
+			/*Search s = new Search(targets, Game.getMyAnts(), null, true, true, false);
+			Set<Tile> results = s.EAStarSearch();*/
+			
+			
+			//BFS otps
+			/*Search s = new Search(targets, Game.getMyAnts(), null, false, true, false);
+			Set<Tile> results = s.adaptiveSearch();
+			*/
+			
+			//BFS normale
+			/**/Search s = new Search(Game.getMyAnts(), targets, null, false, false, false);//questo funziona bene
+			Set<Tile> results = s.adaptiveSearch();
+			
+			
 			Set<Order> orders = s.getOrders();
+			LOGGER.info("Results: " + results);
+			LOGGER.info("Orders: " + orders);
 			if (orders.isEmpty())
 				pathFounded = false;
-			else
+			else pathFounded = issueAndRemoveOrders(orders, targets);//targets.removeAll(results);
 				//issueAndRemoveOrders(orders, targets);
-				targets.removeAll(results);
-			Game.issueOrders(orders);
+				
+			//Game.issueOrders(orders);
 
 		}
 		return pathFounded;
 	}
-	/*
+	
 	private boolean issueAndRemoveOrders(Set<Order> orders, Set<Tile> targets) {
-		4orders.parallelStream().forEachOrdered(o -> {
-			if(Game.issueOrder(o)) 
-				targets.remove(o.getTarget());
-			});
-	}*/
+		boolean pathFounded = false;
+		boolean issued = false;
+		for(Order o : orders) {
+			LOGGER.info("Order first: " + o);
+			issued=Game.issueOrder(o);
+			if(!pathFounded && issued)
+				pathFounded = true;
+			targets.remove(o.getTarget());
+		}
+		LOGGER.info("pathFounded: " + pathFounded);
+		return pathFounded;
+	}
 
 
 }
