@@ -104,6 +104,8 @@ public class MyBot extends Bot {
 		//Game.printMapVision();
 		//Game.printNeigbour();
 
+		state.resetTargetSuitable();
+		
 		//state.doFood();
 	}
 }
