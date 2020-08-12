@@ -41,7 +41,6 @@ public class Game {
 	
 	private static Logger LOGGER = Logger.getLogger( Game.class.getName() );
 
-
 	/**
 	 * Numero di righe della mappa del gioco.
 	 */
@@ -604,9 +603,9 @@ public class Game {
 		
 		LOGGER.info(order.toStringExtended());
 
-		Tile dest = o_ant.getNeighbourTile(o_dir); //Maybe null if staystill
+		Tile dest = o_dir==Directions.STAYSTILL? o_ant: o_ant.getNeighbourTile(o_dir); //Maybe null if staystill
 		
-		if(order.getDirection().equals(Directions.STAYSTILL)) {
+		if(order.getDirection().equals(Directions.STAYSTILL) && !ordersTarget.contains(dest)) {
 			ordersTarget.add(o_ant);
 			myAnts.remove(o_ant);
 			orderlyAnts.add(o_ant);
