@@ -41,7 +41,6 @@ public class Game {
 	
 	private static Logger LOGGER = Logger.getLogger( Game.class.getName() );
 
-
 	/**
 	 * Numero di righe della mappa del gioco.
 	 */
@@ -606,25 +605,22 @@ public class Game {
 
 		Tile dest = o_ant.getNeighbourTile(o_dir); //Maybe null if staystill
 		
-		if(order.getDirection().equals(Directions.STAYSTILL)) {
-			ordersTarget.add(o_ant);
-			myAnts.remove(o_ant);
-			orderlyAnts.add(o_ant);
-			orders.add(order);
-			return true;
-			
-		}else if ( !ordersTarget.contains(dest)) {
+		if ( !ordersTarget.contains(dest)) {
 			ordersTarget.add(dest);
+			dest.setSuitable(false); //destinazione formica turno successivo
 			myAnts.remove(o_ant);
 			orderlyAnts.add(o_ant);
 			orders.add(order);
-			
-			System.out.println(order);
+			if(!order.getDirection().equals(Directions.STAYSTILL))
+				System.out.println(order);
 			return true;
-		}  else return false;/*else {
-			HashSet<Tile> vattin = new HashSet<Tile>();
-			vattin.add(o_ant);
-			return ExplorationAndMovement.toUnexploredArea(vattin);}*/
+		} 
+		return false;
+	}
+	
+	public void resetTargetSuitable() {
+		
+		ordersTarget.parallelStream().forEachOrdered(targetTile -> targetTile.setSuitable(true));
 	}
 
 	/**
@@ -838,5 +834,7 @@ public class Game {
 
 		}
 	}
+
+	
 
 }

@@ -72,7 +72,7 @@ public class ExplorationAndMovement {
 				s = new Search( Game.getMyAnts(),unexplored, null, false, false, false);
 				results =  s.adaptiveSearch();
 			}
-			
+
 
 			Set<Order> orders = s.getOrders();
 			//issueAndRemoveOrders(orders, unexplored);
@@ -130,6 +130,7 @@ public class ExplorationAndMovement {
 			//1%3= 1
 			//2%3= 2
 			//3%3= 0
+			LOGGER.info("\ttarget:"+ (curTarget==0 ? "unexplored" : (curTarget==1)? "ehill": "eAnts"));
 			curTarget = curTarget % size;
 			if (curTarget == 0)
 				countPathFounded = 0;
@@ -251,39 +252,70 @@ public class ExplorationAndMovement {
 
 	//TODO secondo me qui one_per_source, per evitare il time-out
 	private boolean computeOrders(Set<Tile> targets) {
-		boolean pathFounded = true;
-		while (!Game.getMyAnts().isEmpty() && !targets.isEmpty() && pathFounded) {
+		boolean pathFounded = false;
+		//while (!Game.getMyAnts().isEmpty() && !targets.isEmpty() && pathFounded) {
 
-			// io gli farei fare un A* quindi heuristic = true, che dici?
-			//Search s = new Search(Game.getMyAnts(), targets, null, true, false, false);
+		// io gli farei fare un A* quindi heuristic = true, che dici?
 
-			//Search s = new Search(targets,Game.getMyAnts(),  null, false, true, false);
-			Search s = new Search(Game.getMyAnts(), targets, null, false, false, false);//questo funziona bene
-			// Search s = new Search(targets, Game.getMyAnts(), null, false, false, true);
-			//non va bene quella di sopra, se dobbiamo utilizzare quella dobbiamo farci restituire
-			//le tile di order
-			Set<Tile> results = s.adaptiveSearch();
-			/*s.adaptiveSearch();
+
+		//Search s = new Search(targets,Game.getMyAnts(),  null, false, true, false);
+
+		// Search s = new Search(targets, Game.getMyAnts(), null, false, false, true);
+		//non va bene quella di sopra, se dobbiamo utilizzare quella dobbiamo farci restituire
+		//le tile di order
+
+		//Set<Tile> results = s.EAStarSearch();
+		/*s.adaptiveSearch();
 			Set<Tile> results = s.getOrderTile(); */
 
-			Set<Order> orders = s.getOrders();
-			if (orders.isEmpty())
-				pathFounded = false;
-			else
-				//issueAndRemoveOrders(orders, targets);
-				targets.removeAll(results);
-			Game.issueOrders(orders);
+		//A* non funziona, va in timeout for no reason
 
-		}
+		//A* normale
+		/*Search s = new Search(Game.getMyAnts(), targets, null, true, false, false);
+			Set<Tile> results = s.EAStarSearch();
+		 */
+
+		//A* otps
+		/*Search s = new Search(targets, Game.getMyAnts(), null, true, true, false);
+			Set<Tile> results = s.EAStarSearch();*/
+
+
+		//BFS otps
+		/*Search s = new Search(targets, Game.getMyAnts(), null, false, true, false);
+			Set<Tile> results = s.adaptiveSearch();
+		 */
+
+		//BFS normale
+		/**/Search s = new Search(Game.getMyAnts(), targets, null, false, false, false);//questo funziona bene
+		Set<Tile> results = s.adaptiveSearch();
+
+
+		Set<Order> orders = s.getOrders();
+		LOGGER.info("\tResults: " + results);
+		LOGGER.info("\tOrders: " + orders);
+		if (!orders.isEmpty())
+			pathFounded = issueAndRemoveOrders(orders, targets);//targets.removeAll(results);
+		//issueAndRemoveOrders(orders, targets);
+
+		//Game.issueOrders(orders);
+
+
 		return pathFounded;
 	}
-	/*
+
 	private boolean issueAndRemoveOrders(Set<Order> orders, Set<Tile> targets) {
-		4orders.parallelStream().forEachOrdered(o -> {
-			if(Game.issueOrder(o)) 
-				targets.remove(o.getTarget());
-			});
-	}*/
+		boolean pathFounded = false;
+		boolean issued = false;
+		for(Order o : orders) {
+			LOGGER.info("\tOrder first: " + o);
+			issued = Game.issueOrder(o);
+			if(!pathFounded && issued)
+				pathFounded = true;
+			targets.remove(o.getTarget());
+		}
+		LOGGER.info("\tpathFounded: " + pathFounded);
+		return pathFounded;
+	}
 
 
 }

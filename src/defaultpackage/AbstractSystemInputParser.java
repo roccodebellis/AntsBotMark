@@ -319,6 +319,7 @@ public abstract class AbstractSystemInputParser extends AbstractSystemInputReade
      * Finishes turn.
      */
     public void finishTurn() {
+ 
         System.out.println("go");
         System.out.flush();
     }
