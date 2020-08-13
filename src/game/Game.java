@@ -411,9 +411,9 @@ public class Game {
 	 * Clears game state information about my ants locations.
 	 */
 	private void clearMyAnts() {
-		myAnts.parallelStream().forEachOrdered(ant -> ant.removeAnt());
+		myAnts.parallelStream().forEachOrdered(tile -> tile.removeAnt());
 		myAnts.clear();
-		orderlyAnts.parallelStream().forEachOrdered(ant -> ant.removeAnt());
+		orderlyAnts.parallelStream().forEachOrdered(tile -> tile.removeAnt());
 		orderlyAnts.clear();
 	}
 	

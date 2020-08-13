@@ -55,6 +55,9 @@ public class Order implements Comparable<Order>{
 		return tile.getRow();
 	}
 
+	/*
+	 * da dove parte la formica e
+	 */
 	public Tile getOrigin() {
 		return tile;
 	}
