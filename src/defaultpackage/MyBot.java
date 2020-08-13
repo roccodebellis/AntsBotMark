@@ -1,6 +1,8 @@
 package defaultpackage;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,6 +19,7 @@ import game.Game;
 import game.Order;
 import game.Tile;
 import timing.Modules;
+import timing.Timing;
 
 
 public class MyBot extends Bot {
@@ -43,8 +46,13 @@ public class MyBot extends Bot {
 			e.printStackTrace();  
 		} catch (IOException e) {  
 			e.printStackTrace();  
-		}  
-		LOGGER.log(Level.INFO, "HELLO LOG");
+		} 
+		
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  
+		LocalDateTime now = LocalDateTime.now();  
+		  
+
+		LOGGER.severe("-----"+dtf.format(now));
 	}
 
 
@@ -65,6 +73,7 @@ public class MyBot extends Bot {
 
 	@Override //DA FARW
 	public void doTurn() {
+		LOGGER.severe("-----"+Timing.getTurnNumber());
 		Game state = getGame();
 
 
@@ -82,6 +91,7 @@ public class MyBot extends Bot {
 		//3 FOOD COLLECTION
 			time.start(Modules.Food);
 			LOGGER.info("state.doFood()");
+			
 		state.doFood();
 			LOGGER.info("~state.doFood()");
 			time.end(Modules.Food);
