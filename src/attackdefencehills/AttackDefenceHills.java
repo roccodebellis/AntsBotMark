@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import game.Game;
 import game.Tile;
@@ -15,6 +16,8 @@ import vision.Offsets;
 import vision.Vision;
 
 public class AttackDefenceHills {
+
+	private static Logger LOGGER = Logger.getLogger( AttackDefenceHills.class.getName() );
 
 	public static void defence() {
 		int avaiableAnts = Game.getMyAnts().size();
@@ -56,7 +59,7 @@ public class AttackDefenceHills {
 						Set<Tile> myAntsNearHill = new HashSet<Tile>(Game.getMyAnts());
 						myAntsNearHill.addAll(Game.getOrderlyAnts());
 						myAntsNearHill.retainAll(Game.getTiles(hill, new Offsets(Game.getAttackRadius2()*2)));
-						
+
 						if(myAntsNearHill.size()>2) {
 							int minDist = enemies.first().getHeuristicValue(); 
 							if(defIt.hasNext() && antsForHill >= 4 && minDist < Math.sqrt(Game.getViewRadius2()))//PARAMETER
@@ -117,75 +120,25 @@ public class AttackDefenceHills {
 			Game.issueOrders(s.getOrders());//
 		}
 
-		/*
-		System.out.println("*enemiesForHills* "+enemiesForHills);
-		Game.getMyHills().forEach(hill -> System.out.println("*offset*"+Vision.getHillDefenceTargets(hill)));
-		System.out.println("*defender* "+defender);
-		System.out.println("*order* "+withoutHill);
-		System.out.println("*enemy*"+ Game.getEnemyAnts());
-		 */
-
-
-
-
 	}
 
 	//TODO controllare la disponibilità di formiche con la quantità di formiche nemiche che circondano il nido
 	public static void attack() {
-		// questa ricerca e' giusta
-		Search s = new Search(Game.getEnemyHills(), Game.getMyAnts(), null, false, false, true);
-		s.adaptiveSearch();
-		Game.issueOrders(s.getOrders());
-	}
+		Set<Tile> enemyHills = Game.getEnemyHills();
+		Set<Tile> myAnts = Game.getMyAnts();
 
-	/*
-	 * private void defense(Set<Tile> myAnts, Set<Tile> myHills, Set<Tile> enemy) {
-	 * int avaiableAnts = myAnts.size();
-	 * 
-	 * double antsForHill = avaiableAnts/(myHills.size()+1);
-	 * 
-	 * Set<Tile> defender = new TreeSet<Tile>();
-	 * 
-	 * if(antsForHill>0) { Game.getMyHills().parallelStream().forEachOrdered(hill ->
-	 * { Directions sentinel = Directions.random();
-	 * defender.add(Game.getTile(hill,sentinel.getDiagonal()));
-	 * 
-	 * //ricerca la formica nemica più vicina Iterator<Tile> enemyItr =
-	 * enemy.iterator();
-	 * 
-	 * if(enemyItr.hasNext()) { Tile minTarget = enemyItr.next(); int minDist =
-	 * Game.getDistance(hill,minTarget);
-	 * 
-	 * while (enemyItr.hasNext()) { Tile next = enemyItr.next(); int nextDist =
-	 * Game.getDistance(hill,next); if (nextDist < minDist) { minTarget = next;
-	 * minDist = nextDist; } } if(antsForHill>1 && minDist < Game.getViewRadius())
-	 * defender.add(Game.getTile(hill,sentinel.getOpponent().getDiagonal()));
-	 * if(antsForHill>2 && minDist < Game.getAttackRadius()+3)
-	 * defender.add(Game.getTile(hill,sentinel.getNext().getDiagonal()));
-	 * if(antsForHill>3 && minDist < Game.getAttackRadius())
-	 * defender.add(Game.getTile(hill,sentinel.getOpponent().getNext().getDiagonal()
-	 * )); }
-	 * 
-	 * });
-	 * 
-	 * }else if(avaiableAnts > 0 ) { Directions sentinel = Directions.random(); Tile
-	 * hill = myHills.iterator().next(); //difendi almeno un nido
-	 * defender.add(Game.getTile(hill,sentinel.getDiagonal()));
-	 * 
-	 * if(antsForHill>1) //TODO non abbiamo cercato la formica vicina
-	 * defender.add(Game.getTile(hill,sentinel.getOpponent().getDiagonal())); }
-	 * 
-	 * //Search s = new Search(defender, Game.getMyAnts(), null, false, true,
-	 * false); Search s = new Search(defender, Game.getMyAnts(), null, false, false,
-	 * true); s.adaptiveSearch(); Game.issueOrders(s.getOrders()); //FIXME
-	 * controllare se sta cosa funziona, nel caso da l'ordine al contrario }
-	 * 
-	 * private void attack(Set<Tile> myAnts, Set<Tile> enemyHills) { //questa
-	 * ricerca è giusta Search s = new Search(Game.getEnemyHills(),
-	 * Game.getMyAnts(), null, false, false, true); s.adaptiveSearch();
-	 * Game.issueOrders(s.getOrders());
-	 * 
-	 * }
-	 */
+		if(!enemyHills.isEmpty() && !myAnts.isEmpty()) {
+			/* BFS reverse*/
+			Search s = new Search(enemyHills, myAnts, null, false, false, true);
+			s.adaptiveSearch();
+			
+			/* A* 
+			//Search s = new Search(myAnts, enemyHills , null, true, false, false);
+			
+			s.EAStarSearch();
+			*/
+			Game.issueOrders(s.getOrders());
+		}
+	}
 
 }
