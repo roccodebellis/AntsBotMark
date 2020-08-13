@@ -27,20 +27,22 @@ public class ExplorationAndMovement {
 		LOGGER.info("ExplorationAndMovement()");
 		LOGGER.info("ExplorationAndMovement():toUnexploredArea()");
 		if(!toUnexploredArea(Game.getUnexplored())) {
-			LOGGER.info("~ExplorationAndMovement():toUnexploredArea()");
+
 			LOGGER.info("ExplorationAndMovement():toInvisibleArea()");
 			if(!toInvisibleArea(Game.getOutOfSight())) {
-				LOGGER.info("~ExplorationAndMovement():toInvisibleArea()");
+
 				LOGGER.info("ExplorationAndMovement():toPriorityTarget()");
 				if (!toPriorityTarget()) {
-					LOGGER.info("~ExplorationAndMovement():toPriorityTarget()");
+
 					LOGGER.info("ExplorationAndMovement():spreadOut()");
 					spreadOut(Game.getOrderlyAnts());
 					LOGGER.info("~ExplorationAndMovement():spreadOut()");
-				}
 
-			}
-		}
+				} LOGGER.info("~ExplorationAndMovement():toPriorityTarget()");
+
+			} LOGGER.info("~ExplorationAndMovement():toInvisibleArea()");
+		} LOGGER.info("~ExplorationAndMovement():toUnexploredArea()");
+
 		LOGGER.info("~ExplorationAndMovement()");
 	}
 
@@ -64,21 +66,22 @@ public class ExplorationAndMovement {
 			//Set<Tile> results =  s.adaptiveSearch(); 
 			Search s;
 			Set<Tile> results;
+			/*
 			if(unexplored.size()<15) {
 				s = new Search( unexplored, Game.getMyAnts(), null, true, false, true);
 				results = s.EAStarSearch();
-			} else {
-				//s = new Search( Game.getMyAnts(),unexplored, null, true, false, false);
-				s = new Search( Game.getMyAnts(),unexplored, null, false, false, false);
-				results =  s.adaptiveSearch();
-			}
+			} else { */
+			s = new Search(  Game.getMyAnts(), unexplored, null, false, false, false);
+			//s = new Search( Game.getMyAnts(),unexplored, null, false, false, false);
+			results =  s.adaptiveSearch();
+			//}
 
 
 			Set<Order> orders = s.getOrders();
 			//issueAndRemoveOrders(orders, unexplored);
 			LOGGER.info("results: " + results); 
 			Game.issueOrders(orders);
-			unexplored.removeAll(results);
+			//unexplored.removeAll(results);
 		}
 		return Game.getMyAnts().isEmpty();
 	}
@@ -103,7 +106,7 @@ public class ExplorationAndMovement {
 
 	private boolean toPriorityTarget() {
 		ArrayList<Set<Tile>> targets = new ArrayList<Set<Tile>>();
-
+		//FIXME ordinare come vuoi con l'ordine che porta alla vittoria di  più partite 
 		if (!Game.getUnexplored().isEmpty())
 			targets.add(Game.getUnexplored());
 		if (!Game.getEnemyHills().isEmpty())
@@ -111,40 +114,30 @@ public class ExplorationAndMovement {
 		if (!Game.getEnemyAnts().isEmpty())
 			targets.add(Game.getEnemyAnts());
 
-		int curTarget = 0;
 
-		int size = targets.size();
 
-		int countPathFounded = 1;
-		//TODO
-		// IndexOutOfBoundsException: Index: 2, Size: 2 PERCHE'?? l'ha dato due volte dopo le modifiche
-		//non lo da' sempre, solo quando ci sono troppe formiche ed e' in vantaggio
-		//le altre volte ha funzionato benissimo
-		//da 52 formiche in su eccezione
-		//da 43 in su time-out
+		if(targets.size()>0) {
 
-		//while (!targets.get(curTarget).isEmpty() && countPathFounded != 0) {
+			int countPathFounded = 1;
+			//TODO
+			// IndexOutOfBoundsException: Index: 2, Size: 2 PERCHE'?? l'ha dato due volte dopo le modifiche
+			//non lo da' sempre, solo quando ci sono troppe formiche ed e' in vantaggio
+			//le altre volte ha funzionato benissimo
+			//da 52 formiche in su eccezione
+			//da 43 in su time-out
 
-		while (!Game.getMyAnts().isEmpty() && countPathFounded != 0) {	
-			//0%3= 0
-			//1%3= 1
-			//2%3= 2
-			//3%3= 0
-			LOGGER.info("\ttarget:"+ (curTarget==0 ? "unexplored" : (curTarget==1)? "ehill": "eAnts"));
-			curTarget = curTarget % size;
-			if (curTarget == 0)
-				countPathFounded = 0;
-			countPathFounded += computeOrders(targets.get(curTarget++)) ? 1 : 0;
+			//while (!targets.get(curTarget).isEmpty() && countPathFounded != 0) {
+
+			Iterator<Set<Tile>> targetsItr = targets.iterator();
+			while (!Game.getMyAnts().isEmpty() && !(countPathFounded == 0 && !targetsItr.hasNext())) {	
+				if(!targetsItr.hasNext()) {
+					targetsItr = targets.iterator();
+					countPathFounded = 0;
+				}
+				countPathFounded += computeOrders(targetsItr.next()) ? 1 : 0;
+			} 
 		}
 
-
-
-		/*
-		 * do { pathFounded = computeOrders(targets.get(curTarget)); if (pathFounded)
-		 * priorityCount++; curTarget++; if (curTarget != size) pathFounded = true; else
-		 * if (priorityCount == 0) pathFounded = false; else { pathFounded = false; } }
-		 * while (pathFounded);
-		 */
 		return Game.getMyAnts().isEmpty();
 	}
 
@@ -311,7 +304,7 @@ public class ExplorationAndMovement {
 			issued = Game.issueOrder(o);
 			if(!pathFounded && issued)
 				pathFounded = true;
-			targets.remove(o.getTarget());
+			//targets.remove(o.getTarget());
 		}
 		LOGGER.info("\tpathFounded: " + pathFounded);
 		return pathFounded;
