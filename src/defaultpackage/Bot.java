@@ -41,7 +41,6 @@ public abstract class Bot extends AbstractSystemInputParser {
 	 */
 	@Override
 	public void beforeUpdate() {
-		Timing.setTurnStartTime(); 
 		time.start(Modules.Parse);
 		state.clear();
 	}
