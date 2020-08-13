@@ -145,9 +145,9 @@ public class ExplorationAndMovement {
 	private void spreadOut(Set<Tile> orderlyAnts) {
 		// E' uguale a CombatSimulation.Hold
 
+		
 
-
-		List<Tile> myAnts = new ArrayList<>(Game.getMyAnts());
+		List<Tile> myAnts = new ArrayList<Tile>(Game.getMyAnts());
 		Set<Tile> targets = new TreeSet<Tile>();
 
 		targets.addAll(myAnts);
@@ -158,14 +158,14 @@ public class ExplorationAndMovement {
 		int i = 0;
 		while(i<myAnts.size()) {
 			Tile ant = myAnts.get(i);
-			//for(Tile ant : myAnts) {
-			Set<Tile> targetsWithoutAnt = targets.parallelStream().filter(curAnt -> !curAnt.equals(ant)).collect(Collectors.toSet());
-
+			
+			Set<Tile> targetsWithoutAnt = new HashSet<Tile>(targets);
+			targetsWithoutAnt.remove(ant);
+			
 			Set<Tile> singoletto = new TreeSet<Tile>();
 			singoletto.add(ant);
 
 			Search s = new Search(singoletto, targetsWithoutAnt, null, false, false, false);// da singoletto alla formica piu'
-			// vicina non il contrario
 
 			// Search s = new Search(targets, singoletto, null, false, false, true);//BFS
 			s.adaptiveSearch();
@@ -177,11 +177,11 @@ public class ExplorationAndMovement {
 				Order o = orderIt.next();
 				Directions dir = o.getDirection();
 				//TODO da controllare ma penso stia bene
-				if (ant.getNeighbours().contains(dir.getOpponent()))
+				if (ant.getNeighbours().contains(dir.getOpponent()) && ant.getNeighbourTile(dir.getOpponent()).isSuitable() )
 					toIssue.add(o.withOpponentDirection());
-				else if(ant.getNeighbours().contains(dir.getOpponent().getNext()))
+				else if(ant.getNeighbours().contains(dir.getOpponent().getNext())  && ant.getNeighbourTile(dir.getOpponent().getNext()).isSuitable())
 					toIssue.add(new Order(ant, dir.getOpponent().getNext(), Game.getTile(ant, dir.getOpponent().getNext().getOffset())));
-				else if(ant.getNeighbours().contains(dir.getOpponent().getNext().getOpponent()))
+				else if(ant.getNeighbours().contains(dir.getOpponent().getNext().getOpponent())  && ant.getNeighbourTile(dir.getOpponent().getNext().getOpponent()).isSuitable())
 					toIssue.add(new Order(ant, dir.getOpponent().getNext().getOpponent(), Game.getTile(ant, dir.getOpponent().getNext().getOpponent().getOffset())));
 				Game.issueOrders(toIssue);
 			}
