@@ -87,9 +87,11 @@ public class MyBot extends Bot {
 			time.end(Modules.Food);
 		
 		//3.5 HILL ATTACK
-			/*time.start(Modules.Attack);
+			time.start(Modules.Attack);
+			LOGGER.info("state.doAttackHills()");
 		state.doAttackHills();
-			time.end(Modules.Attack);*/
+			LOGGER.info("~state.doAttackHills()");
+			time.end(Modules.Attack);
 		
 		//4 EXPLORATION AND MOVEMENTS
 			time.start(Modules.Exploration);
