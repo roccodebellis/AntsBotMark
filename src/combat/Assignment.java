@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -22,11 +23,11 @@ import vision.Offsets;
 
 public class Assignment implements Comparable<Assignment>{
 
-
+	private static Logger LOGGER = Logger.getLogger( Assignment.class.getName() );
 	private Set<Tile> ants;
 	private int antsLosses;
 
-	private Set<Tile> antsHills;
+	private Set<Tile> antsHills ;
 	private int antsHillsDestroyed;
 
 	private Map<Integer, Set<Tile>> enemyAnts;
@@ -64,7 +65,7 @@ public class Assignment implements Comparable<Assignment>{
 		this.enemyHills = enemyHills;
 		this.enemyLosses = new ArrayList<Integer>(enemyAnts.size());
 		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyLosses.add(0));
-		
+
 		this.enemyHillsDestroyed = new ArrayList<Integer>(enemyAnts.size());
 		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyHillsDestroyed.add(0));
 
@@ -73,8 +74,7 @@ public class Assignment implements Comparable<Assignment>{
 		this.enemyFoodCollected = new ArrayList<Integer>(enemyAnts.size());
 		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyFoodCollected.add(0));
 
-
-		antsMove = new TreeSet<Order>();
+		antsMove = new HashSet<Order>();
 	}
 
 
@@ -83,7 +83,13 @@ public class Assignment implements Comparable<Assignment>{
 	}
 
 	public Set<Tile> getAnts() {
-		return ants;
+		Set<Tile> output;
+		if(isEnemyMoves) {
+			output = new HashSet<Tile>();
+			this.enemyAnts.forEach( (key,enemySet) -> output.addAll(enemySet));
+		} else
+			output = new HashSet<Tile>(this.ants);
+		return output;
 	}
 
 	public int getAnts_number() {
@@ -91,14 +97,22 @@ public class Assignment implements Comparable<Assignment>{
 	}
 
 	public Set<Tile> getOpponentAnts() {
-		Set<Tile> enemy = new HashSet<Tile>();
-		enemyAnts.values().forEach( enemySet -> enemy.addAll(enemySet));
-		return enemy;
+		Set<Tile> output;
+		if(!isEnemyMoves) {
+			output = new HashSet<Tile>();
+			this.enemyAnts.forEach( (key,enemySet) -> output.addAll(enemySet));
+		} else 
+			output = new HashSet<Tile>(this.ants);
+		return output;
 	}
 
 	public Set<Tile> getOpponentHills() {
-		Set<Tile> curEnemyHills = new HashSet<Tile>();
-		enemyHills.values().forEach( enemySet -> curEnemyHills.addAll(enemySet));
+		Set<Tile> curEnemyHills;
+		if(isEnemyMoves) {
+			curEnemyHills = new HashSet<Tile>();
+			enemyHills.values().forEach( enemySet -> curEnemyHills.addAll(enemySet));
+		}else 
+			curEnemyHills = new HashSet<Tile>(antsHills);
 		return curEnemyHills;
 	}
 
@@ -136,32 +150,32 @@ public class Assignment implements Comparable<Assignment>{
 
 
 	public Assignment performMove(Set<Order> moves) {
-		Set<Tile> newAnts = new TreeSet<Tile>();
-		newAnts.addAll(ants);
-		Map<Integer, Set<Tile>> newEnemyAnts = new TreeMap<Integer, Set<Tile>>(enemyAnts);
+		Set<Tile> newAnts = new TreeSet<Tile>(ants);
+		Map<Integer, Set<Tile>> newEnemyAnts = new TreeMap<Integer, Set<Tile>>();
+		enemyAnts.forEach((key,set)-> newEnemyAnts.put(key, new HashSet<Tile>(set)));
 
-		if(isEnemyMoves)
-			moves.parallelStream().forEach(move ->{ 
+		if(isEnemyMoves) {
+			moves.parallelStream().forEachOrdered(move ->{ 
 				IntStream.range(0, newEnemyAnts.size()).parallel().forEachOrdered( i  -> { 
-					if(newEnemyAnts.get(i+1).remove(move.getOrigin()))
-						newEnemyAnts.get(i+1).add(move.getOrderedTile());
+					if(newEnemyAnts.get(i+1).remove(move.getOrigin()));
+					newEnemyAnts.get(i+1).add(move.getOrderedTile());
 				});
 			});
-		else {
-			moves.parallelStream().forEach(move ->{ newAnts.remove(move.getOrigin()); newAnts.add(move.getOrderedTile());});
-			antsMove = moves;
+		} else {
+			moves.parallelStream().forEachOrdered(move -> { 
+				newAnts.remove(move.getOrigin()); 
+				newAnts.add(move.getOrderedTile());
+				antsMove.add(move);
+			});
 		}
-		return new Assignment(currentTurn+1,  newAnts, antsHills, newEnemyAnts, enemyHills, foodTiles, isEnemyMoves ? false : true);
-
+		return new Assignment(currentTurn+1, newAnts, antsHills, newEnemyAnts, enemyHills, foodTiles, !isEnemyMoves);
 	}
 
 	public void resolveCombatAndFoodCollection() {
-
 		istantKill();
 		battle();
 		hillRazing();
 		foodResolution();
-
 	}
 
 	private HashMap<Tile, Integer> computeFocusAttack(Set<Tile> ants, Set<Tile> enemy){
@@ -182,32 +196,29 @@ public class Assignment implements Comparable<Assignment>{
 
 
 		Set<Tile> enemy = new HashSet<Tile>();
-		enemyAnts.values().forEach( enemySet -> enemy.addAll(enemySet));
+		enemyAnts.forEach( (id,set) -> enemy.addAll(set));
 
 		focusAttack.putAll(computeFocusAttack(ants, enemy));
 
-
 		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered( i  -> { 
 			Set<Tile> ienemySet = enemyAnts.get(i+1);
-
-			enemy.clear();
-			enemy.addAll(ants);
+			Set<Tile> tempEenemy = new HashSet<Tile>();
+			tempEenemy.addAll(ants);
 			if(i > 0)
-				IntStream.range(0, i+1).parallel().forEachOrdered( j -> enemy.addAll(enemyAnts.get(j+1)));//FIXME
+				IntStream.range(0, i+1).parallel().forEachOrdered( j -> tempEenemy.addAll(enemyAnts.get(j+1)));//FIXME
 			if(i+2 < enemyAnts.size())
-				IntStream.range(i+2, enemyAnts.size()).parallel().forEachOrdered( j -> enemy.addAll(enemyAnts.get(j+1)));
+				IntStream.range(i+2, enemyAnts.size()).parallel().forEachOrdered( j -> tempEenemy.addAll(enemyAnts.get(j+1)));
 
 			//System.out.println("* ienemySet"+ ienemySet);
 			//System.out.println("* enemy"+ enemy);
 
-			focusAttack.putAll(computeFocusAttack(ienemySet, enemy));
+			focusAttack.putAll(computeFocusAttack(ienemySet, tempEenemy));
 		});
 
 		Set<Tile> deadAnts = new TreeSet<Tile>();
 
 		ants.parallelStream().forEachOrdered(ant -> {
 			int curAntFA = focusAttack.get(ant);
-
 
 			Set<Tile> deadEnemyAnts = new TreeSet<Tile>();
 
@@ -219,18 +230,19 @@ public class Assignment implements Comparable<Assignment>{
 
 				ienemySet.parallelStream().forEachOrdered(enemyAnt -> {
 					int curEnemyFA = focusAttack.get(enemyAnt);
-
-					if(curAntFA > curEnemyFA) {
-						antsLosses++;
-						deadAnts.add(ant);
-					} else if (curAntFA < curEnemyFA) {
-						deadEnemyAnts.add(enemyAnt);
-						enemyLosses.set(i, enemyLossesNumber+1);
-					} else {
-						antsLosses++;
-						deadAnts.add(ant);
-						deadEnemyAnts.add(enemyAnt);
-						enemyLosses.set(i, enemyLossesNumber+1);
+					if(curAntFA > 0 && curEnemyFA > 0) {
+						if(curAntFA > curEnemyFA) {
+							antsLosses++;
+							deadAnts.add(ant);
+						} else if (curAntFA < curEnemyFA) {
+							deadEnemyAnts.add(enemyAnt);
+							enemyLosses.set(i, enemyLossesNumber+1);
+						} else {
+							antsLosses++;
+							deadAnts.add(ant);
+							deadEnemyAnts.add(enemyAnt);
+							enemyLosses.set(i, enemyLossesNumber+1);
+						}
 					}
 
 				});
@@ -359,6 +371,9 @@ public class Assignment implements Comparable<Assignment>{
 
 
 	public Set<Order> getFirstChild() {
+		LOGGER.severe("\tgetFirstChild()");
+		LOGGER.severe("\t"+child);
+		LOGGER.severe("\t~getFirstChild()");
 		return child.first().getMoves();
 	}
 
@@ -370,8 +385,19 @@ public class Assignment implements Comparable<Assignment>{
 	long GetExtensionEstimate() {
 		return (long) (ants.size() + enemyAnts.entrySet().parallelStream().mapToInt(eASet -> eASet.getValue().size()).sum()) * Configuration.getMilSecUsedForEachAntsInCS();
 	}
-	
+
 	/**
+	 * 
+	 * Lo stato di valutazione è per la maggior parte basato sull'ammontare di perdite da parte di una
+	 * fazione nella risoluzione del combattimento in questo nodo e lungo tutti il percorso del miglior 
+	 * figlio attraverso l'albero. Le perdite nemiche incrementano i risultati di valutazione, mentre le
+	 * perdite delle formiche dell'agente lo decrementano. Viene assegnato un bonus per la completa
+	 * eliminazione di tutte le formiche nemiche, mentre viene sottratto un malus se tutte le formiche 
+	 * dell'agente vengono sterminate. Il valore dei nemici persi è incrementato nel caso in cui il numero 
+	 * delle formiche dell'agente sia sufficientemente alto rispetto al numero delle formiche nemiche, o
+	 * quando il gioco è vicino al turno finale. 
+	 * Tutti i valori numerici sono stati 
+	 * 
 	 * 
 	 * FIXME aggiungere quando veine effettuata la traduzione che un punteggio di 1 eè assegnato se un nido
 	 * nemico viene distruto
@@ -412,17 +438,13 @@ public class Assignment implements Comparable<Assignment>{
 		return value;
 	}
 
-
 	@Override
 	public int compareTo(Assignment o) {
 		return Double.compare(value, o.value);
 	}
 
-
 	@Override
 	public String toString() {
-		return "Assignment [ants=" + ants + ", enemyAnts=" + enemyAnts + ", value=" + value + "]";
+		return "Assignment [currentTurn="+currentTurn+" value=" + value + "]";
 	}
-
-
 }

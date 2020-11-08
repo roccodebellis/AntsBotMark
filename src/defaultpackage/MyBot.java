@@ -79,45 +79,45 @@ public class MyBot extends Bot {
 
 		//1 VISION MODULE
 		//2 COMBAT SIMULATION
-		//state.doCombat();
+			//time.start(Modules.Combat);
+			//LOGGER.info("state.doCombat()");
+		state.doCombat();
+			//LOGGER.info("~state.doCombat()");
+			//time.end(Modules.Combat);
 		
 		//2.5 HILL DEFENSE
 			time.start(Modules.Defence);
-			LOGGER.info("state.doDefenceHills()");
+			//LOGGER.info("state.doDefenceHills()");
 		state.doDefenceHills();
-			LOGGER.info("~state.doDefenceHills()");
+			//LOGGER.info("~state.doDefenceHills()");
 			time.end(Modules.Defence);
 		
 		//3 FOOD COLLECTION
 			time.start(Modules.Food);
-			LOGGER.info("state.doFood()");
-			
+			//LOGGER.info("state.doFood()");
 		state.doFood();
-			LOGGER.info("~state.doFood()");
+			//LOGGER.info("~state.doFood()");
 			time.end(Modules.Food);
 		
 		//3.5 HILL ATTACK
 			time.start(Modules.Attack);
-			LOGGER.info("state.doAttackHills()");
+			//LOGGER.info("state.doAttackHills()");
 		state.doAttackHills();
-			LOGGER.info("~state.doAttackHills()");
+			//LOGGER.info("~state.doAttackHills()");
 			time.end(Modules.Attack);
 		
 		//4 EXPLORATION AND MOVEMENTS
 			time.start(Modules.Exploration);
-			LOGGER.info("state.doExploration()");
+			//LOGGER.info("state.doExploration()");
 		state.doExploration();
-			LOGGER.info("~state.doExploration()");
+			//LOGGER.info("~state.doExploration()");
 			time.end(Modules.Exploration);
 
 		
-		
-		LOGGER.info("Available Ants: "+ Game.getMyAnts());
+		//LOGGER.info("Available Ants: "+ Game.getMyAnts());
 		//Game.printMapVision();
 		//Game.printNeigbour();
-
 		state.resetTargetSuitable();
-		
 		//state.doFood();
 	}
 }

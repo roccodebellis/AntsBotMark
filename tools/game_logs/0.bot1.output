@@ -1,457 +1,134 @@
 # turn 1
-o 9 6 s
+o 9 6 w
 # turn 2
-o 10 6 s
+o 9 5 w
 # turn 3
-o 11 6 w
+o 9 4 s
 # turn 4
-o 11 5 w
+o 10 4 s
+o 9 6 w
 # turn 5
-o 11 4 s
-# turn 6
-o 12 4 e
-o 9 6 s
-# turn 7
-o 12 5 w
-o 10 6 s
-# turn 8
-o 11 6 s
-o 12 4 w
-# turn 9
-o 12 6 w
-o 12 3 e
-# turn 10
-o 12 4 w
-o 9 6 s
-o 12 5 e
-# turn 11
-o 12 6 w
-o 12 3 e
-o 10 6 s
-# turn 12
-o 11 6 s
-o 12 4 w
-o 12 5 n
-# turn 13
-o 12 6 w
-o 12 3 e
-o 11 5 w
-# turn 14
-o 11 4 e
-o 12 4 w
-o 12 5 e
-# turn 15
-o 12 6 w
-o 12 3 e
-o 11 5 w
-# turn 16
-o 11 4 e
-o 12 4 w
-o 12 5 e
-# turn 17
-o 12 6 w
-o 12 3 e
-o 11 5 w
-# turn 18
-o 11 4 e
-o 12 4 w
-o 12 5 e
-# turn 19
-o 12 6 w
-o 12 3 e
-o 11 5 w
-# turn 20
-o 11 4 e
-o 12 4 w
-o 12 5 e
-# turn 21
-o 12 6 w
-o 12 3 e
-o 11 5 w
-# turn 22
-o 11 4 e
-o 12 4 w
-o 12 5 e
-# turn 23
-o 12 6 w
-o 12 3 e
-o 11 5 w
-# turn 24
-o 11 4 e
-o 12 4 w
-o 12 5 e
-# turn 25
-o 12 6 w
-o 12 3 e
-o 11 5 w
-# turn 26
-o 11 4 e
-o 12 4 w
-o 12 5 e
-# turn 27
-o 12 6 w
-o 12 3 e
-o 11 5 w
-# turn 28
-o 11 4 e
-o 12 4 w
-o 12 5 e
-# turn 29
-o 12 6 w
-o 12 3 e
-o 11 5 w
-# turn 30
-o 11 4 e
-o 12 4 w
-o 12 5 e
-# turn 31
-o 12 6 w
-o 12 3 e
-o 11 5 w
-# turn 32
-o 11 4 e
-o 12 4 w
-o 12 5 e
-# turn 33
-o 12 6 w
-o 12 3 e
-o 11 5 w
-# turn 34
-o 11 4 e
-o 12 4 w
-o 12 5 e
-# turn 35
-o 12 6 w
-o 12 3 e
-o 11 5 w
-# turn 36
-o 11 4 e
-o 12 4 w
-o 12 5 e
-# turn 37
-o 12 6 w
-o 12 3 e
-o 11 5 w
-# turn 38
-o 11 4 e
-o 12 4 w
-o 12 5 e
-# turn 39
-o 12 6 w
-o 12 3 e
-o 11 5 w
-# turn 40
-o 11 4 e
-o 12 4 w
-o 12 5 e
-# turn 41
-o 12 6 w
-o 11 5 n
-o 12 3 n
-# turn 42
-o 11 3 s
-o 12 5 w
-o 10 5 n
-# turn 43
-o 12 4 e
-o 12 3 n
+o 11 4 w
 o 9 5 n
-# turn 44
-o 12 5 w
-o 11 3 n
+# turn 6
+o 11 3 w
 o 8 5 w
-# turn 45
-o 12 4 w
-o 10 3 n
+# turn 7
+o 11 2 n
 o 8 4 w
-# turn 46
-o 12 3 e
-o 9 3 w
+# turn 8
 o 8 3 w
-# turn 47
-o 12 4 w
-o 9 2 s
+o 10 2 n
+o 9 6 s
+# turn 9
+o 9 2 w
+o 10 6 w
 o 8 2 e
-# turn 48
-o 12 3 e
-o 10 2 s
-o 8 3 w
-# turn 49
-o 12 4 w
-o 11 2 w
-o 8 2 s
-# turn 50
-o 12 3 e
-o 11 1 s
-o 9 2 n
-# turn 51
-o 12 4 w
-o 12 1 n
-o 8 2 e
-# turn 52
-o 12 3 e
-o 11 1 n
-o 8 3 w
-# turn 53
-o 12 4 w
-o 10 1 n
-o 8 2 e
-# turn 54
-o 12 3 e
-o 8 3 w
+# turn 10
 o 9 1 w
-# turn 55
-o 12 4 w
-o 8 2 e
-o 9 0 n
-# turn 56
-o 12 3 e
 o 8 3 w
+o 10 5 s
+# turn 11
+o 9 0 n
+o 11 5 n
+o 8 2 s
+# turn 12
 o 8 0 n
-# turn 57
-o 7 0 n
-o 12 4 w
+o 9 2 n
+o 10 5 s
+# turn 13
+o 7 0 s
 o 8 2 e
-# turn 58
-o 6 0 n
+o 11 5 s
+# turn 14
+o 8 0 w
+o 8 3 w
+o 12 5 e
+o 9 6 s
+# turn 15
+o 8 89 n
+o 8 2 s
+o 10 6 e
+o 12 6 w
+# turn 16
+o 7 89 n
+o 9 6 s
+o 10 7 s
+o 9 2 n
+o 12 5 w
+# turn 17
+o 6 89 n
+o 12 4 w
+o 10 6 e
+o 11 7 w
+o 8 2 e
+# turn 18
+o 5 89 n
+o 11 6 s
 o 12 3 e
+o 9 6 s
+o 10 7 s
 o 8 3 e
-# turn 59
-o 5 0 n
+# turn 19
+o 4 89 n
+o 12 6 w
 o 12 4 w
 o 8 4 e
-# turn 60
-o 12 3 e
+o 10 6 e
+o 11 7 w
+# turn 20
+o 3 89 e
+o 12 5 w
+o 11 6 s
+o 10 7 s
+o 12 3 n
 o 8 5 s
-o 4 0 n
-# turn 61
-o 12 4 w
-o 9 6 s
+# turn 21
+o 12 6 w
+o 11 7 n
+o 11 3 s
+o 12 4 n
 o 9 5 n
 o 3 0 n
-# turn 62
-o 10 6 e
+# turn 22
+o 10 7 s
 o 12 3 e
+o 11 4 w
+o 12 5 e
 o 8 5 s
 o 2 0 e
-# turn 63
-o 10 7 s
-o 12 4 w
+# turn 23
+o 12 6 n
+o 11 7 n
+o 11 3 s
+o 12 4 e
 o 9 5 n
 o 2 1 w
-# turn 64
-o 11 7 n
-o 12 3 e
+# turn 24
+o 10 7 s
+o 12 5 w
+o 11 6 s
+o 12 3 n
 o 8 5 s
-o 2 0 s
-# turn 65
-o 12 4 w
-o 3 0 w
-o 10 7 s
-# turn 66
-o 3 89 s
+o 2 0 e
+# turn 25
+o 12 6 n
 o 11 7 n
-o 12 3 e
-# turn 67
-o 4 89 s
-o 10 7 s
-o 12 4 w
-# turn 68
-o 5 89 s
-o 11 7 n
-o 12 3 e
-# turn 69
-o 6 89 s
-o 10 7 s
-o 12 4 w
-# turn 70
-o 7 89 s
-o 11 7 n
-o 12 3 e
-# turn 71
-o 8 89 s
-o 10 7 s
-o 12 4 w
-# turn 72
-o 9 89 s
-o 11 7 n
-o 12 3 e
-# turn 73
-o 10 89 s
-o 10 7 s
-o 12 4 w
-# turn 74
-o 11 89 w
-o 11 7 n
-o 12 3 e
-# turn 75
-o 12 4 n
-o 11 88 w
-o 10 7 s
-# turn 76
-o 11 7 n
-o 11 87 w
-o 11 4 s
-# turn 77
-o 12 4 n
-o 11 86 s
-o 10 7 s
-# turn 78
-o 11 7 n
-o 12 86 w
-o 11 4 s
-# turn 79
-o 12 4 n
-o 12 85 s
-o 10 7 s
-# turn 80
-o 11 7 n
-o 13 85 s
-o 11 4 s
-# turn 81
-o 12 4 n
-o 14 85 s
-o 10 7 s
-# turn 82
-o 15 85 s
-o 11 7 n
-o 11 4 s
-# turn 83
-o 16 85 s
-o 12 4 n
-o 10 7 s
-# turn 84
-o 11 7 n
-o 17 85 e
-o 11 4 s
-# turn 85
-o 17 86 s
-o 12 4 n
-o 10 7 s
-# turn 86
-o 11 7 n
-o 11 4 s
-o 18 86 n
-# turn 87
-o 12 4 n
-o 17 86 s
-o 10 7 s
-# turn 88
-o 11 7 n
-o 18 86 n
-o 11 4 s
-# turn 89
-o 12 4 n
-o 17 86 s
-o 10 7 s
-# turn 90
-o 11 7 n
-o 18 86 n
-o 11 4 s
-# turn 91
-o 12 4 n
-o 17 86 s
-o 10 7 s
-# turn 92
-o 11 7 n
-o 18 86 n
-o 11 4 s
-# turn 93
-o 12 4 n
-o 17 86 s
-o 10 7 s
-# turn 94
-o 11 4 s
-o 11 7 n
-o 18 86 n
-# turn 95
-o 12 4 w
-o 17 86 n
-o 10 7 s
-# turn 96
-o 11 7 w
-o 12 3 n
-o 16 86 w
-# turn 97
 o 11 3 s
-o 11 6 n
-o 16 85 w
-# turn 98
-o 10 6 s
+o 12 4 e
+o 9 5 n
+o 2 1 w
+# turn 26
+o 10 7 s
+o 12 5 w
+o 11 6 s
 o 12 3 n
-o 16 84 s
-# turn 99
-o 11 6 n
-o 17 84 s
+o 8 5 s
+o 2 0 e
+# turn 27
+o 12 6 n
+o 11 7 n
 o 11 3 s
-# turn 100
-o 10 6 e
-o 18 84 s
-o 12 3 e
-# turn 101
-o 12 4 n
-o 19 84 s
-o 10 7 s
-# turn 102
-o 11 7 n
-o 20 84 s
-o 11 4 s
-# turn 103
-o 12 4 n
-o 21 84 s
-o 10 7 s
-# turn 104
-o 11 7 n
-o 22 84 s
-# turn 105
-o 23 84 n
-o 10 7 s
-# turn 106
-o 11 7 n
-o 22 84 w
-# turn 107
-o 22 83 n
-o 10 7 s
-# turn 108
-o 11 7 n
-o 21 83 n
-# turn 109
-o 20 83 n
-o 10 7 s
-# turn 110
-o 11 7 n
-o 19 83 n
-# turn 111
-o 18 83 n
-o 10 7 s
-# turn 112
-o 11 7 n
-o 17 83 n
-# turn 113
-o 10 7 w
-o 16 83 n
-# turn 114
-o 10 6 e
-# turn 115
-o 9 6 s
-o 10 7 s
-# turn 116
-o 10 6 e
-o 11 7 w
-# turn 117
-o 11 6 n
-o 10 7 s
-# turn 118
-o 11 7 n
-# turn 119
-o 10 7 s
-# turn 120
-o 11 7 n
-# turn 121
-o 10 7 s
-# turn 122
-o 11 7 n
-# turn 123
-o 10 7 s
-# turn 124
-o 11 7 n
+o 12 4 e
+o 9 5 n
+o 2 1 w

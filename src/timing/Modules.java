@@ -2,7 +2,7 @@ package timing;
 
 public enum Modules {
 	Parse,
-	Combat,
+	//Combat,
 	Defence,
 	Food,
 	Attack,

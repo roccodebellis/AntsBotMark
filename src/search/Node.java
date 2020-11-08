@@ -71,14 +71,6 @@ public class Node implements Comparable<Node>{
 		this.heuristicValue = heuristicValue;
 	}
 
-	@Override
-	public int compareTo(Node o) {
-		int thisCompare = pathCost + heuristicValue;
-		int otheCompare = o.pathCost + o.heuristicValue;
-
-		return (thisCompare == otheCompare) ? tile.compareTo(o.tile) : Integer.compareUnsigned(thisCompare, otheCompare);
-	}
-
 	public Tile getTile() {
 		return tile;
 	}
@@ -96,13 +88,16 @@ public class Node implements Comparable<Node>{
 	}
 
 	@Override
-	public int hashCode(){
-		return tile.hashCode();
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + heuristicValue;
+		result = prime * result + pathCost;
+		result = prime * result + ((target == null) ? 0 : target.hashCode());
+		result = prime * result + ((tile == null) ? 0 : tile.hashCode());
+		return result;
 	}
 
-	/**
-	 * Verifica se due ExtendedTile sono uguali anche in base al loro contenuto.
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -112,6 +107,15 @@ public class Node implements Comparable<Node>{
 		if (getClass() != obj.getClass())
 			return false;
 		Node other = (Node) obj;
+		if (heuristicValue != other.heuristicValue)
+			return false;
+		if (pathCost != other.pathCost)
+			return false;
+		if (target == null) {
+			if (other.target != null)
+				return false;
+		} else if (!target.equals(other.target))
+			return false;
 		if (tile == null) {
 			if (other.tile != null)
 				return false;
@@ -119,11 +123,13 @@ public class Node implements Comparable<Node>{
 			return false;
 		return true;
 	}
-
+	
 	@Override
-	public String toString() {
-		return "Node [tile=" + tile + ", pathCost=" + pathCost + ", heuristicValue=" + heuristicValue + ", target="
-				+ target + "]";
+	public int compareTo(Node o) {
+		int thisCompare = pathCost + heuristicValue;
+		int otheCompare = o.pathCost + o.heuristicValue;
+		int tileCompare = tile.compareTo(o.tile);
+		return (thisCompare == otheCompare) ? (tileCompare == 0 ? target.compareTo(o.target) : tileCompare) : Integer.compareUnsigned(thisCompare, otheCompare);
 	}
 
 	/** 
@@ -145,6 +151,12 @@ public class Node implements Comparable<Node>{
 	}
 	public static final Comparator<Node> nodeComparator2() {
 		return (Node o1, Node o2) -> (Integer.compare(o1.getTile().hashCode(), o2.getTile().hashCode()));
+	}
+	
+	@Override
+	public String toString() {
+		return "Node [tile=" + tile + ", pathCost=" + pathCost + ", heuristicValue=" + heuristicValue + ", target="
+				+ target + "]";
 	}
 
 }

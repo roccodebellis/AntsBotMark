@@ -46,7 +46,7 @@ public class Timing {
 	}
 	public void end(Modules module) {
 		if(turnNo>1)
-			modulesTime.put(module, (long) ((getCurTime()-modulesTimeStart.get(module)) * 0.85 + modulesTime.get(module) * 0.15));
+			modulesTime.put(module, (long) ((getCurTime()-modulesTimeStart.get(module)) * 0.9 + modulesTime.get(module) * 0.1));
 		else
 			modulesTime.put(module, (getCurTime()-modulesTimeStart.get(module)));
 	}

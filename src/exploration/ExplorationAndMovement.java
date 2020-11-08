@@ -21,29 +21,29 @@ public class ExplorationAndMovement {
 	// in aree gia esplorate per minimizzare la distanza media dal cibo e mantenere
 	// un'area di visione
 
-	private static Logger LOGGER = Logger.getLogger( ExplorationAndMovement.class.getName() );
+	//private static Logger LOGGER = Logger.getLogger( ExplorationAndMovement.class.getName() );
 
 	public ExplorationAndMovement() {// TODO ?
-		LOGGER.info("ExplorationAndMovement()");
-		LOGGER.info("ExplorationAndMovement():toUnexploredArea()");
+		//LOGGER.info("ExplorationAndMovement()");
+		//LOGGER.info("ExplorationAndMovement():toUnexploredArea()");
 		if(!toUnexploredArea(Game.getUnexplored())) {
 
-			LOGGER.info("ExplorationAndMovement():toInvisibleArea()");
+			//LOGGER.info("ExplorationAndMovement():toInvisibleArea()");
 			if(!toInvisibleArea(Game.getOutOfSight())) {
 
-				LOGGER.info("ExplorationAndMovement():toPriorityTarget()");
+				//LOGGER.info("ExplorationAndMovement():toPriorityTarget()");
 				if (!toPriorityTarget()) {
 
-					LOGGER.info("ExplorationAndMovement():spreadOut()");
+					//LOGGER.info("ExplorationAndMovement():spreadOut()");
 					spreadOut(Game.getOrderlyAnts());
-					LOGGER.info("~ExplorationAndMovement():spreadOut()");
+					//LOGGER.info("~ExplorationAndMovement():spreadOut()");
 
-				} LOGGER.info("~ExplorationAndMovement():toPriorityTarget()");
+				} //LOGGER.info("~ExplorationAndMovement():toPriorityTarget()");
 
-			} LOGGER.info("~ExplorationAndMovement():toInvisibleArea()");
-		} LOGGER.info("~ExplorationAndMovement():toUnexploredArea()");
+			} //LOGGER.info("~ExplorationAndMovement():toInvisibleArea()");
+		} //LOGGER.info("~ExplorationAndMovement():toUnexploredArea()");
 
-		LOGGER.info("~ExplorationAndMovement()");
+		//LOGGER.info("~ExplorationAndMovement()");
 	}
 
 	private boolean toUnexploredArea(Set<Tile> unexplored) {
@@ -79,7 +79,7 @@ public class ExplorationAndMovement {
 
 			Set<Order> orders = s.getOrders();
 			//issueAndRemoveOrders(orders, unexplored);
-			LOGGER.info("results: " + results); 
+			//LOGGER.info("results: " + results); 
 			Game.issueOrders(orders);
 			//unexplored.removeAll(results);
 		}
@@ -284,8 +284,8 @@ public class ExplorationAndMovement {
 
 
 		Set<Order> orders = s.getOrders();
-		LOGGER.info("\tResults: " + results);
-		LOGGER.info("\tOrders: " + orders);
+		//LOGGER.info("\tResults: " + results);
+		//LOGGER.info("\tOrders: " + orders);
 		if (!orders.isEmpty())
 			pathFounded = issueAndRemoveOrders(orders, targets);//targets.removeAll(results);
 		//issueAndRemoveOrders(orders, targets);
@@ -300,13 +300,13 @@ public class ExplorationAndMovement {
 		boolean pathFounded = false;
 		boolean issued = false;
 		for(Order o : orders) {
-			LOGGER.info("\tOrder first: " + o);
+			//LOGGER.info("\tOrder first: " + o);
 			issued = Game.issueOrder(o);
 			if(!pathFounded && issued)
 				pathFounded = true;
 			//targets.remove(o.getTarget());
 		}
-		LOGGER.info("\tpathFounded: " + pathFounded);
+		//LOGGER.info("\tpathFounded: " + pathFounded);
 		return pathFounded;
 	}
 

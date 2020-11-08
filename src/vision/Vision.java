@@ -48,7 +48,7 @@ public class Vision {
 
 	private Set<Tile> mapTiles;
 
-	private Map<Node,Tile> enemyToAnt;
+	private Set<Node> enemyToAnt;
 
 	private static Map<Tile,Set<Tile>> hillDefenceTargets; 
 
@@ -56,7 +56,7 @@ public class Vision {
 		this.mapTiles = mapTiles;
 		visionOffsets = new Offsets(viewRadius);
 		inVision = new HashSet<Tile>();
-		enemyToAnt = new HashMap<Node,Tile>();
+		enemyToAnt = new TreeSet<Node>(); //TODO maybe fix compare
 		hillDefenceTargets = new TreeMap<Tile,Set<Tile>>();
 	}
 
@@ -93,13 +93,12 @@ public class Vision {
 		myAnts_visible.parallelStream().forEachOrdered(
 				ant -> 
 				//for each tile in vision of the current ant, we update the vision index of the tile
-				Game.getTiles(ant, visionOffsets).parallelStream().forEachOrdered(visibleTile ->{
+				Game.getTiles(ant, visionOffsets).parallelStream().forEachOrdered(visibleTile -> {
 					//setting the vision
 					updateVision(visibleTile);
 
-
 					//if the Tile (as a Node) contains an enemy, we update enemyToAnt
-					//setting the value as the Node (wich corresponds to the enemy)
+					//setting the value as the Node (which corresponds to the enemy)
 					//and (one of) its key as the ant (which it's able to see)
 					if(visibleTile.isOccupiedByAnt() && visibleTile.getOwner() != 0)
 						updateEnemyToAnt(visibleTile, ant);
@@ -109,15 +108,16 @@ public class Vision {
 	}
 
 	//TODO re-read it, not sure it has the behaviour we expect (see compareTo in Node)
-	//non funzia
 	private void updateEnemyToAnt(Tile enemyTile, Tile ant) {
-		Node enemyTileAsANode = new Node(enemyTile,ant);
-		if((enemyToAnt.containsKey(enemyTileAsANode) &&  Game.getDistance(ant, enemyTile) < Game.getDistance(enemyToAnt.get(enemyTileAsANode), enemyTile)) || !enemyToAnt.containsKey(enemyTileAsANode)) 
-			enemyToAnt.put(enemyTileAsANode,ant);
+		/*--old version with old compare--*/
+		//Node enemyTileAsANode = new Node(enemyTile,ant);
+		//if((enemyToAnt.contains(enemyTileAsANode) &&  Game.getDistance(ant, enemyTile) < Game.getDistance(enemyToAnt.get(enemyTileAsANode), enemyTile)) || !enemyToAnt.containsKey(enemyTileAsANode)) 
+		//	enemyToAnt.put(enemyTileAsANode,ant);
 		//if the distance between the ant and the enemy is lower than the distance between
 		//another ant (already contained in enemyToAnt) and the enemy
 		//we add another node with the enemy and the current ant
-
+		
+		enemyToAnt.add(new Node(enemyTile,ant));
 	}
 
 	private void updateOutOfSight() {
@@ -134,7 +134,8 @@ public class Vision {
 			Game.setVisible(visibleTile,true);
 	}
 
-	public Map<Node,Tile> getEnemyToAnt() {
+	//public Map<Node,Tile> getEnemyToAnt() {
+	public Set<Node> getEnemyToAnt() {
 		return enemyToAnt;
 	}
 

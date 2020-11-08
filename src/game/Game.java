@@ -38,7 +38,7 @@ import vision.Vision;
  *
  */
 public class Game {
-	
+
 	private static Logger LOGGER = Logger.getLogger( Game.class.getName() );
 
 	/**
@@ -416,7 +416,7 @@ public class Game {
 		orderlyAnts.parallelStream().forEachOrdered(tile -> tile.removeAnt());
 		orderlyAnts.clear();
 	}
-	
+
 	/**
 	 * Clears game state information about enemy ants locations.
 	 */
@@ -467,7 +467,7 @@ public class Game {
 	public void setWater(int row, int col) {
 		Tile curTile = getTile(row, col);
 		curTile.setTypeWater();
-		
+
 		water.add(curTile);
 
 	}
@@ -578,7 +578,7 @@ public class Game {
 		}
 	}
 
-	
+
 
 	/**
 	 * EQUALS TO STATIC SEARCH Calculates visible information
@@ -600,11 +600,11 @@ public class Game {
 	static public boolean issueOrder(Order order) {
 		Tile o_ant = order.getOrigin();
 		Directions o_dir = order.getDirection();
-		
-		LOGGER.info(order.toStringExtended());
+
+		//LOGGER.info(order.toStringExtended());
 
 		Tile dest = o_ant.getNeighbourTile(o_dir); //Maybe null if staystill
-		
+
 		if ( !ordersTarget.contains(dest)) {
 			ordersTarget.add(dest);
 			dest.setSuitable(false); //destinazione formica turno successivo
@@ -617,9 +617,9 @@ public class Game {
 		} 
 		return false;
 	}
-	
+
 	public void resetTargetSuitable() {
-		
+
 		ordersTarget.parallelStream().forEachOrdered(targetTile -> targetTile.setSuitable(true));
 	}
 
@@ -677,7 +677,8 @@ public class Game {
 		return setTiles;
 	}
 
-	public static Map<Node, Tile> getEnemyToAnt() {
+	//public static Map<Node, Tile> getEnemyToAnt() {
+	public static Set<Node> getEnemyToAnt() {
 		return view.getEnemyToAnt();
 	}
 
@@ -713,47 +714,42 @@ public class Game {
 	 * @return
 	 */
 	private Map<Tile, Tile> getOngoingBattlesSituation() {
+		int targetDistance = Configuration.getCombatModuleSearchRadius();
+		Iterator<Node> inCombatSituationItr = getEnemyToAnt().iterator();
+		Map<Tile, Tile> ongoingBattles = new HashMap<Tile, Tile>();
+		Set<Tile> antsInvolved = new HashSet<Tile>();
+		Set<Tile> enemyInvolved = new HashSet<Tile>();
 
-		Map<Node, Tile> enemyToAnt = getEnemyToAnt();
-		Iterator<Entry<Node, Tile>> inCombatSituationItr = enemyToAnt.entrySet().iterator();
 
-		Set<Tile> myAntsInCombatSituation = new TreeSet<Tile>();
-		Map<Tile, Tile> ongoingBattles = new TreeMap<Tile, Tile>();
+		if(inCombatSituationItr.hasNext()) {
+			Node curEnemyToAnt = inCombatSituationItr.next();
+			Tile curEnemy = curEnemyToAnt.getTile();
+			Tile curAnt = curEnemyToAnt.getTarget();
+			ongoingBattles.put(curAnt, curEnemy);
+			antsInvolved.add(curAnt);
+			enemyInvolved.add(curEnemy);
 
-		while (inCombatSituationItr.hasNext()) {
-			Entry<Node, Tile> currPairOfOpponents = inCombatSituationItr.next();
-			Tile enemyAnt = currPairOfOpponents.getKey().getTile();
-			Tile myAnt = currPairOfOpponents.getValue();
+			while(inCombatSituationItr.hasNext()) {
+				curEnemyToAnt = inCombatSituationItr.next();
+				final Tile enemy = curEnemyToAnt.getTile();
+				final Tile ant = curEnemyToAnt.getTarget();
+				if(!antsInvolved.contains(ant)) {
+					if(!enemyInvolved.contains(enemy)) {
+						if(antsInvolved.stream().allMatch(nextAnts -> (
+								Game.getDistance(ant, nextAnts)>targetDistance) && Game.getDistance(enemy, nextAnts)>targetDistance)
+								&& enemyInvolved.parallelStream().allMatch(nextEnemy -> 
+								Game.getDistance(enemy, nextEnemy)>targetDistance &&  Game.getDistance(ant, nextEnemy)>targetDistance)) {
 
-			// if(enemyTileAsNode.getHeuristicValue()) FIXME magari diminuire e non
-			// utilizzare il raggio di visione, utilizzando la distanza
-			if (!myAntsInCombatSituation.add(myAnt)) {
-				Iterator<Tile> setEnemyIt = ongoingBattles.keySet().iterator();
-				boolean notAddThisAnt = false;
-				while (!notAddThisAnt && setEnemyIt.hasNext()) {
-					Tile eA = setEnemyIt.next();
-					if (Game.getDistance(myAnt, eA) < Configuration.getCombatModuleSearchRadius())
-						notAddThisAnt = true;
+							ongoingBattles.put(ant, enemy);
+
+						}
+						enemyInvolved.add(enemy);
+					}
+					antsInvolved.add(ant);
 				}
-				if (notAddThisAnt)
-					ongoingBattles.put(myAnt, enemyAnt);
-			}
-
+			}	
 		}
-
-		// myAntsInCombatSituation.parallelStream().forEachOrdered(ant ->
-		// Game.myAnts.remove(ant));
-
-		/*
-		 * try { if(ongoingBattles.size()>0) throw new NullPointerException();
-		 */
 		return ongoingBattles;
-		/*
-		 * }catch(NullPointerException e) { throw new
-		 * NullPointerException("I'm in! - > " + ongoingBattles + "\nEnemyToAnt - >"
-		 * +enemyToAnt); }
-		 */
-
 	}
 
 	/**
@@ -767,18 +763,15 @@ public class Game {
 		long timeAssigned = Timing.getCombatTimeStime() / ongoingBattlesSituation.size();
 
 		ongoingBattlesSituation.entrySet().parallelStream()
-				.forEachOrdered(e -> battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
+		.forEachOrdered(e -> battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
 
 		battles.parallelStream().forEachOrdered(battle -> battle.combatResolution());
-		try {
-			if (battles.size() > 1)
-				throw new NullPointerException();
 
-		} catch (NullPointerException e) {
-			throw new NullPointerException("I'm in! - > " + battles + "\n\t" + getEnemyToAnt());
-		}
 		Set<Order> movesToPerform = new HashSet<Order>();
 		battles.parallelStream().forEachOrdered(battle -> movesToPerform.addAll(battle.getMoves()));
+		LOGGER.severe("\tCOMBAT ORDER_______");
+		LOGGER.severe("\t"+movesToPerform);
+		LOGGER.severe("\t___________________");
 		Game.issueOrders(movesToPerform);
 	}
 
@@ -834,7 +827,4 @@ public class Game {
 
 		}
 	}
-
-	
-
 }

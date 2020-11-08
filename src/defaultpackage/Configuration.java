@@ -4,8 +4,8 @@ import game.Game;
 
 public class Configuration {
 	
-	private static final int CombatModuleMinMaxMaxDepth = 40;
-	private static final int MilSecUsedForEachAntsInCS = 10;
+	private static final int CombatModuleMinMaxMaxDepth = 9;
+	private static final int MillSecUsedForEachAntsInCS = 15;
 	private static final int CombatModuleSearchRadius = Game.getAttackRadius2() * 9;
 	
 	public static int getCombatModuleMinMaxMaxDepth(){
@@ -14,7 +14,7 @@ public class Configuration {
 	
 	/*tempo presunto utilizzato da combattimento per simulare la battaglia con una formica*/
 	public static int getMilSecUsedForEachAntsInCS(){
-		return MilSecUsedForEachAntsInCS;
+		return MillSecUsedForEachAntsInCS;
 	}
 	
 	public static int getCombatModuleSearchRadius(){

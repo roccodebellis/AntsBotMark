@@ -17,7 +17,7 @@ import vision.Vision;
 
 public class AttackDefenceHills {
 
-	private static Logger LOGGER = Logger.getLogger( AttackDefenceHills.class.getName() );
+	//private static Logger LOGGER = Logger.getLogger( AttackDefenceHills.class.getName() );
 
 	public static void defence() {
 		int avaiableAnts = Game.getMyAnts().size();
@@ -129,7 +129,10 @@ public class AttackDefenceHills {
 
 		if(!enemyHills.isEmpty() && !myAnts.isEmpty()) {
 			/* BFS reverse*/
-			Search s = new Search(enemyHills, myAnts, null, false, false, true);
+			//Search s = new Search(enemyHills, myAnts, null, false, false, true);
+			
+			/* BFS*/
+			Search s = new Search(myAnts, enemyHills, null, false, false, false);
 			s.adaptiveSearch();
 			
 			/* A* 
