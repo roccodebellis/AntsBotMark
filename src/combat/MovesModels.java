@@ -15,7 +15,7 @@ public enum MovesModels {
 	 * o del nido {@code formicaio} piu' vicino e prova ad eseguire un passo
 	 * nella direzione della fazione opposta;
 	 */
-	//ATTACK,
+	ATTACK,
 	/**
 	 * <p>Mossa di avanzamento/ritirata.</p>
 	 * <p>La formica prova a restare ad una esatta distanza dalle formiche
@@ -37,7 +37,7 @@ public enum MovesModels {
 	 * <p>Mossa di inattivita'.</p>
 	 * Nessuna formica del gruppo sara' mossa.
 	 */
-	//IDLE,
+	IDLE,
 	
 	/**
 	 * <p>Mossa di avanzamento verso un'unica direzione.</p>

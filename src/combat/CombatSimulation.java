@@ -165,9 +165,9 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		LOGGER.severe("\tmovesGenerator()");
 		Map<MovesModels,Set<Order>> output = new HashMap<MovesModels,Set<Order>>();
 
-		//output.put(MovesModels.ATTACK, attack(s));
+		output.put(MovesModels.ATTACK, attack(s));
 		output.put(MovesModels.HOLD, hold(s));
-		//output.put(MovesModels.IDLE, idle(s));
+		output.put(MovesModels.IDLE, idle(s));
 		output.put(MovesModels.NORTH, directional(s,Directions.NORTH));
 		output.put(MovesModels.SOUTH, directional(s,Directions.SOUTH));
 		output.put(MovesModels.EAST, directional(s,Directions.EAST));
@@ -182,6 +182,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	}
 
 	private Set<Order> attack(Assignment currAssignment) {
+		LOGGER.info("attack()");
 		Set<Tile> targets = new HashSet<Tile>();
 		targets.addAll(currAssignment.getOpponentAnts());
 		targets.addAll(currAssignment.getOpponentHills());
@@ -190,9 +191,11 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		if(targets!=null && currAssignment.getAnts()!=null) {
 			Search search = new Search(currAssignment.getAnts(),targets, null, false, false, false);
 			search.adaptiveSearch();
+			LOGGER.info("~attack("+search.getOrders()+")");
 			return search.getOrders();
-		}else
-			return new HashSet<Order>();
+		}
+		LOGGER.info("~attack()");
+		return new HashSet<Order>();
 	}
 
 	private Set<Order> hold(Assignment currAssignment) {
@@ -320,50 +323,6 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 			Order order;
 			Directions dir = tDir;
 
-			/*
-			if(!Game.getTile(ant, dir.getOffset()).isAccessible()) {
-				//dir not accessible water
-				order = new Order(ant,Directions.STAYSTILL, ant);
-				if(!orders.add(order)) {
-					//stay still non aggiunto
-					dir = dir.getNext();
-					if(Game.getTile(ant, dir.getOffset()).isAccessible()) {
-						order = new Order(ant,dir, ant.getNeighbourTile(dir));
-						if(!orders.add(order)) {
-							dir = dir.getOpponent();
-							if(Game.getTile(ant, dir.getOffset()).isAccessible())
-								orders.add(new Order(ant,dir, ant.getNeighbourTile(dir)));
-						}
-					} else {
-						dir = dir.getOpponent();
-						if(Game.getTile(ant, dir.getOffset()).isAccessible()) 
-							orders.add(new Order(ant,dir, ant.getNeighbourTile(dir)));	
-					}
-				}
-			} else {
-				//dir accessibile	
-				Tile target = ant.getNeighbourTile(dir);
-				order = new Order(ant,dir, target);
-				if(!orders.add(order)) {
-					order = new Order(ant,Directions.STAYSTILL, ant);
-					if(!orders.add(order)) {
-						//stay still non aggiunto
-						dir = dir.getNext();
-						if(Game.getTile(ant, dir.getOffset()).isAccessible()) {
-							order = new Order(ant,dir, ant.getNeighbourTile(dir));
-							if(!orders.add(order)) {
-								dir = dir.getOpponent();
-								if(Game.getTile(ant, dir.getOffset()).isAccessible())
-									orders.add(new Order(ant,dir, ant.getNeighbourTile(dir)));
-							}
-						} else {
-							dir = dir.getOpponent();
-							if(Game.getTile(ant, dir.getOffset()).isAccessible()) 
-								orders.add(new Order(ant,dir, ant.getNeighbourTile(dir)));	
-						}
-					}
-				}
-			}*/
 			if(Game.getTile(ant, dir.getOffset()).isAccessible()) {
 				Tile target = ant.getNeighbourTile(dir);
 				order = new Order(ant,dir, target);

@@ -181,7 +181,7 @@ public class Assignment implements Comparable<Assignment>{
 
 
 	public Assignment performMove(Set<Order> moves, MovesModels moveType) {
-		//LOGGER.info("\tperformMove("+moves+", "+moveType+")["+ants+"]["+enemyAnts+"]");
+		LOGGER.info("\tperformMove("+moves+", "+moveType+")["+ants+"]["+enemyAnts+"]**********");
 		Set<Tile> newAnts = new HashSet<Tile>(ants);
 		Map<Integer, Set<Tile>> newEnemyAnts = new HashMap<Integer, Set<Tile>>();
 		enemyAnts.forEach((key,set)-> newEnemyAnts.put(key, new HashSet<Tile>(set)));
@@ -193,7 +193,7 @@ public class Assignment implements Comparable<Assignment>{
 						newEnemyAnts.get(i+1).add(move.getOrderedTile());
 				});
 			});
-			//LOGGER.info("\t~performMove() - isEnemyMoves(antsMove:"+this.antsMove);
+			LOGGER.info("\t~performMove() - isEnemyMoves(antsMove:"+this.antsMove+")***********");
 			return new Assignment(currentTurn+1, newAnts, antsHills, newEnemyAnts, enemyHills, foodTiles, !isEnemyMoves, moveType, this.antsMove);
 
 		} else {
@@ -203,7 +203,7 @@ public class Assignment implements Comparable<Assignment>{
 				this.antsMove.add(move);
 			});			
 		}
-		//LOGGER.info("\t~performMove() - end");
+		LOGGER.info("\t~performMove() - end**************");
 		return new Assignment(currentTurn+1, newAnts, antsHills, newEnemyAnts, enemyHills, foodTiles, !isEnemyMoves, moveType);
 	}
 
@@ -416,9 +416,9 @@ public class Assignment implements Comparable<Assignment>{
 	}
 
 	public Set<Order> getFirstChild() {
-		LOGGER.severe("\tgetFirstChild()");
-		LOGGER.severe("\t"+child);
-		LOGGER.severe("\t~getFirstChild()");
+		LOGGER.severe("\t\t\t\tgetFirstChild()");
+		LOGGER.severe("\t\t\t\t"+child);
+		LOGGER.severe("\t\t\t\t~getFirstChild()");
 		return child.first().getMoves();
 	}
 
