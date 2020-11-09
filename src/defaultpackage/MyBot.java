@@ -73,16 +73,16 @@ public class MyBot extends Bot {
 
 	@Override //DA FARW
 	public void doTurn() {
-		LOGGER.severe("-----"+Timing.getTurnNumber());
+		LOGGER.severe("BOT MARK GIUSTO-----"+Timing.getTurnNumber());
 		Game state = getGame();
 
 
 		//1 VISION MODULE
 		//2 COMBAT SIMULATION
 			//time.start(Modules.Combat);
-			//LOGGER.info("state.doCombat()");
+			LOGGER.info("state.doCombat()");
 		state.doCombat();
-			//LOGGER.info("~state.doCombat()");
+			LOGGER.info("~state.doCombat()");
 			//time.end(Modules.Combat);
 		
 		//2.5 HILL DEFENSE

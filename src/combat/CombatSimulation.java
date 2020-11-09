@@ -164,13 +164,13 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		//LOGGER.severe("\tmovesGenerator()");
 		Map<MovesModels,Set<Order>> output = new HashMap<MovesModels,Set<Order>>();
 
-		output.put(MovesModels.ATTACK, attack(s));
+		//output.put(MovesModels.ATTACK, attack(s));
 		output.put(MovesModels.HOLD, hold(s));
-		output.put(MovesModels.IDLE, idle(s));
+		//output.put(MovesModels.IDLE, idle(s));
 		//output.put(MovesModels.NORTH, directional(s,Directions.NORTH));
-		//output.put(MovesModels.SOUTH, directional(s,Directions.SOUTH));
-		//output.put(MovesModels.EAST, directional(s,Directions.EAST));
-		//output.put(MovesModels.WEST, directional(s,Directions.WEST));
+		output.put(MovesModels.SOUTH, directional(s,Directions.SOUTH));
+		output.put(MovesModels.EAST, directional(s,Directions.EAST));
+		output.put(MovesModels.WEST, directional(s,Directions.WEST));
 
 		
 		//LOGGER.severe("\t"+output);
@@ -327,7 +327,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 			MovesModels moveType = movesEntry.getKey();
 			Set<Order> moves = movesEntry.getValue();
 
-			Assignment childState = state.performMove(moves);
+			Assignment childState = state.performMove(moves, moveType);
 			long curTime = Timing.getCurTime();
 			long childDeadline = curTime + (deadLine-curTime)/(movesSet.size()-moveType.ordinal());//FIXME getNumber of Moves forse è il numero di mosse in questo calcolo
 
@@ -359,11 +359,20 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	}
 
 	public void combatResolution() {
+		try {
 		LOGGER.severe("\tcombatResolution()");
-		root = new Assignment(1, myAntSet, Game.getMyHills(), enemyAntSet, enemyHills, Game.getFoodTiles(), false);
+		root = new Assignment(0, myAntSet, Game.getMyHills(), enemyAntSet, enemyHills, Game.getFoodTiles(), false, null);
+		LOGGER.severe("\troot: " + root);
 		MinMax(root, Timing.getCurTime() + deadLine, 0);	
 		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(false));
+		LOGGER.severe("\tchild: " + root.getChildren());
+		
 		LOGGER.severe("\t~combatResolution()");
+		if(root.equals(null))
+			throw new NullPointerException("root is NULL" + root);
+		}catch(NullPointerException e) {
+			e.getMessage();
+		}
 	}
 
 	@Override

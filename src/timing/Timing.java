@@ -4,9 +4,14 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import combat.CombatSimulation;
+
 public class Timing {
+	
+	private static Logger LOGGER = Logger.getLogger( Timing.class.getName() );
 	
 	private static int turnNo;
 	/**
@@ -53,6 +58,14 @@ public class Timing {
 	
 	
 	public static long getCombatTimeStime(){
+		LOGGER.severe("\tgetCombatTimeStime()");
+		
+		LOGGER.severe("\t_turnTime:"+_turnTime);
+		LOGGER.severe("\t_ModulesTime:"+modulesTime);
+		
+		LOGGER.severe("\t~getCombatTimeStime()");
+		
+		
 		return getTimeRemaining() - modulesTime.entrySet().stream().mapToLong(Map.Entry::getValue).sum();
 	}
 

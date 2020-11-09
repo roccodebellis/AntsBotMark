@@ -688,11 +688,11 @@ public class Game {
 	 * 
 	 */
 	public void doCombat() {
-
+		LOGGER.severe("\tdoCombat");
 		Map<Tile, Tile> ongoingBattlesSituation = getOngoingBattlesSituation();
-
+		LOGGER.severe("\tOngoingBattles number:" + ongoingBattlesSituation.size() + "\nOngoing Battles: " + ongoingBattlesSituation);
 		// System.out.println("battlesLeading: "+ongoingBattles);
-
+		
 		if (ongoingBattlesSituation.size() != 0) {
 			/*
 			 * try { if(ongoingBattlesSituation.size()>2) throw new NullPointerException();
@@ -702,7 +702,7 @@ public class Game {
 			 * }catch(NullPointerException e) { throw new
 			 * NullPointerException("I'm in! - > " + ongoingBattlesSituation); }
 			 */
-
+			LOGGER.severe("\t~doCombat");
 		}
 	}
 
@@ -759,21 +759,25 @@ public class Game {
 	 * @param ongoingBattlesSituation
 	 */
 	private void fight(Map<Tile, Tile> ongoingBattlesSituation) {
+		LOGGER.severe("\tFIGHT");
 		Set<CombatSimulation> battles = new HashSet<CombatSimulation>();
 		long timeAssigned = Timing.getCombatTimeStime() / ongoingBattlesSituation.size();
-
+		LOGGER.severe("\ttime Assigned: " + timeAssigned);
 		ongoingBattlesSituation.entrySet().parallelStream()
 		.forEachOrdered(e -> battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
-
+		
 		battles.parallelStream().forEachOrdered(battle -> battle.combatResolution());
-
+		
 		Set<Order> movesToPerform = new HashSet<Order>();
 		battles.parallelStream().forEachOrdered(battle -> movesToPerform.addAll(battle.getMoves()));
+		
 		LOGGER.severe("\tCOMBAT ORDER_______");
 		LOGGER.severe("\t"+movesToPerform);
 		LOGGER.severe("\t___________________");
 		Game.issueOrders(movesToPerform);
+		LOGGER.severe("\t~FIGHT");
 	}
+	
 
 	public void doFood() {
 		if (getMyAnts().size() > 0)
