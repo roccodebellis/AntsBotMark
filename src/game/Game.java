@@ -750,7 +750,7 @@ public class Game {
 	 * @param ongoingBattlesSituation
 	 */
 	private void fight(Map<Tile, Tile> ongoingBattlesSituation) {
-		LOGGER.severe("\tfight()");
+		//LOGGER.severe("\tfight()");
 		
 		Set<CombatSimulation> battles = new HashSet<CombatSimulation>();
 		long timeAssigned = Timing.getCombatTimeStime() / ongoingBattlesSituation.size();
@@ -759,17 +759,28 @@ public class Game {
 		ongoingBattlesSituation.entrySet().parallelStream()
 		.forEachOrdered(e -> battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
 		
-		battles.parallelStream().forEachOrdered(battle -> battle.combatResolution());
-		
 		Set<Order> movesToPerform = new HashSet<Order>();
-		battles.parallelStream().forEachOrdered(battle -> movesToPerform.addAll(battle.getMoves()));
 		
-		LOGGER.severe("\t\tCOMBAT ORDER_______");
+		battles.parallelStream().forEachOrdered(battle -> {
+			battle.combatResolution();
+			/*LOGGER.severe("\n\n\t\t\t\t_______*_*_*_*_*BATTLE*_*_*_*_*_______");
+			LOGGER.severe("\n\n\t\t\t\t"+ battle +"\n\n");*/
+			movesToPerform.addAll(battle.getMoves());
+			/*LOGGER.severe("\n\n\t\t\t\t_______*_*_*_*_*SINGLE MOVES:*_*_*_*_*_______");
+			LOGGER.severe("\n\n\t\t\t\t"+ battle.getMoves() +"\n\n");
+			LOGGER.severe("\n\n\t\t\t\t_______*_*_*_*_*ALL MOVES:*_*_*_*_*_______");
+			LOGGER.severe("\n\n\t\t\t\t"+ movesToPerform +"\n\n");*/
+		});
+		
+		/*Set<Order> movesToPerform = new HashSet<Order>();
+		battles.parallelStream().forEachOrdered(battle -> movesToPerform.addAll(battle.getMoves()));
+		*/
+		LOGGER.severe("\t\t_______*_*_*_*_*COMBAT ORDER*_*_*_*_*_______");
 		LOGGER.severe("\t\t"+movesToPerform);
 		LOGGER.severe("\t\t___________________");
 		Game.issueOrders(movesToPerform);
 		
-		LOGGER.severe("\t~fight");
+		//LOGGER.severe("\t~fight");
 	}
 	
 

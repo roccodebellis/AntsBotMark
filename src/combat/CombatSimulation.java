@@ -70,6 +70,12 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	}
 
 	public Set<Order> getMoves(){
+		LOGGER.severe("\tSE MI CERCHI SONO QUI");
+		LOGGER.severe("\tgetMoves("+ root +" moves"+root.getMoves()+")++++++++++++");
+		
+		root.getChildren().forEach(c -> LOGGER.severe("\tAssignment: " + c+"["+c.getMoves()+"]"));
+		
+		LOGGER.severe("\t\t~getMoves()++++++++++++");
 		return root.getFirstChild();
 	}
 
@@ -162,12 +168,12 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	 * </p>
 	 */
 	private Map<MovesModels,Set<Order>> movesGenerator(Assignment s) {
-		LOGGER.severe("\tmovesGenerator()");
+		//LOGGER.severe("\tmovesGenerator()");
 		Map<MovesModels,Set<Order>> output = new HashMap<MovesModels,Set<Order>>();
 
 		output.put(MovesModels.ATTACK, attack(s));
 		output.put(MovesModels.HOLD, hold(s));
-		output.put(MovesModels.IDLE, idle(s));
+		//output.put(MovesModels.IDLE, idle(s));
 		output.put(MovesModels.NORTH, directional(s,Directions.NORTH));
 		output.put(MovesModels.SOUTH, directional(s,Directions.SOUTH));
 		output.put(MovesModels.EAST, directional(s,Directions.EAST));
@@ -175,31 +181,32 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 
 		//LOGGER.severe("\t"+output);
-		LOGGER.severe("\t\tants"+s.getAnts());
-		LOGGER.severe("\t\tenemy"+s.getOpponentAnts());
-		LOGGER.severe("\t~movesGenerator()");
+		//LOGGER.severe("\t\tants"+s.getAnts());
+		//LOGGER.severe("\t\tenemy"+s.getOpponentAnts());
+		//LOGGER.severe("\t~movesGenerator()");
 		return output;
 	}
 
 	private Set<Order> attack(Assignment currAssignment) {
-		LOGGER.info("attack()");
+		//LOGGER.info("attack()");
 		Set<Tile> targets = new HashSet<Tile>();
 		targets.addAll(currAssignment.getOpponentAnts());
 		targets.addAll(currAssignment.getOpponentHills());
 		//TODO forse bisogna migliorare questa ricerca 
 		//ora abbiamo provato a mettere che piu formiche nostre attaccano un unico targhet
 		if(targets!=null && currAssignment.getAnts()!=null) {
-			Search search = new Search(currAssignment.getAnts(),targets, null, false, false, false);
+			//Search search = new Search(currAssignment.getAnts(),targets, null, false, false, false); //bfs classica
+			Search search = new Search(targets, currAssignment.getAnts(), null, false, false, true); //bfs reverse
 			search.adaptiveSearch();
-			LOGGER.info("~attack("+search.getOrders()+")");
+			//LOGGER.info("~attack("+search.getOrders()+")");
 			return search.getOrders();
 		}
-		LOGGER.info("~attack()");
+		//LOGGER.info("~attack()");
 		return new HashSet<Order>();
 	}
 
 	private Set<Order> hold(Assignment currAssignment) {
-		LOGGER.info("hold()");
+		//LOGGER.info("hold()");
 		double targetDistance = Math.sqrt(Game.getAttackRadius2()) + (currAssignment.isEnemyMove() ? 1 : 2);
 		Set<Order> ordersAssigned = new HashSet<Order>();
 
@@ -224,7 +231,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 				ordersAssigned.add(moveBackOrForward(ordersAssigned, ant, minTarget, minDist, targetDistance));
 			}
 		}
-		LOGGER.info("~hold("+ordersAssigned+")");
+		//LOGGER.info("~hold("+ordersAssigned+")");
 		return ordersAssigned;
 	}
 
@@ -305,7 +312,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 			} 
 		}
 
-		LOGGER.severe("~directional(,dir:"+dir+")");
+		//LOGGER.severe("~directional(,dir:"+dir+")");
 		return order;
 	}
 
@@ -315,7 +322,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	}
 
 	private Set<Order> directional(Assignment ordersAssigned, Directions tDir) {
-		LOGGER.severe("directional(,tDir:"+tDir+")");
+		//LOGGER.severe("directional(,tDir:"+tDir+")");
 		Set<Order> orders = new HashSet<Order>();
 
 
@@ -335,7 +342,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 				orders.add(order);
 			}
 		});
-		LOGGER.severe("~directional("+orders+")");
+		//LOGGER.severe("~directional("+orders+")");
 		return orders;
 	}
 
@@ -374,10 +381,10 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	 * @return
 	 */
 	private void MinMax(Assignment state, long deadLine, int depth) {
-		LOGGER.severe("MINMAX-> depth:"+depth+" MT:"+state.getMoveType()+" state:"+ state.isEnemyMove()+" deadline"+deadLine+" ct:"+Timing.getCurTime());
+		//LOGGER.severe("MINMAX-> depth:"+depth+" MT:"+state.getMoveType()+" state:"+ state.isEnemyMove()+" deadline"+deadLine+" ct:"+Timing.getCurTime());
 		//LOGGER.severe("\t(MINMAX) - ["+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+" ants:"+state.getAnts() +" enemy:"+state.getOpponentAnts() + "]");
 		if(depth!=0 && !(depth < Configuration.getCombatModuleMinMaxMaxDepth() && deadLine > state.GetExtensionEstimate())) {
-			LOGGER.severe("\t[(if)"+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+"]");
+			//LOGGER.severe("\t[(if)"+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+"]");
 			state.evaluate();
 			return;
 		}
@@ -398,7 +405,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 			}
 
 			MinMax(childState, childDeadline, depth+1);
-			LOGGER.severe("\t["+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+"]");
+			//LOGGER.severe("\t["+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+"]");
 			state.addChild(childState);
 
 		});
@@ -416,17 +423,17 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	}
 
 	public void combatResolution() {
-		LOGGER.severe("\tcombatResolution()");
+		//LOGGER.severe("\tcombatResolution()");
 
-		root = new Assignment(0, myAntSet, Game.getMyHills(), enemyAntSet, enemyHills, Game.getFoodTiles(), false, null);
+		root = new Assignment(0, myAntSet, Game.getMyHills(), enemyAntSet, enemyHills, Game.getFoodTiles(), false, null, new HashSet<Order>());
 
 		MinMax(root, Timing.getCurTime() + deadLine, 0);	
 
 		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(false));
 
-		LOGGER.severe("\t\t->->->child: " + root.getChildren());
+		//LOGGER.severe("\t\t->->->child: " + root.getChildren());
 
-		LOGGER.severe("\t~combatResolution()");
+		//LOGGER.severe("\t~combatResolution()");
 	}
 
 	@Override

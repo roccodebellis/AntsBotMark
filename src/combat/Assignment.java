@@ -52,7 +52,35 @@ public class Assignment implements Comparable<Assignment>{
 	private double value;
 
 
-	Assignment(int turn,  Set<Tile> myAntSet, Set<Tile> antHills, Map<Integer, Set<Tile>> enemyAntSet, Map<Integer, Set<Tile>> enemyHills, Set<Tile> foodTiles, boolean enemyMoves, MovesModels moveType) {
+	Assignment(int turn,  Set<Tile> myAntSet, Set<Tile> antHills, Map<Integer, Set<Tile>> enemyAntSet, Map<Integer, Set<Tile>> enemyHills, Set<Tile> foodTiles, boolean enemyMoves, MovesModels moveType,Set<Order> antsMove) {
+		this.moveType = moveType;
+
+		this.currentTurn = turn;
+		this.isEnemyMoves =  enemyMoves;
+		this.child = new TreeSet<Assignment>(Collections.reverseOrder());
+
+		this.ants = myAntSet;
+		this.antsHills = antHills;
+		this.antsLosses = 0;
+		this.antsHillsDestroyed = 0;
+
+		this.enemyAnts = enemyAntSet;
+		this.enemyHills = enemyHills;
+		this.enemyLosses = new ArrayList<Integer>(enemyAnts.size());
+		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyLosses.add(0));
+
+		this.enemyHillsDestroyed = new ArrayList<Integer>(enemyAnts.size());
+		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyHillsDestroyed.add(0));
+
+		this.foodTiles = foodTiles;
+		this.antsFoodCollected = 0;
+		this.enemyFoodCollected = new ArrayList<Integer>(enemyAnts.size());
+		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyFoodCollected.add(0));
+
+		this.antsMove = new HashSet<Order>(antsMove);
+	}
+
+	/*Assignment(int turn,  Set<Tile> myAntSet, Set<Tile> antHills, Map<Integer, Set<Tile>> enemyAntSet, Map<Integer, Set<Tile>> enemyHills, Set<Tile> foodTiles, boolean enemyMoves, MovesModels moveType, Set<Order> antsMove) {
 		this.moveType = moveType;
 
 		this.currentTurn = turn;
@@ -78,35 +106,8 @@ public class Assignment implements Comparable<Assignment>{
 		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyFoodCollected.add(0));
 
 		antsMove = new HashSet<Order>();
-	}
-
-	Assignment(int turn,  Set<Tile> myAntSet, Set<Tile> antHills, Map<Integer, Set<Tile>> enemyAntSet, Map<Integer, Set<Tile>> enemyHills, Set<Tile> foodTiles, boolean enemyMoves, MovesModels moveType, Set<Order> antsMove) {
-		this.moveType = moveType;
-
-		this.currentTurn = turn;
-		this.isEnemyMoves =  enemyMoves;
-		this.child = new TreeSet<Assignment>(Collections.reverseOrder());
-
-		this.ants = myAntSet;
-		this.antsHills = antHills;
-		this.antsLosses = 0;
-		this.antsHillsDestroyed = 0;
-
-		this.enemyAnts = enemyAntSet;
-		this.enemyHills = enemyHills;
-		this.enemyLosses = new ArrayList<Integer>(enemyAnts.size());
-		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyLosses.add(0));
-
-		this.enemyHillsDestroyed = new ArrayList<Integer>(enemyAnts.size());
-		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyHillsDestroyed.add(0));
-
-		this.foodTiles = foodTiles;
-		this.antsFoodCollected = 0;
-		this.enemyFoodCollected = new ArrayList<Integer>(enemyAnts.size());
-		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyFoodCollected.add(0));
-
-		antsMove = new HashSet<Order>();	this.antsMove = new HashSet<Order>(antsMove);
-	}
+		this.antsMove = new HashSet<Order>(antsMove);
+	}*/
 
 
 	public boolean isEnemyMove() {
@@ -181,7 +182,7 @@ public class Assignment implements Comparable<Assignment>{
 
 
 	public Assignment performMove(Set<Order> moves, MovesModels moveType) {
-		LOGGER.info("\tperformMove("+moves+", "+moveType+")["+ants+"]["+enemyAnts+"]**********");
+		//LOGGER.info("\tperformMove("+moves+", "+moveType+")["+ants+"]["+enemyAnts+"]**********");
 		Set<Tile> newAnts = new HashSet<Tile>(ants);
 		Map<Integer, Set<Tile>> newEnemyAnts = new HashMap<Integer, Set<Tile>>();
 		enemyAnts.forEach((key,set)-> newEnemyAnts.put(key, new HashSet<Tile>(set)));
@@ -193,18 +194,20 @@ public class Assignment implements Comparable<Assignment>{
 						newEnemyAnts.get(i+1).add(move.getOrderedTile());
 				});
 			});
-			LOGGER.info("\t~performMove() - isEnemyMoves(antsMove:"+this.antsMove+")***********");
+			/*LOGGER.info("\t~performMove() - isEnemyMoves(antsMove:"+this.antsMove+")***********");
 			return new Assignment(currentTurn+1, newAnts, antsHills, newEnemyAnts, enemyHills, foodTiles, !isEnemyMoves, moveType, this.antsMove);
-
+			 */
+			
 		} else {
 			moves.parallelStream().forEachOrdered(move -> { 
 				newAnts.remove(move.getOrigin()); 
 				newAnts.add(move.getOrderedTile());
-				this.antsMove.add(move);
-			});			
+				//this.antsMove.add(move);
+			});
+			//antsMove = moves;		
 		}
-		LOGGER.info("\t~performMove() - end**************");
-		return new Assignment(currentTurn+1, newAnts, antsHills, newEnemyAnts, enemyHills, foodTiles, !isEnemyMoves, moveType);
+		//LOGGER.info("\t~performMove() - end**************");
+		return new Assignment(currentTurn+1, newAnts, antsHills, newEnemyAnts, enemyHills, foodTiles, !isEnemyMoves, moveType, moves);
 	}
 
 	public void resolveCombatAndFoodCollection() {
@@ -416,22 +419,22 @@ public class Assignment implements Comparable<Assignment>{
 	}
 
 	public Set<Order> getFirstChild() {
-		LOGGER.severe("\t\t\t\tgetFirstChild()");
+		/*LOGGER.severe("\t\t\t\tgetFirstChild()");
 		LOGGER.severe("\t\t\t\t"+child);
-		LOGGER.severe("\t\t\t\t~getFirstChild()");
+		LOGGER.severe("\t\t\t\t~getFirstChild()");*/
 		return child.first().getMoves();
 	}
 
 
-	private Set<Order> getMoves() {
+	Set<Order> getMoves() {
 		return antsMove;
 	}
 
 	long GetExtensionEstimate() {
-		LOGGER.severe("\t\tGetExtensionEstimate()");
+		/*LOGGER.severe("\t\tGetExtensionEstimate()");
 		LOGGER.severe("\t\t\tants:"+ants);
 		LOGGER.severe("\t\t\tenemy:"+enemyAnts);
-		LOGGER.severe("\t\t~GetExtensionEstimate()");
+		LOGGER.severe("\t\t~GetExtensionEstimate()");*/
 		return (long) (ants.size() + enemyAnts.entrySet().parallelStream().mapToInt(eASet -> eASet.getValue().size()).sum()) * Configuration.getMilSecUsedForEachAntsInCS();
 	}
 
@@ -483,8 +486,8 @@ public class Assignment implements Comparable<Assignment>{
 		value += getAntsFoodCollected_number() /2;
 		value -= getOpponentFoodCollected_number();
 		//LOGGER.severe("\t\tvalue before: " + value);
-		value -= enemyAnts.values().parallelStream().mapToDouble(es -> es.parallelStream().mapToDouble(e -> ants.parallelStream().mapToDouble(a -> Game.getDistance(e,a)).sum()).sum()).sum();
-
+		/*value -= enemyAnts.values().parallelStream().mapToDouble(es -> es.parallelStream().mapToDouble(e -> ants.parallelStream().mapToDouble(a -> Game.getDistance(e,a)).sum()).sum()).sum();
+		 */
 		this.value = value;
 		//LOGGER.severe("\t\tants: " + ants);
 		//LOGGER.severe("\t\tenemyAnts: " + enemyAnts);
