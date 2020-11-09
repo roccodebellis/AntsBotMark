@@ -54,9 +54,9 @@ public class Assignment implements Comparable<Assignment>{
 
 	Assignment(int turn,  Set<Tile> myAntSet, Set<Tile> antHills, Map<Integer, Set<Tile>> enemyAntSet, Map<Integer, Set<Tile>> enemyHills, Set<Tile> foodTiles, boolean enemyMoves, MovesModels moveType) {
 		this.moveType = moveType;
-		
+
 		this.currentTurn = turn;
-		this.isEnemyMoves = enemyMoves;
+		this.isEnemyMoves =  enemyMoves;
 		this.child = new TreeSet<Assignment>(Collections.reverseOrder());
 
 		this.ants = myAntSet;
@@ -79,10 +79,33 @@ public class Assignment implements Comparable<Assignment>{
 
 		antsMove = new HashSet<Order>();
 	}
-	
+
 	Assignment(int turn,  Set<Tile> myAntSet, Set<Tile> antHills, Map<Integer, Set<Tile>> enemyAntSet, Map<Integer, Set<Tile>> enemyHills, Set<Tile> foodTiles, boolean enemyMoves, MovesModels moveType, Set<Order> antsMove) {
-		new Assignment(turn,  myAntSet,  antHills,  enemyAntSet,  enemyHills,  foodTiles,  enemyMoves,  moveType);
-		this.antsMove = antsMove;
+		this.moveType = moveType;
+
+		this.currentTurn = turn;
+		this.isEnemyMoves =  enemyMoves;
+		this.child = new TreeSet<Assignment>(Collections.reverseOrder());
+
+		this.ants = myAntSet;
+		this.antsHills = antHills;
+		this.antsLosses = 0;
+		this.antsHillsDestroyed = 0;
+
+		this.enemyAnts = enemyAntSet;
+		this.enemyHills = enemyHills;
+		this.enemyLosses = new ArrayList<Integer>(enemyAnts.size());
+		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyLosses.add(0));
+
+		this.enemyHillsDestroyed = new ArrayList<Integer>(enemyAnts.size());
+		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyHillsDestroyed.add(0));
+
+		this.foodTiles = foodTiles;
+		this.antsFoodCollected = 0;
+		this.enemyFoodCollected = new ArrayList<Integer>(enemyAnts.size());
+		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyFoodCollected.add(0));
+
+		antsMove = new HashSet<Order>();	this.antsMove = new HashSet<Order>(antsMove);
 	}
 
 
@@ -158,6 +181,7 @@ public class Assignment implements Comparable<Assignment>{
 
 
 	public Assignment performMove(Set<Order> moves, MovesModels moveType) {
+		//LOGGER.info("\tperformMove("+moves+", "+moveType+")["+ants+"]["+enemyAnts+"]");
 		Set<Tile> newAnts = new HashSet<Tile>(ants);
 		Map<Integer, Set<Tile>> newEnemyAnts = new HashMap<Integer, Set<Tile>>();
 		enemyAnts.forEach((key,set)-> newEnemyAnts.put(key, new HashSet<Tile>(set)));
@@ -165,29 +189,31 @@ public class Assignment implements Comparable<Assignment>{
 		if(isEnemyMoves) {
 			moves.parallelStream().forEachOrdered(move ->{ 
 				IntStream.range(0, newEnemyAnts.size()).parallel().forEachOrdered( i  -> { 
-					if(newEnemyAnts.get(i+1).remove(move.getOrigin()));
-					newEnemyAnts.get(i+1).add(move.getOrderedTile());
+					if(newEnemyAnts.get(i+1).remove(move.getOrigin()))
+						newEnemyAnts.get(i+1).add(move.getOrderedTile());
 				});
 			});
-			return new Assignment(currentTurn+1, newAnts, antsHills, newEnemyAnts, enemyHills, foodTiles, !isEnemyMoves, moveType, antsMove);
-			
+			//LOGGER.info("\t~performMove() - isEnemyMoves(antsMove:"+this.antsMove);
+			return new Assignment(currentTurn+1, newAnts, antsHills, newEnemyAnts, enemyHills, foodTiles, !isEnemyMoves, moveType, this.antsMove);
+
 		} else {
 			moves.parallelStream().forEachOrdered(move -> { 
 				newAnts.remove(move.getOrigin()); 
 				newAnts.add(move.getOrderedTile());
-				antsMove.add(move);
+				this.antsMove.add(move);
 			});			
 		}
+		//LOGGER.info("\t~performMove() - end");
 		return new Assignment(currentTurn+1, newAnts, antsHills, newEnemyAnts, enemyHills, foodTiles, !isEnemyMoves, moveType);
 	}
 
 	public void resolveCombatAndFoodCollection() {
-		LOGGER.info("resolveCombatAndFoodCollection()");
+		//LOGGER.info("resolveCombatAndFoodCollection("+currentTurn+"° isEM:"+isEnemyMoves+" a:"+ants+" e:"+enemyAnts+")");
 		istantKill();
 		battle();
 		hillRazing();
 		foodResolution();
-		LOGGER.info("~resolveCombatAndFoodCollection()");
+		//LOGGER.info("~resolveCombatAndFoodCollection()");
 	}
 
 	private HashMap<Tile, Integer> computeFocusAttack(Set<Tile> ants, Set<Tile> enemy){
@@ -204,7 +230,7 @@ public class Assignment implements Comparable<Assignment>{
 	}
 
 	private void battle() {
-		LOGGER.info("battle()");
+		//LOGGER.info("battle()");
 		HashMap<Tile, Integer> focusAttack= new HashMap<Tile, Integer>();
 
 
@@ -262,7 +288,7 @@ public class Assignment implements Comparable<Assignment>{
 				ienemySet.removeAll(deadEnemyAnts);
 			});
 		});
-		LOGGER.info("~battle()");
+		//LOGGER.info("~battle()");
 	}
 
 
@@ -380,7 +406,7 @@ public class Assignment implements Comparable<Assignment>{
 
 	public void addChild(Assignment childState) {
 		if(child.size()==0 || childState.getValue() > getValue())
-				value = childState.getValue();
+			value = childState.getValue();
 		child.add(childState);
 	}
 
@@ -402,10 +428,10 @@ public class Assignment implements Comparable<Assignment>{
 	}
 
 	long GetExtensionEstimate() {
-		LOGGER.severe("\tGetExtensionEstimate()");
-		LOGGER.severe("\t\tants:"+ants);
-		LOGGER.severe("\t\tenemy:"+enemyAnts);
-		LOGGER.severe("\t~GetExtensionEstimate()");
+		LOGGER.severe("\t\tGetExtensionEstimate()");
+		LOGGER.severe("\t\t\tants:"+ants);
+		LOGGER.severe("\t\t\tenemy:"+enemyAnts);
+		LOGGER.severe("\t\t~GetExtensionEstimate()");
 		return (long) (ants.size() + enemyAnts.entrySet().parallelStream().mapToInt(eASet -> eASet.getValue().size()).sum()) * Configuration.getMilSecUsedForEachAntsInCS();
 	}
 
@@ -458,7 +484,7 @@ public class Assignment implements Comparable<Assignment>{
 		value -= getOpponentFoodCollected_number();
 		//LOGGER.severe("\t\tvalue before: " + value);
 		value -= enemyAnts.values().parallelStream().mapToDouble(es -> es.parallelStream().mapToDouble(e -> ants.parallelStream().mapToDouble(a -> Game.getDistance(e,a)).sum()).sum()).sum();
-	
+
 		this.value = value;
 		//LOGGER.severe("\t\tants: " + ants);
 		//LOGGER.severe("\t\tenemyAnts: " + enemyAnts);
@@ -469,7 +495,7 @@ public class Assignment implements Comparable<Assignment>{
 	@Override
 	public int compareTo(Assignment o) {
 		int compValue = Double.compare(value, o.value);
-		
+
 		return compValue == 0?moveType.compareTo(o.moveType):compValue;
 	}
 
@@ -479,7 +505,7 @@ public class Assignment implements Comparable<Assignment>{
 	}
 
 
-	 public Set<Assignment> getChildren() {
+	public Set<Assignment> getChildren() {
 
 		return child;
 	}

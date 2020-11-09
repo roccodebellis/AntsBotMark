@@ -162,7 +162,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	 * </p>
 	 */
 	private Map<MovesModels,Set<Order>> movesGenerator(Assignment s) {
-		//LOGGER.severe("\tmovesGenerator()");
+		LOGGER.severe("\tmovesGenerator()");
 		Map<MovesModels,Set<Order>> output = new HashMap<MovesModels,Set<Order>>();
 
 		//output.put(MovesModels.ATTACK, attack(s));
@@ -175,9 +175,9 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 
 		//LOGGER.severe("\t"+output);
-		//LOGGER.severe("\tants"+s.getAnts());
-		//LOGGER.severe("\tenemy"+s.getOpponentAnts());
-		//LOGGER.severe("\t~movesGenerator()");
+		LOGGER.severe("\t\tants"+s.getAnts());
+		LOGGER.severe("\t\tenemy"+s.getOpponentAnts());
+		LOGGER.severe("\t~movesGenerator()");
 		return output;
 	}
 
@@ -315,8 +315,8 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	 * @return
 	 */
 	private void MinMax(Assignment state, long deadLine, int depth) {
-		//LOGGER.severe("MINMAX-> depth:"+depth+" state:"+ state.isEnemyMove()+" deadline"+deadLine+" ct:"+Timing.getCurTime());
-		LOGGER.severe("\t(MINMAX) - ["+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+" ants:"+state.getAnts() +" enemy:"+state.getOpponentAnts() + "]");
+		LOGGER.severe("MINMAX-> depth:"+depth+" state:"+ state.isEnemyMove()+" deadline"+deadLine+" ct:"+Timing.getCurTime());
+		//LOGGER.severe("\t(MINMAX) - ["+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+" ants:"+state.getAnts() +" enemy:"+state.getOpponentAnts() + "]");
 		if(depth!=0 && !(depth < Configuration.getCombatModuleMinMaxMaxDepth() && deadLine > state.GetExtensionEstimate())) {
 			LOGGER.severe("\t[(if)"+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+"]");
 			state.evaluate();
@@ -333,7 +333,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 			long curTime = Timing.getCurTime();
 			long childDeadline = curTime + (deadLine-curTime)/(movesSet.size()-moveType.ordinal());
 
-			if(depth!=0 && childState.isEnemyMove()) {
+			if(!childState.isEnemyMove()) {
 				childState.resolveCombatAndFoodCollection();
 				state.evaluate();
 			}
@@ -365,7 +365,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(false));
 
-		//LOGGER.severe("\t\tchild: " + root.getChildren());
+		LOGGER.severe("\t\t->->->child: " + root.getChildren());
 
 		LOGGER.severe("\t~combatResolution()");
 	}
