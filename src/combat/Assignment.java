@@ -57,7 +57,7 @@ public class Assignment implements Comparable<Assignment>{
 
 		this.currentTurn = turn;
 		this.isEnemyMoves =  enemyMoves;
-		this.child = new TreeSet<Assignment>();//this.child = new TreeSet<Assignment>(Collections.reverseOrder());
+		this.child = new TreeSet<Assignment>(Collections.reverseOrder());
 
 		this.ants = myAntSet;
 		this.antsHills = antHills;
@@ -85,7 +85,7 @@ public class Assignment implements Comparable<Assignment>{
 
 		this.currentTurn = turn;
 		this.isEnemyMoves =  enemyMoves;
-		this.child = new TreeSet<Assignment>();
+		this.child = new TreeSet<Assignment>(Collections.reverseOrder());
 
 		this.ants = myAntSet;
 		this.antsHills = antHills;

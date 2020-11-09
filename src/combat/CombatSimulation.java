@@ -196,6 +196,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	}
 
 	private Set<Order> hold(Assignment currAssignment) {
+		LOGGER.info("hold()");
 		double targetDistance = Math.sqrt(Game.getAttackRadius2()) + (currAssignment.isEnemyMove() ? 1 : 2);
 		Set<Order> ordersAssigned = new HashSet<Order>();
 
@@ -220,6 +221,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 				ordersAssigned.add(moveBackOrForward(ordersAssigned, ant, minTarget, minDist, targetDistance));
 			}
 		}
+		LOGGER.info("~hold("+ordersAssigned+")");
 		return ordersAssigned;
 	}
 
@@ -231,29 +233,76 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		Order order;
 
 		if(distance != targetDistance) {
-			order = new Order(ant, dir, enemy);
-			if(ordersAssigned.contains(order)|| !Game.getTile(ant, dir.getOffset()).isAccessible()) {
+			//avvicinarsi/allontanarsi
+			if(!Game.getTile(ant,dir.getOffset()).isAccessible()) {
+				//non accessibile //ordine non impartibile
 				dir = dir.getNext();
-				order = new Order(ant, dir, enemy);
-				if(ordersAssigned.contains(order)|| !Game.getTile(ant, dir.getOffset()).isAccessible())
-					order = new Order(ant, dir.getOpponent(), enemy);
-				//se non c'è neanche quest'ordine sono cazzi della formica
+				if(!Game.getTile(ant,dir.getOffset()).isAccessible()) {
+					dir = dir.getOpponent();
+					if(Game.getTile(ant,dir.getOffset()).isAccessible())
+						order = new Order(ant, dir, ant.getNeighbourTile(dir));
+					else 
+						order = new Order(ant, Directions.STAYSTILL, ant);
+				} else {
+					order = new Order(ant, dir, ant.getNeighbourTile(dir));
+					if(ordersAssigned.contains(order)) {
+						dir = dir.getOpponent();
+						if(Game.getTile(ant,dir.getOffset()).isAccessible())
+							order = new Order(ant, dir, ant.getNeighbourTile(dir));
+						else 
+							order = new Order(ant, Directions.STAYSTILL, ant);
+					}
+				}
+			} else {
+				//accessobile
+				order = new Order(ant, dir, ant.getNeighbourTile(dir));
+				if(ordersAssigned.contains(order)) {
+					//non accessibile //ordine non impartibile
+					dir = dir.getNext();
+					if(!Game.getTile(ant,dir.getOffset()).isAccessible()) {
+						dir = dir.getOpponent();
+						if(Game.getTile(ant,dir.getOffset()).isAccessible())
+							order = new Order(ant, dir, ant.getNeighbourTile(dir));
+						else 
+							order = new Order(ant, Directions.STAYSTILL, ant);
+
+					} else {
+						order = new Order(ant, dir, ant.getNeighbourTile(dir));
+						if(ordersAssigned.contains(order)) {
+							dir = dir.getOpponent();
+							if(Game.getTile(ant,dir.getOffset()).isAccessible())
+								order = new Order(ant, dir, ant.getNeighbourTile(dir));
+							else 
+								order = new Order(ant, Directions.STAYSTILL, ant);
+						}
+					}
+				}
 			}
-		} else {
+		}else {
 			order = new Order(ant, Directions.STAYSTILL, ant);
 			if(ordersAssigned.contains(order)) {
-				dir = dir.getOpponent();
-				order = new Order(ant, dir, enemy);
-				if(ordersAssigned.contains(order)|| !Game.getTile(ant, dir.getOffset()).isAccessible()) {
-					dir = dir.getNext();
-					order = new Order(ant, dir, enemy);
-					if(ordersAssigned.contains(order)|| !Game.getTile(ant, dir.getOffset()).isAccessible())
-						order = new Order(ant, dir.getOpponent(), enemy);
+				dir = dir.getNext();
+				if(!Game.getTile(ant,dir.getOffset()).isAccessible()) {
+					dir = dir.getOpponent();
+					if(Game.getTile(ant,dir.getOffset()).isAccessible())
+						order = new Order(ant, dir, ant.getNeighbourTile(dir));
+					else 
+						order = new Order(ant, Directions.STAYSTILL, ant);
+
+				} else {
+					order = new Order(ant, dir, ant.getNeighbourTile(dir));
+					if(ordersAssigned.contains(order)) {
+						dir = dir.getOpponent();
+						if(Game.getTile(ant,dir.getOffset()).isAccessible())
+							order = new Order(ant, dir, ant.getNeighbourTile(dir));
+						else 
+							order = new Order(ant, Directions.STAYSTILL, ant);
+					}
 				}
-				//se non c'è neanche quest'ordine sono cazzi della formica
-			}
+			} 
 		}
 
+		LOGGER.severe("~directional(,dir:"+dir+")");
 		return order;
 	}
 
@@ -263,20 +312,71 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	}
 
 	private Set<Order> directional(Assignment ordersAssigned, Directions tDir) {
+		LOGGER.severe("directional(,tDir:"+tDir+")");
 		Set<Order> orders = new HashSet<Order>();
 
-		ordersAssigned.getAnts().forEach(ant -> {
-			Directions dir = tDir;
-			Tile target = ant.getNeighbourTile(dir);
 
-			if(target==null || !orders.add(new Order(ant,dir, target))) {
-				if(!orders.add(new Order(ant,Directions.STAYSTILL, ant))) {
+		ordersAssigned.getAnts().forEach(ant -> {
+			Order order;
+			Directions dir = tDir;
+
+			/*
+			if(!Game.getTile(ant, dir.getOffset()).isAccessible()) {
+				//dir not accessible water
+				order = new Order(ant,Directions.STAYSTILL, ant);
+				if(!orders.add(order)) {
+					//stay still non aggiunto
 					dir = dir.getNext();
-					if(!orders.add(new Order(ant,dir,ant)))
-						orders.add(new Order(ant,dir.getOpponent(), ant));
+					if(Game.getTile(ant, dir.getOffset()).isAccessible()) {
+						order = new Order(ant,dir, ant.getNeighbourTile(dir));
+						if(!orders.add(order)) {
+							dir = dir.getOpponent();
+							if(Game.getTile(ant, dir.getOffset()).isAccessible())
+								orders.add(new Order(ant,dir, ant.getNeighbourTile(dir)));
+						}
+					} else {
+						dir = dir.getOpponent();
+						if(Game.getTile(ant, dir.getOffset()).isAccessible()) 
+							orders.add(new Order(ant,dir, ant.getNeighbourTile(dir)));	
+					}
 				}
+			} else {
+				//dir accessibile	
+				Tile target = ant.getNeighbourTile(dir);
+				order = new Order(ant,dir, target);
+				if(!orders.add(order)) {
+					order = new Order(ant,Directions.STAYSTILL, ant);
+					if(!orders.add(order)) {
+						//stay still non aggiunto
+						dir = dir.getNext();
+						if(Game.getTile(ant, dir.getOffset()).isAccessible()) {
+							order = new Order(ant,dir, ant.getNeighbourTile(dir));
+							if(!orders.add(order)) {
+								dir = dir.getOpponent();
+								if(Game.getTile(ant, dir.getOffset()).isAccessible())
+									orders.add(new Order(ant,dir, ant.getNeighbourTile(dir)));
+							}
+						} else {
+							dir = dir.getOpponent();
+							if(Game.getTile(ant, dir.getOffset()).isAccessible()) 
+								orders.add(new Order(ant,dir, ant.getNeighbourTile(dir)));	
+						}
+					}
+				}
+			}*/
+			if(Game.getTile(ant, dir.getOffset()).isAccessible()) {
+				Tile target = ant.getNeighbourTile(dir);
+				order = new Order(ant,dir, target);
+				if(!orders.add(order)) {
+					order = new Order(ant,Directions.STAYSTILL, ant);
+					orders.add(order);
+				}
+			} else {
+				order = new Order(ant,Directions.STAYSTILL, ant);
+				orders.add(order);
 			}
 		});
+		LOGGER.severe("~directional("+orders+")");
 		return orders;
 	}
 
@@ -315,7 +415,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	 * @return
 	 */
 	private void MinMax(Assignment state, long deadLine, int depth) {
-		LOGGER.severe("MINMAX-> depth:"+depth+" state:"+ state.isEnemyMove()+" deadline"+deadLine+" ct:"+Timing.getCurTime());
+		LOGGER.severe("MINMAX-> depth:"+depth+" MT:"+state.getMoveType()+" state:"+ state.isEnemyMove()+" deadline"+deadLine+" ct:"+Timing.getCurTime());
 		//LOGGER.severe("\t(MINMAX) - ["+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+" ants:"+state.getAnts() +" enemy:"+state.getOpponentAnts() + "]");
 		if(depth!=0 && !(depth < Configuration.getCombatModuleMinMaxMaxDepth() && deadLine > state.GetExtensionEstimate())) {
 			LOGGER.severe("\t[(if)"+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+"]");
@@ -337,7 +437,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 				childState.resolveCombatAndFoodCollection();
 				state.evaluate();
 			}
-			
+
 			MinMax(childState, childDeadline, depth+1);
 			LOGGER.severe("\t["+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+"]");
 			state.addChild(childState);

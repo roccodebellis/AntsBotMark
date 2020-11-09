@@ -442,6 +442,14 @@ public class Tile implements Comparable<Tile> {
 		return reorderedNeigh;
 	}
 	
+	/**
+	 * restituisce null
+	 * 
+	 * @param dir
+	 * @return
+	 * 
+	 * @aller statti attenzione potrebbe restituire null
+	 */
 	public Tile getNeighbourTile(Directions dir) {
 		
 		return dir.equals(Directions.STAYSTILL) ? this : neighbourTiles.get(dir);
