@@ -690,20 +690,11 @@ public class Game {
 	public void doCombat() {
 		LOGGER.severe("\tdoCombat");
 		Map<Tile, Tile> ongoingBattlesSituation = getOngoingBattlesSituation();
-		LOGGER.severe("\tOngoingBattles number:" + ongoingBattlesSituation.size() + "\nOngoing Battles: " + ongoingBattlesSituation);
-		// System.out.println("battlesLeading: "+ongoingBattles);
+		LOGGER.severe("\t\t****OngoingBattles number:" + ongoingBattlesSituation.size() + "\nOngoing Battles: " + ongoingBattlesSituation);
 		
-		if (ongoingBattlesSituation.size() != 0) {
-			/*
-			 * try { if(ongoingBattlesSituation.size()>2) throw new NullPointerException();
-			 */
+		if (ongoingBattlesSituation.size() != 0) 
 			fight(ongoingBattlesSituation);
-			/*
-			 * }catch(NullPointerException e) { throw new
-			 * NullPointerException("I'm in! - > " + ongoingBattlesSituation); }
-			 */
-			LOGGER.severe("\t~doCombat");
-		}
+		LOGGER.severe("\t~doCombat");
 	}
 
 	/**
@@ -759,10 +750,12 @@ public class Game {
 	 * @param ongoingBattlesSituation
 	 */
 	private void fight(Map<Tile, Tile> ongoingBattlesSituation) {
-		LOGGER.severe("\tFIGHT");
+		LOGGER.severe("\tfight()");
+		
 		Set<CombatSimulation> battles = new HashSet<CombatSimulation>();
 		long timeAssigned = Timing.getCombatTimeStime() / ongoingBattlesSituation.size();
-		LOGGER.severe("\ttime Assigned: " + timeAssigned);
+		
+		
 		ongoingBattlesSituation.entrySet().parallelStream()
 		.forEachOrdered(e -> battles.add(new CombatSimulation(e.getKey(), e.getValue(), timeAssigned)));
 		
@@ -771,11 +764,12 @@ public class Game {
 		Set<Order> movesToPerform = new HashSet<Order>();
 		battles.parallelStream().forEachOrdered(battle -> movesToPerform.addAll(battle.getMoves()));
 		
-		LOGGER.severe("\tCOMBAT ORDER_______");
-		LOGGER.severe("\t"+movesToPerform);
-		LOGGER.severe("\t___________________");
+		LOGGER.severe("\t\tCOMBAT ORDER_______");
+		LOGGER.severe("\t\t"+movesToPerform);
+		LOGGER.severe("\t\t___________________");
 		Game.issueOrders(movesToPerform);
-		LOGGER.severe("\t~FIGHT");
+		
+		LOGGER.severe("\t~fight");
 	}
 	
 

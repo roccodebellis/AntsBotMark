@@ -43,7 +43,7 @@ public enum MovesModels {
 	 * <p>Mossa di avanzamento verso un'unica direzione.</p>
 	 * Tutte le formiche della fazione corrente si sposteranno verso {@link Directions#NORTH}.
 	 */
-	//NORTH,
+	NORTH,
 	
 	/**
 	 * <p>Mossa di avanzamento verso un'unica direzione.</p>

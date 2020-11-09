@@ -64,8 +64,9 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		this.deadLine = deadLine;
 		enemyHills = new TreeMap<Integer, Set<Tile>>();
 		IntStream.range(0, Game.getNumberEnemy()).forEach(id -> enemyHills.put(id+1, new HashSet<Tile>()));
-
-		Game.getEnemyHills().forEach(eHill -> enemyHills.get(eHill.getOwner()).add(eHill));
+		Set<Tile> gameEnemyHills = Game.getEnemyHills();
+		if(!gameEnemyHills.isEmpty())
+			gameEnemyHills.forEach(eHill -> enemyHills.get(eHill.getOwner()).add(eHill));
 	}
 
 	public Set<Order> getMoves(){
@@ -167,12 +168,12 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		//output.put(MovesModels.ATTACK, attack(s));
 		output.put(MovesModels.HOLD, hold(s));
 		//output.put(MovesModels.IDLE, idle(s));
-		//output.put(MovesModels.NORTH, directional(s,Directions.NORTH));
+		output.put(MovesModels.NORTH, directional(s,Directions.NORTH));
 		output.put(MovesModels.SOUTH, directional(s,Directions.SOUTH));
 		output.put(MovesModels.EAST, directional(s,Directions.EAST));
 		output.put(MovesModels.WEST, directional(s,Directions.WEST));
 
-		
+
 		//LOGGER.severe("\t"+output);
 		//LOGGER.severe("\tants"+s.getAnts());
 		//LOGGER.severe("\tenemy"+s.getOpponentAnts());
@@ -315,12 +316,13 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	 */
 	private void MinMax(Assignment state, long deadLine, int depth) {
 		//LOGGER.severe("MINMAX-> depth:"+depth+" state:"+ state.isEnemyMove()+" deadline"+deadLine+" ct:"+Timing.getCurTime());
-
-		if(!AllowExtension(state,deadLine, depth)) {
+		LOGGER.severe("\t(MINMAX) - ["+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+" ants:"+state.getAnts() +" enemy:"+state.getOpponentAnts() + "]");
+		if(depth!=0 && !(depth < Configuration.getCombatModuleMinMaxMaxDepth() && deadLine > state.GetExtensionEstimate())) {
+			LOGGER.severe("\t[(if)"+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+"]");
 			state.evaluate();
 			return;
 		}
-		
+
 		Map<MovesModels,Set<Order>> movesSet = movesGenerator(state);
 
 		movesSet.entrySet().parallelStream().forEachOrdered( movesEntry -> {
@@ -329,22 +331,18 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 			Assignment childState = state.performMove(moves, moveType);
 			long curTime = Timing.getCurTime();
-			long childDeadline = curTime + (deadLine-curTime)/(movesSet.size()-moveType.ordinal());//FIXME getNumber of Moves forse è il numero di mosse in questo calcolo
+			long childDeadline = curTime + (deadLine-curTime)/(movesSet.size()-moveType.ordinal());
 
-			if(childState.isEnemyMove())
+			if(depth!=0 && childState.isEnemyMove()) {
 				childState.resolveCombatAndFoodCollection();
-
-			MinMax(childState, childDeadline, depth+1);
-
-			state.addChild(childState);
+				state.evaluate();
+			}
 			
+			MinMax(childState, childDeadline, depth+1);
+			LOGGER.severe("\t["+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+"]");
+			state.addChild(childState);
+
 		});
-	}
-
-
-
-	boolean AllowExtension(Assignment state, long deadline, int depth){
-		return (depth%2 != 0) || (depth < Configuration.getCombatModuleMinMaxMaxDepth() && deadline > state.GetExtensionEstimate()); //FIXME GetExtensionEstimate
 	}
 
 	private int antInvolved() {
@@ -359,20 +357,17 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	}
 
 	public void combatResolution() {
-		try {
 		LOGGER.severe("\tcombatResolution()");
+
 		root = new Assignment(0, myAntSet, Game.getMyHills(), enemyAntSet, enemyHills, Game.getFoodTiles(), false, null);
-		LOGGER.severe("\troot: " + root);
+
 		MinMax(root, Timing.getCurTime() + deadLine, 0);	
+
 		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(false));
-		LOGGER.severe("\tchild: " + root.getChildren());
-		
+
+		//LOGGER.severe("\t\tchild: " + root.getChildren());
+
 		LOGGER.severe("\t~combatResolution()");
-		if(root.equals(null))
-			throw new NullPointerException("root is NULL" + root);
-		}catch(NullPointerException e) {
-			e.getMessage();
-		}
 	}
 
 	@Override
