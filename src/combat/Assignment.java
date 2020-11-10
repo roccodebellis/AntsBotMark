@@ -179,13 +179,13 @@ class Assignment implements Comparable<Assignment> {
 	}
 
 	public Assignment performMove(Set<Order> moves, MovesModels moveType) {
-		LOGGER.info("\tperformMove()");// +moves+",
+		//LOGGER.info("\tperformMove()");// +moves+",
 		// "+moveType+")["+ants+"]["+enemyAnts+"]**********");
 		Set<Tile> newAnts = new HashSet<Tile>(ants);
 		Map<Integer, Set<Tile>> newEnemyAnts = new HashMap<Integer, Set<Tile>>();
 		enemyAnts.forEach((key, set) -> newEnemyAnts.put(key, new HashSet<Tile>(set)));
-		LOGGER.severe("enemy: " + enemyAnts);
-		LOGGER.severe("NEW enemyANTS: " + newEnemyAnts);
+		//LOGGER.severe("enemy: " + enemyAnts);
+		//LOGGER.severe("NEW enemyANTS: " + newEnemyAnts);
 		if (isEnemyMoves) {
 			moves.parallelStream().forEachOrdered(move -> {
 				IntStream.range(0, newEnemyAnts.size()).parallel().forEachOrdered(i -> {
@@ -207,7 +207,7 @@ class Assignment implements Comparable<Assignment> {
 			});
 			// antsMove = moves;
 		}
-		LOGGER.info("\t~performMove() - end**************");
+		//LOGGER.info("\t~performMove() - end**************");
 		return new Assignment(currentTurn + 1, newAnts, antsHills, antsLosses, antsHillsDestroyed, antsFoodCollected,
 				newEnemyAnts, enemyHills, enemyLosses, enemyHillsDestroyed, enemyFoodCollected, foodTiles,
 				!isEnemyMoves, moveType, moves);
@@ -276,7 +276,7 @@ class Assignment implements Comparable<Assignment> {
 
 		focusAttack.putAll(computeFocusAttack(ants, enemy));
 		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> {
-			LOGGER.severe("-------------enemyAnts" + enemyAnts);
+			//LOGGER.severe("-------------enemyAnts" + enemyAnts);
 			Set<Tile> ienemySet = enemyAnts.get(i);
 			Set<Tile> tempEenemy = new HashSet<Tile>();
 			tempEenemy.addAll(ants);
@@ -390,7 +390,7 @@ class Assignment implements Comparable<Assignment> {
 				});
 			});
 			// remove enemy
-			LOGGER.severe("-------------deadEnemyAnts" + deadEnemyAnts);
+			//LOGGER.severe("-------------deadEnemyAnts" + deadEnemyAnts);
 			deadEnemyAnts.forEach((i, v) -> {
 				if (!v.isEmpty() && enemyAnts.containsKey(i) && !enemyAnts.get(i).isEmpty()) {
 					// String out = "Enemy " + i + 1 + " before: " + enemyAnts.get(i).size();
@@ -477,7 +477,7 @@ class Assignment implements Comparable<Assignment> {
 					antHillDestroyed.add(aHill);
 				}
 
-				LOGGER.severe("enemy hills: " + enemyHills);
+				//LOGGER.severe("enemy hills: " + enemyHills);
 				//LOGGER.severe("enemy hills destroyed: " + enemyHillsDestroyed);
 				Set<Tile> curEnemyHills = enemyHills.get(i);//////////////////////////////
 				if (!curEnemyHills.isEmpty()) {

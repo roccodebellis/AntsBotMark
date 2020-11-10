@@ -2,7 +2,6 @@ package defaultpackage;
 
 import game.Game;
 import timing.Modules;
-import timing.Timing;
 
 /**
  * Provides basic game state handling.

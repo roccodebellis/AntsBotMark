@@ -1,9 +1,7 @@
 package gathering;
 
-import java.util.HashSet;
 import java.util.Set;
 import game.Game;
-import game.Order;
 import game.Tile;
 import search.Search;
 //import java.util.Set;

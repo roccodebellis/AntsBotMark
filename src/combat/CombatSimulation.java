@@ -1,5 +1,4 @@
 package combat;
-import static org.junit.Assume.assumeFalse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -79,7 +77,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 				LOGGER.severe("eHill" + eHill);});
 		}*/
 		IntStream.range(0, Game.getNumberEnemy()).forEach(i -> enemyHills.put(i, Game.getEnemyHills().stream().filter(x -> x.getOwner() == i).collect(Collectors.toSet())));
-		LOGGER.severe("\t------------------\n\tGame Enemy Hills size: "+Game.getEnemyHills().size()+ "enemyHills size:"+ enemyHills.values().stream().mapToInt(x->x.size()).sum() +"\t\n-------------------------");
+	//	LOGGER.severe("\t------------------\n\tGame Enemy Hills size: "+Game.getEnemyHills().size()+ "enemyHills size:"+ enemyHills.values().stream().mapToInt(x->x.size()).sum() +"\t\n-------------------------");
 		
 	}
 

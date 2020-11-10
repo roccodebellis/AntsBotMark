@@ -3,21 +3,11 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.FileHandler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-
-import attackdefencehills.AttackDefenceHills;
 //import attackdefensehills.AttackDefenseHills;
-import game.Directions;
 import game.Game;
-import game.Order;
-import game.Tile;
 import timing.Modules;
 import timing.Timing;
 
@@ -73,7 +63,7 @@ public class MyBot extends Bot {
 
 	@Override //DA FARW
 	public void doTurn() {
-		LOGGER.severe("BOT MARK GIUSTO-----"+Timing.getTurnNumber());
+		LOGGER.severe("MARKSHIVE-----"+Timing.getTurnNumber());
 		Game state = getGame();
 
 
