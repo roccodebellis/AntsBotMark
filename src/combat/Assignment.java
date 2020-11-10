@@ -605,7 +605,7 @@ public class Assignment implements Comparable<Assignment> {
 
 		// TODO crescita logaritmica col passare dei turni a partire da una certa soglia
 		//if (getTurnsLeft() < 50)
-			OpponentMultiplier *= Math.pow(getTurnLeft(),1.5D);
+			OpponentMultiplier *= Math.pow(getTurnsLeft(),1.5D);
 
 		value = OpponentMultiplier * getOpponentLosses_number() - AntsMultiplier * getAntsLosses_number();
 
