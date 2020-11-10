@@ -319,9 +319,9 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	}
 
 
-	private Set<Order> idle(Assignment ordersAssigned) {
+	/*private Set<Order> idle(Assignment ordersAssigned) {
 		return ordersAssigned.getAnts().stream().map(ant -> new Order(ant,Directions.STAYSTILL, ant)).collect(Collectors.toSet());
-	}
+	}*/
 
 	private Set<Order> directional(Assignment ordersAssigned, Directions tDir) {
 		//LOGGER.severe("directional(,tDir:"+tDir+")");
