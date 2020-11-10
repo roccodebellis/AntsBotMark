@@ -1,28 +1,18 @@
 package game;
 
 import java.util.Iterator;
-import java.sql.Time;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
 import attackdefencehills.AttackDefenceHills;
-//import attackdefensehills.AttackDefenseHills;
 import combat.CombatSimulation;
 import defaultpackage.Configuration;
-import defaultpackage.MyBot;
 import exploration.ExplorationAndMovement;
 import gathering.FoodCollection;
 import search.Node;
@@ -150,9 +140,9 @@ public class Game {
 	 * 
 	 * @return all orders sent so far
 	 */
-	private Set<Order> getOrders() {
+	/*private Set<Order> getOrders() {
 		return orders;
-	}
+	}*/
 
 	public static Set<Tile> getOrdersTarget() {
 		return ordersTarget;

@@ -1,6 +1,5 @@
 package combat;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,13 +7,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import defaultpackage.Configuration;
 import game.Game;
 import game.Order;
@@ -22,7 +18,7 @@ import game.Tile;
 import timing.Timing;
 import vision.Offsets;
 
-public class Assignment implements Comparable<Assignment> {
+class Assignment implements Comparable<Assignment> {
 
 	private MovesModels moveType;
 	private static Logger LOGGER = Logger.getLogger(Assignment.class.getName());
@@ -37,7 +33,6 @@ public class Assignment implements Comparable<Assignment> {
 	 * non mettere +1 pd
 	 */
 	private List<Integer> enemyLosses;
-	
 
 	private Map<Integer, Set<Tile>> enemyHills;
 	private List<Integer> enemyHillsDestroyed;
@@ -113,11 +108,11 @@ public class Assignment implements Comparable<Assignment> {
 	 * HashSet<Order>(antsMove); }
 	 */
 
-	public boolean isEnemyMove() {
+	boolean isEnemyMove() {
 		return isEnemyMoves;
 	}
 
-	public Set<Tile> getAnts() {
+	Set<Tile> getAnts() {
 		Set<Tile> output;
 		if (isEnemyMoves) {
 			output = new HashSet<Tile>();
@@ -127,11 +122,11 @@ public class Assignment implements Comparable<Assignment> {
 		return output;
 	}
 
-	public int getAnts_number() {
+	private int getAnts_number() {
 		return ants.size();
 	}
 
-	public Set<Tile> getOpponentAnts() {
+	Set<Tile> getOpponentAnts() {
 		Set<Tile> output;
 		if (!isEnemyMoves) {
 			output = new HashSet<Tile>();
@@ -141,7 +136,7 @@ public class Assignment implements Comparable<Assignment> {
 		return output;
 	}
 
-	public Set<Tile> getOpponentHills() {
+	Set<Tile> getOpponentHills() {
 		Set<Tile> curEnemyHills;
 		if (isEnemyMoves) {
 			curEnemyHills = new HashSet<Tile>();
@@ -151,39 +146,81 @@ public class Assignment implements Comparable<Assignment> {
 		return curEnemyHills;
 	}
 
-	public int getOpponentAnts_number() {
+	private int getOpponentAnts_number() {
 		return enemyAnts.size();
 	}
 
-	public int getTurnsLeft() {
+	private int getTurnsLeft() {
 		return Timing.getTurnLeft(currentTurn);
 	}
 
-	public int getAntsLosses_number() {
+	private int getAntsLosses_number() {
 		return antsLosses;
 	}
 
-	public int getOpponentLosses_number() {
+	private int getOpponentLosses_number() {
 		return enemyLosses.parallelStream().mapToInt(Integer::intValue).sum();
 	}
 
-	public int getOpponentHillDestroyed_number() {
+	private int getOpponentHillDestroyed_number() {
 		return enemyHillsDestroyed.parallelStream().mapToInt(Integer::intValue).sum();
 	}
 
-	public int getAntsHillDestroyed_number() {
+	private int getAntsHillDestroyed_number() {
 		return antsHillsDestroyed;
 	}
 
-	public int getAntsFoodCollected_number() {
+	private int getAntsFoodCollected_number() {
 		return antsFoodCollected;
 	}
 
-	public int getOpponentFoodCollected_number() {
+	private int getOpponentFoodCollected_number() {
 		return enemyFoodCollected.parallelStream().mapToInt(Integer::intValue).sum();
 	}
 
-	public Assignment performMove(Set<Order> moves, MovesModels moveType) {
+	Set<Order> getFirstChild() {
+		/*
+		 * LOGGER.severe("\t\t\t\tgetFirstChild()"); LOGGER.severe("\t\t\t\t"+child);
+		 * LOGGER.severe("\t\t\t\t~getFirstChild()");
+		 */
+		return child.first().getMoves();
+	}
+
+	Set<Assignment> getChildren() {
+
+		return child;
+	}
+
+	/*
+	 * MovesModels getMoveType() { return moveType; }
+	 */
+
+	Set<Order> getMoves() {
+		return antsMove;
+	}
+
+	long GetExtensionEstimate() {
+		/*
+		 * LOGGER.severe("\t\tGetExtensionEstimate()");
+		 * LOGGER.severe("\t\t\tants:"+ants); LOGGER.severe("\t\t\tenemy:"+enemyAnts);
+		 * LOGGER.severe("\t\t~GetExtensionEstimate()");
+		 */
+		return (long) (ants.size()
+				+ enemyAnts.entrySet().parallelStream().mapToInt(eASet -> eASet.getValue().size()).sum())
+				* Configuration.getMilSecUsedForEachAntsInCS();
+	}
+
+	double getValue() {
+		return value;
+	}
+
+	void addChild(Assignment childState) {
+		if (child.size() == 0 || childState.getValue() > getValue())
+			value = childState.getValue();
+		child.add(childState);
+	}
+
+	Assignment performMove(Set<Order> moves, MovesModels moveType) {
 		// LOGGER.info("\tperformMove("+moves+",
 		// "+moveType+")["+ants+"]["+enemyAnts+"]**********");
 		Set<Tile> newAnts = new HashSet<Tile>(ants);
@@ -217,7 +254,7 @@ public class Assignment implements Comparable<Assignment> {
 				!isEnemyMoves, moveType, moves);
 	}
 
-	public void resolveCombatAndFoodCollection() {
+	void resolveCombatAndFoodCollection() {
 		// LOGGER.info("resolveCombatAndFoodCollection("+currentTurn+"°
 		// isEM:"+isEnemyMoves+" a:"+ants+" e:"+enemyAnts+")");
 		istantKill();
@@ -303,10 +340,10 @@ public class Assignment implements Comparable<Assignment> {
 
 			Map<Integer, Set<Tile>> deadEnemyAnts = new HashMap<Integer, Set<Tile>>();//
 			enemyAnts.forEach((k, v) -> deadEnemyAnts.put(k, new HashSet<Tile>()));
-			
+
 			LOGGER.info("\tenemyAnts: " + enemyAnts);
 			LOGGER.info("\tdeadEnemyAnts: " + deadEnemyAnts);
-			
+
 			// Per ogni nemico
 			IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> {
 				// si ottiene il numero di formiche nemiche morte nel livello MinMax precedente
@@ -345,12 +382,12 @@ public class Assignment implements Comparable<Assignment> {
 							antsLosses++;
 							deadAnts.add(ant);
 						} else if (curAntFA < curEnemyFA) {
-							deadEnemyAnts.get(i+1).add(enemyAnt);
+							deadEnemyAnts.get(i + 1).add(enemyAnt);
 							enemyLosses.set(i, enemyLossesNumber + 1);
 						} else {
 							antsLosses++;
 							deadAnts.add(ant);
-							deadEnemyAnts.get(i+1).add(enemyAnt);
+							deadEnemyAnts.get(i + 1).add(enemyAnt);
 							enemyLosses.set(i, enemyLossesNumber + 1);
 						}
 					}
@@ -375,14 +412,14 @@ public class Assignment implements Comparable<Assignment> {
 							  le fazioni) e si incrementa il numero dei morti
 							 */
 							if (curEnemyFA > curOpponentFA) {
-								deadEnemyAnts.get(i+1).add(enemyAnt);
+								deadEnemyAnts.get(i + 1).add(enemyAnt);
 								enemyLosses.set(i, enemyLossesNumber + 1);
 							} else if (curEnemyFA < curOpponentFA) {
-								deadEnemyAnts.get(idOpponent+1).add(opponentAnt);
+								deadEnemyAnts.get(idOpponent + 1).add(opponentAnt);
 								enemyLosses.set(idOpponent, enemyLossesNumber + 1);
 							} else {
-								deadEnemyAnts.get(idOpponent+1).add(opponentAnt);
-								deadEnemyAnts.get(i+1).add(enemyAnt);
+								deadEnemyAnts.get(idOpponent + 1).add(opponentAnt);
+								deadEnemyAnts.get(i + 1).add(enemyAnt);
 								enemyLosses.set(i, enemyLossesNumber + 1);
 								enemyLosses.set(idOpponent, opponentLossesNumber + 1);
 							}
@@ -476,8 +513,8 @@ public class Assignment implements Comparable<Assignment> {
 					antsHillsDestroyed++;
 					antHillDestroyed.add(aHill);
 				}
-				
-				Set<Tile> curEnemyHills = enemyHills.get(i+1);
+
+				Set<Tile> curEnemyHills = enemyHills.get(i + 1);
 				if (!curEnemyHills.isEmpty()) {
 					Set<Tile> hillDestroyed = new TreeSet<Tile>();
 					curEnemyHills.parallelStream().forEachOrdered(eHill -> {
@@ -488,7 +525,7 @@ public class Assignment implements Comparable<Assignment> {
 							enemyHillsDestroyed.set(i, enemyHillsDestroyed.get(i) + 1);
 						}
 					});
-					enemyHills.get(i+1).removeAll(hillDestroyed);
+					enemyHills.get(i + 1).removeAll(hillDestroyed);
 				}
 			});
 
@@ -523,7 +560,7 @@ public class Assignment implements Comparable<Assignment> {
 
 				int fakeID = -1;
 				while (++fakeID < enemyAnts.size())
-					if (enemyAnts.get(fakeID+1).contains(neighbour))
+					if (enemyAnts.get(fakeID + 1).contains(neighbour))
 						opponentID.add(fakeID + 1);
 			}
 
@@ -540,39 +577,6 @@ public class Assignment implements Comparable<Assignment> {
 		});
 
 		foodTiles.removeAll(foodGathered);
-	}
-
-	public void addChild(Assignment childState) {
-		if (child.size() == 0 || childState.getValue() > getValue())
-			value = childState.getValue();
-		child.add(childState);
-	}
-
-	double getValue() {
-		return value;
-	}
-
-	public Set<Order> getFirstChild() {
-		/*
-		 * LOGGER.severe("\t\t\t\tgetFirstChild()"); LOGGER.severe("\t\t\t\t"+child);
-		 * LOGGER.severe("\t\t\t\t~getFirstChild()");
-		 */
-		return child.first().getMoves();
-	}
-
-	Set<Order> getMoves() {
-		return antsMove;
-	}
-
-	long GetExtensionEstimate() {
-		/*
-		 * LOGGER.severe("\t\tGetExtensionEstimate()");
-		 * LOGGER.severe("\t\t\tants:"+ants); LOGGER.severe("\t\t\tenemy:"+enemyAnts);
-		 * LOGGER.severe("\t\t~GetExtensionEstimate()");
-		 */
-		return (long) (ants.size()
-				+ enemyAnts.entrySet().parallelStream().mapToInt(eASet -> eASet.getValue().size()).sum())
-				* Configuration.getMilSecUsedForEachAntsInCS();
 	}
 
 	/**
@@ -599,20 +603,20 @@ public class Assignment implements Comparable<Assignment> {
 
 		double value;
 
-		// TODO MassRatioThreshold impostare mass radio in base al numero di formiche
-		if (getAnts_number() > 3) // FIXME MassRatioThreshold
-			OpponentMultiplier *= Math.max(1, Math.pow((getAnts_number() + 1) / (getOpponentAnts_number() + 1), 2));
+		OpponentMultiplier *= Math.pow(getTurnsLeft(), 2);// 1.5D;
+		AntsMultiplier *= Math.pow(2, getTurnsLeft());
 
-		// TODO crescita logaritmica col passare dei turni a partire da una certa soglia
-		if (getTurnsLeft() < 50)
-			OpponentMultiplier *= 1.5D;
+		// if (getAnts_number() > 3) //
+		// OpponentMultiplier *= Math.max(1, Math.pow((getAnts_number() + 1) /
+		// (getOpponentAnts_number() + 1), 2));
 
-		value = OpponentMultiplier * getOpponentLosses_number() - AntsMultiplier * getAntsLosses_number();
 
-		if (getAntsLosses_number() == getAnts_number())
-			value -= 0.5;
-		else if (getOpponentLosses_number() == getOpponentAnts_number())
-			value += 0.4;
+		value = -OpponentMultiplier * getOpponentLosses_number() + AntsMultiplier * getAntsLosses_number();
+
+		if  (getAnts_number()==0)
+			value -= 0.5 * getAntsLosses_number();
+		else if (getOpponentAnts_number()==0)
+			value += 0.7 * getAntsLosses_number();
 
 		// TODO RISCRIVERE FUNZIONE
 		// considerando un pareggio
@@ -620,11 +624,11 @@ public class Assignment implements Comparable<Assignment> {
 		// maggiore
 		// del numero di formiche perse
 
-		value += getOpponentHillDestroyed_number();
-		value -= getAntsHillDestroyed_number() * 5;
+		value += getOpponentHillDestroyed_number() * 7;
+		value -= getAntsHillDestroyed_number() * 10;
 
-		value += getAntsFoodCollected_number() / 2;
-		value -= getOpponentFoodCollected_number();
+		value += getAntsFoodCollected_number() * 3;
+		value -= getOpponentFoodCollected_number() * 2;
 		// LOGGER.severe("\t\tvalue before: " + value);
 		/*
 		 * value -= enemyAnts.values().parallelStream().mapToDouble(es ->
@@ -649,14 +653,4 @@ public class Assignment implements Comparable<Assignment> {
 	public String toString() {
 		return "Assignment movetype=" + moveType + " [Turn=" + currentTurn + " value=" + value + "]";
 	}
-
-	public Set<Assignment> getChildren() {
-
-		return child;
-	}
-
-	public MovesModels getMoveType() {
-		return moveType;
-	}
-
 }

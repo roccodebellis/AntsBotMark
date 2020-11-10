@@ -8,9 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import defaultpackage.Configuration;
 import game.Directions;
 import game.Game;
@@ -319,9 +317,9 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	}
 
 
-	private Set<Order> idle(Assignment ordersAssigned) {
+	/*private Set<Order> idle(Assignment ordersAssigned) {
 		return ordersAssigned.getAnts().stream().map(ant -> new Order(ant,Directions.STAYSTILL, ant)).collect(Collectors.toSet());
-	}
+	}*/
 
 	private Set<Order> directional(Assignment ordersAssigned, Directions tDir) {
 		//LOGGER.severe("directional(,tDir:"+tDir+")");
