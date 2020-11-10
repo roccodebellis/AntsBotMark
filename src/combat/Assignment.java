@@ -197,7 +197,7 @@ public class Assignment implements Comparable<Assignment>{
 			/*LOGGER.info("\t~performMove() - isEnemyMoves(antsMove:"+this.antsMove+")***********");
 			return new Assignment(currentTurn+1, newAnts, antsHills, newEnemyAnts, enemyHills, foodTiles, !isEnemyMoves, moveType, this.antsMove);
 			 */
-			
+
 		} else {
 			moves.parallelStream().forEachOrdered(move -> { 
 				newAnts.remove(move.getOrigin()); 
@@ -336,71 +336,81 @@ public class Assignment implements Comparable<Assignment>{
 		ants.removeAll(antsKilled);
 	}
 
+	/**
+	 * Metodo che calcola se hill nemiche/nostre sono state rase al suolo
+	 * durante la simulazione del turno in uno dei livelli di MinMax (Assignment Corrente).
+	 */
 	private void hillRazing() { //TODO fare una sola funzione
 		//FIXME TENERE IN CONSIDERAZIONE L'AVER MANGIATO CIBO NEL TURNO PRECEDENTE
-		Set<Tile> hillDestroyed = new TreeSet<Tile>();
-		antsHills.parallelStream().forEachOrdered(hill -> {
+		Set<Tile> antHillDestroyed = new TreeSet<Tile>();
+
+		antsHills.parallelStream().forEachOrdered(aHill -> {
 			IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> { 
-				if(enemyAnts.get(i+1).contains(hill)) {
+				if(enemyAnts.get(i+1).contains(aHill)) {
 					antsHillsDestroyed++;
-					hillDestroyed.add(hill);
+					antHillDestroyed.add(aHill);
 				}
+
+				Set<Tile> hillDestroyed = new TreeSet<Tile>();
+				Set<Tile> curEnemyHills = enemyHills.get(i+1);
+				curEnemyHills.parallelStream().forEachOrdered(eHill -> {
+					if(ants.contains(eHill)) {
+						enemyHillsDestroyed.set(i, enemyHillsDestroyed.get(i)+1);
+						hillDestroyed.add(eHill);
+					}
+				});
+				enemyHills.get(i+1).removeAll(hillDestroyed);	
 			});
 		});
-		antsHills.removeAll(hillDestroyed);	
-
-
-		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> {
-			hillDestroyed.clear();
-			Set<Tile> curEnemyHills = enemyHills.get(i+1);
-			curEnemyHills.parallelStream().forEachOrdered(hill -> {
-				if(ants.contains(hill)) {
-					enemyHillsDestroyed.set(i, enemyHillsDestroyed.get(i)+1);
-					hillDestroyed.add(hill);
-				}
-			});
-			enemyHills.get(i+1).removeAll(hillDestroyed);	
-		});
+		antsHills.removeAll(antHillDestroyed);
 	}
 
 	/**
+	 * 
+	 * 
+	 * Sapendo che spawn_radius è uguale ad 1 vengono presi tutti i vicini delle tile di cibo
+	 * 
+	 * 
 	 * NB: è scritta sapendo che spawn radius == 1, il modo corretto sarebbe usare una static search
 	 */
 	private void foodResolution() {
 		Set<Tile> foodGathered = new TreeSet<Tile>();
+		List<Integer> enemyCount = new ArrayList<Integer>(enemyAnts.size());
+		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyCount.add(0));
+		int antCount = 0;
 
-		foodTiles.parallelStream().forEachOrdered(food -> {
-			int antCount = 0;
-			List<Integer> enemyCount = new ArrayList<Integer>(enemyAnts.size());
-			IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyCount.add(0));
+		foodTiles.parallelStream().forEachOrdered(food -> {	
 
 			Set<Tile> neighbours = food.getNeighbours().parallelStream().map(nDir -> food.getNeighbourTile(nDir)).collect(Collectors.toSet());
 			Iterator<Tile> neItr = neighbours.iterator();
 			while(neItr.hasNext()) {
 				Tile neighbour = neItr.next();
-				if(ants.contains(neighbour))
-					antCount++;
-				else enemyAnts.entrySet().parallelStream().forEachOrdered(e -> {
-					if(e.getValue().contains(neighbour))
+				boolean antsNeigh = ants.contains(neighbour);
+				int enemyNeigh=0;
+
+				enemyAnts.entrySet().parallelStream().forEachOrdered(e -> enemyNeigh += e.getValue().contains(neighbour) ? 1 :0);		
+
+				if(!(enemyNeigh==1 && antsNeigh)|| enemyNeigh==1) {
+					if(antsNeigh)
+						antCount++;
+					else
 						enemyCount.set(e.getKey()-1, enemyCount.get(e.getKey()-1) +1);
-				});
-
+					foodGathered.add(food);
+				}
 			}
-
-			int count = enemyCount.parallelStream().mapToInt(Integer::intValue).sum();
-
-
-			if(antCount>0 && count==0) 
-				antsFoodCollected++;
-			else if(antCount==0 && count>0)
-				IntStream.range(0, enemyCount.size()).parallel().forEachOrdered(i -> { 
-					if(enemyCount.get(i) == count) 
-						enemyFoodCollected.set(i,enemyFoodCollected.get(i)+1); 
-				});
-
-			if(antCount>0 || count>0)
-				foodGathered.add(food);
 		});
+		int count = enemyCount.parallelStream().mapToInt(Integer::intValue).sum();
+
+		if(antCount>0 && count==0) 
+			antsFoodCollected++;
+		else if(antCount==0 && count>0)
+			IntStream.range(0, enemyCount.size()).parallel().forEachOrdered(i -> { 
+				if(enemyCount.get(i) == count) 
+					enemyFoodCollected.set(i,enemyFoodCollected.get(i)+1); 
+			});
+
+		if(antCount>0 || count>0)
+			foodGathered.add(food);
 
 		foodTiles.removeAll(foodGathered);
 	}
