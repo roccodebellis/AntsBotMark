@@ -12,6 +12,8 @@ public class Order implements Comparable<Order>{
 	 * Direzione verso cui la formica deve effettuare lo spostamento.
 	 */
 	private Directions direction;
+	
+	private Tile target;
 
 	/**
 	 * Crea un nuovo oggetto {@link Order} estrapolando da {@code t}
@@ -19,9 +21,9 @@ public class Order implements Comparable<Order>{
 	 * @param t {@link Tile} della mappa su cui si trova la mia formica
 	 * @param direction {@link Directions direzione}e verso cui muovere la mia formica
 	 */
-	public Order(Tile t, Directions direction) {
+	public Order(Tile t, Directions direction, Tile target) {
 		this.setTile(t);
-
+		this.target = target;
 		this.direction = direction;
 	}
 
@@ -29,9 +31,7 @@ public class Order implements Comparable<Order>{
 		this.tile = t;
 
 	}
-
-
-
+	
 	/**
 	 * <p>Genera la stringa contenente l'ordine da mandare al System Output.<br>
 	 * La stringa avra' il seguente aspetto: "{@code o }{@link #row} {@link #col} {@link #direction}" 
@@ -40,9 +40,13 @@ public class Order implements Comparable<Order>{
 	 */
 	@Override
 	public String toString() {
-		return "o " + getRow() + " " + getCol() + " " + direction;
+		return "o " + getRow() + " " + getCol() + " " + direction;// + "\nOrigin: " + tile + "\nTarget: " + target + "\nOrdered Tile: " + getOrderedTile();
 	}
 
+	public String toStringExtended() {
+		return "o " + getRow() + " " + getCol() + " " + direction + "("+getOrderedTile()+") [O: " + tile + " | T: " + target + " ]";
+	}
+	
 	private int getCol() {
 		return tile.getCol();
 	}
@@ -51,9 +55,17 @@ public class Order implements Comparable<Order>{
 		return tile.getRow();
 	}
 
+	/*
+	 * da dove parte la formica e
+	 */
 	public Tile getOrigin() {
 		return tile;
 	}
+	
+	public Tile getTarget() {
+		return target;
+	}
+
 
 	public Directions getDirection() {
 		return direction;

@@ -37,7 +37,7 @@ public enum MovesModels {
 	 * <p>Mossa di inattivita'.</p>
 	 * Nessuna formica del gruppo sara' mossa.
 	 */
-	IDLE,
+	//IDLE,
 	
 	/**
 	 * <p>Mossa di avanzamento verso un'unica direzione.</p>

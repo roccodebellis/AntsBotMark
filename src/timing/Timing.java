@@ -1,12 +1,13 @@
 package timing;
 
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
+import java.util.logging.Logger;
 
 public class Timing {
+	
+	private static Logger LOGGER = Logger.getLogger( Timing.class.getName() );
 	
 	private static int turnNo;
 	/**
@@ -46,13 +47,21 @@ public class Timing {
 	}
 	public void end(Modules module) {
 		if(turnNo>1)
-			modulesTime.put(module, (long) ((getCurTime()-modulesTimeStart.get(module)) * 0.85 + modulesTime.get(module) * 0.15));
+			modulesTime.put(module, (long) ((getCurTime()-modulesTimeStart.get(module)) * 0.9 + modulesTime.get(module) * 0.1));
 		else
 			modulesTime.put(module, (getCurTime()-modulesTimeStart.get(module)));
 	}
 	
 	
 	public static long getCombatTimeStime(){
+		/*LOGGER.severe("\tgetCombatTimeStime()");
+		
+		LOGGER.severe("\t_turnTime:"+_turnTime);
+		LOGGER.severe("\t_ModulesTime:"+modulesTime);
+		
+		LOGGER.severe("\t~getCombatTimeStime()");*/
+		
+		
 		return getTimeRemaining() - modulesTime.entrySet().stream().mapToLong(Map.Entry::getValue).sum();
 	}
 
@@ -110,10 +119,4 @@ public class Timing {
 	public static long getCurTime() {	
 		return System.currentTimeMillis();
 	}
-	
-	
-
-	
-	
-	
 }

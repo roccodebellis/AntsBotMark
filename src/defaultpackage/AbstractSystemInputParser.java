@@ -3,8 +3,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
-
-import game.Game;
 import timing.Timing;
 
 /**
@@ -319,6 +317,7 @@ public abstract class AbstractSystemInputParser extends AbstractSystemInputReade
      * Finishes turn.
      */
     public void finishTurn() {
+ 
         System.out.println("go");
         System.out.flush();
     }

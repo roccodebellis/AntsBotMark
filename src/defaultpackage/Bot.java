@@ -2,7 +2,6 @@ package defaultpackage;
 
 import game.Game;
 import timing.Modules;
-import timing.Timing;
 
 /**
  * Provides basic game state handling.
@@ -41,7 +40,6 @@ public abstract class Bot extends AbstractSystemInputParser {
 	 */
 	@Override
 	public void beforeUpdate() {
-		Timing.setTurnStartTime(); 
 		time.start(Modules.Parse);
 		state.clear();
 	}
@@ -92,6 +90,7 @@ public abstract class Bot extends AbstractSystemInputParser {
 	@Override
 	public void afterUpdate() {
 		state.doVision();
+		
 		time.end(Modules.Parse);
 	}
 }

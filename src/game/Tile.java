@@ -1,11 +1,11 @@
 package game;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
+import java.util.Random;
 import search.Search;
 import timing.Timing;
 
@@ -257,7 +257,7 @@ public class Tile implements Comparable<Tile> {
 	 * 
 	 * @return {@link #type}
 	 */
-	private TileTypes getType() {// TODO non utilizzata??
+	public TileTypes getType() {// TODO non utilizzata??
 		return type;
 	}
 
@@ -291,6 +291,9 @@ public class Tile implements Comparable<Tile> {
 		idOwner = null;
 		containsFood = false;
 		isSuitable = false;
+		Game.getUnexplored().remove(this);
+		//visibile?
+		
 
 	}
 
@@ -415,8 +418,38 @@ public class Tile implements Comparable<Tile> {
 	 * 
 	 * @return {@link #neighbourTiles}
 	 */
-	public Map<Directions, Tile> getNeighbour() {
+	private Map<Directions, Tile> getNeighbour() {
 		return neighbourTiles;
+		//return generateCrazyNeighbours();
+	}
+	
+	public List<Directions> getNeighbours() {
+		List<Directions> reorderedNeigh = new ArrayList<Directions>();
+		ArrayList<Tile> neighAsList = new ArrayList<Tile>(getNeighbour().values());
+		Map<Tile, Directions> tempNeigh = new HashMap<Tile, Directions>();
+		getNeighbour().entrySet().parallelStream().forEachOrdered(e -> tempNeigh.put(e.getValue(), e.getKey()));
+		while (neighAsList.size() > 0) {
+			Random r = new Random(Timing.getCurTime());
+			int val = (int) r.nextInt(neighAsList.size());
+			//ThreadLocalRandom current = ThreadLocalRandom.current();
+			//int val = current.nextInt((neighAsList.size()));
+			reorderedNeigh.add(tempNeigh.get(neighAsList.remove(val)));
+		}
+		return reorderedNeigh;
+	}
+	
+	/**
+	 * restituisce null
+	 * 
+	 * @param dir
+	 * @return
+	 * 
+	 * @aller statti attenzione potrebbe restituire null
+	 */
+	public Tile getNeighbourTile(Directions dir) {
+		
+		return dir.equals(Directions.STAYSTILL) ? this : neighbourTiles.get(dir);
+		//return generateCrazyNeighbours();
 	}
 
 	/**
@@ -432,7 +465,7 @@ public class Tile implements Comparable<Tile> {
 	 */
 	public int getOwner() {// TODO non lo utilizziamo?!
 		//if (occupiedByAnt || type.equals(TileTypes.HILL)) FIXME
-		return idOwner;
+		return this.idOwner;
 		//else
 		//throw new TileTypeException("Pensavi ci fosse una formica/un HILL invece era " + type);
 	}
@@ -526,7 +559,7 @@ public class Tile implements Comparable<Tile> {
 	 * @return
 	 */
 	public boolean isSuitable() {// TODO da cancellare?? riguarda solo acqua??? bohboh
-
+//return true;
 		return this.isSuitable;
 		// return (occupiedByAnt || (type.equals(TileTypes.HILL) && idOwner==0 )) ?
 		// false : true;
@@ -547,6 +580,12 @@ public class Tile implements Comparable<Tile> {
 
 	public void setSuitable(boolean suitable) {
 		this.isSuitable = suitable;
+	}
+	
+	public void setSuitableSuperSpecial(boolean suitable) {
+		this.isSuitable = suitable;
+		/*getNeighbour().entrySet().stream().forEachOrdered(
+			vicino -> {vicino.getValue().isSuitable = suitable;});*/
 	}
 
 	public static final Comparator<Tile> visionComparator() {

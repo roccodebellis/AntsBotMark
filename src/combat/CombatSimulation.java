@@ -1,13 +1,15 @@
 package combat;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import defaultpackage.Configuration;
 import game.Directions;
 import game.Game;
@@ -40,6 +42,7 @@ import timing.Timing;
  */
 public class CombatSimulation implements Comparable<CombatSimulation>{
 
+	private static Logger LOGGER = Logger.getLogger( CombatSimulation.class.getName() );
 	private Set<Tile> myAntSet;
 	private Map<Integer, Set<Tile>> enemyAntSet;
 	private Map<Integer, Set<Tile>> enemyHills;
@@ -60,15 +63,31 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 		situationRecognition(myAnt,enemyAnt);
 		this.deadLine = deadLine;
-		enemyHills = new TreeMap<Integer, Set<Tile>>();
-		IntStream.range(0, Game.getNumberEnemy()).forEach(id -> enemyHills.put(id+1, new HashSet<Tile>()));
-
-		Game.getEnemyHills().forEach(eHill -> enemyHills.get(eHill.getOwner()).add(eHill));
-
-
+		enemyHills = new HashMap<Integer, Set<Tile>>();
+		/*
+		IntStream.range(0, Game.getNumberEnemy()).forEach(i -> enemyHills.put(i, new HashSet<Tile>()));
+		Set<Tile> gameEnemyHills = Game.getEnemyHills();
+		if(!gameEnemyHills.isEmpty()) {
+			LOGGER.severe("enemyHills" + enemyHills);
+			
+			gameEnemyHills.forEach(eHill -> {
+				enemyHills.get(eHill.getOwner()-1).add(eHill);
+				
+				LOGGER.severe("eHill.getOwner()-1" + (eHill.getOwner()-1));
+				LOGGER.severe("eHill" + eHill);});
+		}*/
+		IntStream.range(0, Game.getNumberEnemy()).forEach(i -> enemyHills.put(i, Game.getEnemyHills().stream().filter(x -> x.getOwner() == i).collect(Collectors.toSet())));
+	//	LOGGER.severe("\t------------------\n\tGame Enemy Hills size: "+Game.getEnemyHills().size()+ "enemyHills size:"+ enemyHills.values().stream().mapToInt(x->x.size()).sum() +"\t\n-------------------------");
+		
 	}
 
 	public Set<Order> getMoves(){
+		////LOGGER.severe("\tSE MI CERCHI SONO QUI");
+		////LOGGER.severe("\tgetMoves("+ root +" moves"+root.getMoves()+")++++++++++++");
+		
+		//root.getChildren().forEach(c -> ////LOGGER.severe("\tAssignment: " + c+"["+c.getMoves()+"]"));
+		
+		////LOGGER.severe("\t\t~getMoves()++++++++++++");
 		return root.getFirstChild();
 	}
 
@@ -102,22 +121,12 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		enemyAntSet = new HashMap<Integer, Set<Tile>>();
 
 		myAntSet.add(myAnt);
-		
-		IntStream.range(0, Game.getNumberEnemy()).forEach(id -> enemyAntSet.put(id+1, new HashSet<Tile>()));
-		//System.out.println("* "+ enemyAntSet);
-		//System.out.println("* "+ enemyAnt.getOwner());
-		
-		//try {
-			enemyAntSet.get(enemyAnt.getOwner()).add(enemyAnt);
-		/*	if(true)
-				throw new NullPointerException();
-		}catch(NullPointerException e) {
-			throw new NullPointerException("\nOwner" + (enemyAnt.getOwner()) + "\nnemico "+ enemyAntSet.get(1) + "\nTile del nemico " + enemyAnt + "\nSet nemici " + enemyAntSet + "\nnumero nemici: " + Game.getNumberEnemy());
-		}*/
-		
 
-		int attackRadius = Configuration.getCombatModuleSearchRadius();
-		
+		IntStream.range(0, Game.getNumberEnemy()).forEach(id -> enemyAntSet.put(id, new HashSet<Tile>()));
+		enemyAntSet.get(enemyAnt.getOwner()-1).add(enemyAnt);
+
+		int combatSearchRadius = Configuration.getCombatModuleSearchRadius();
+
 		//FIXME ciclare solo sulle formiche aggiunte, prendere la diffrenza tra l'intersezione e l'insisme nuovo
 		//e considerare quelle formiche per la successiva iterata aggiungendole cmq alla lista delle myAntsSet
 
@@ -125,22 +134,22 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		boolean addedAnts = true;
 		while(addedAnts){
 			addedAnts = false;
-			Search forEnemyAnts = new Search(myAntSet, Game.getEnemyAnts(), attackRadius, false, false, false);
+			Search forEnemyAnts = new Search(myAntSet, Game.getEnemyAnts(), combatSearchRadius, false, false, false);
 			Set<Tile> newEnemyFound = forEnemyAnts.adaptiveSearch();
 
 			if(newEnemyFound.size() > enemyAntSet.entrySet().parallelStream().mapToInt(eASet -> eASet.getValue().size()).sum()) {
+
 				addedAnts = true;
-				newEnemyFound.parallelStream().forEachOrdered(eA -> {
-					enemyAntSet.get(eA.getOwner()).add(eA); }
-						);
+				newEnemyFound.parallelStream().forEachOrdered(eA -> enemyAntSet.get(eA.getOwner()-1).add(eA));
+				//newEnemyFound.parallelStream().forEachOrdered(enemyAntSet::add);
 			}
 
 			Set<Tile> enemyAntsSet = new HashSet<Tile>();
 			enemyAntSet.values().forEach( enemySet -> enemyAntsSet.addAll(enemySet));
 
-			Search forMyAnts = new Search(enemyAntsSet, Game.getMyAnts(), attackRadius, false, false, true);
+			Search forMyAnts = new Search(enemyAntsSet, Game.getMyAnts(), combatSearchRadius, false, false, false);
 			Set<Tile> newMyAntsFound = forMyAnts.adaptiveSearch();
-			addedAnts =	addedAnts || myAntSet.addAll(newMyAntsFound);
+			addedAnts |= myAntSet.addAll(newMyAntsFound);
 		}
 	}
 
@@ -171,42 +180,53 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	 * </p>
 	 */
 	private Map<MovesModels,Set<Order>> movesGenerator(Assignment s) {
+		//////LOGGER.severe("\tmovesGenerator()");
 		Map<MovesModels,Set<Order>> output = new HashMap<MovesModels,Set<Order>>();
 
 		output.put(MovesModels.ATTACK, attack(s));
 		output.put(MovesModels.HOLD, hold(s));
-		output.put(MovesModels.IDLE, idle(s));
+		//output.put(MovesModels.IDLE, idle(s));
 		output.put(MovesModels.NORTH, directional(s,Directions.NORTH));
 		output.put(MovesModels.SOUTH, directional(s,Directions.SOUTH));
 		output.put(MovesModels.EAST, directional(s,Directions.EAST));
 		output.put(MovesModels.WEST, directional(s,Directions.WEST));
-		
+
+
+		//////LOGGER.severe("\t"+output);
+		//////LOGGER.severe("\t\tants"+s.getAnts());
+		//////LOGGER.severe("\t\tenemy"+s.getOpponentAnts());
+		//////LOGGER.severe("\t~movesGenerator()");
 		return output;
 	}
 
-	private Set<Order> attack(Assignment s) {
+	private Set<Order> attack(Assignment currAssignment) {
+		//////LOGGER.info("attack()");
 		Set<Tile> targets = new HashSet<Tile>();
-		targets.addAll(s.getOpponentAnts());
-		targets.addAll(s.getOpponentHills());
-
-		Search search = new Search(targets, s.getAnts(), null, false, true, false);
-		search.adaptiveSearch();
-		return search.getOrders();
+		targets.addAll(currAssignment.getOpponentAnts());
+		targets.addAll(currAssignment.getOpponentHills());
+		//TODO forse bisogna migliorare questa ricerca 
+		//ora abbiamo provato a mettere che piu formiche nostre attaccano un unico targhet
+		if(targets!=null && currAssignment.getAnts()!=null) {
+			Search search = new Search(currAssignment.getAnts(),targets, null, false, false, false); //bfs classica
+			//Search search = new Search(targets, currAssignment.getAnts(), null, false, false, true); //bfs reverse
+			search.adaptiveSearch();
+			//////LOGGER.info("~attack("+search.getOrders()+")");
+			return search.getOrders();
+		}
+		//////LOGGER.info("~attack()");
+		return new HashSet<Order>();
 	}
 
-
-	private Set<Order> hold(Assignment s) {
-		//E' UGUALE!! EXPLORATIONANDMOVEMENT.spreadOut(); TODO
-
-		double targetDistance = Math.sqrt(Game.getAttackRadius2()) + (s.isEnemyMove() ? 1 : 2);
+	private Set<Order> hold(Assignment currAssignment) {
+		//////LOGGER.info("hold()");
+		double targetDistance = Math.sqrt(Game.getAttackRadius2()) + (currAssignment.isEnemyMove() ? 1 : 2);
 		Set<Order> ordersAssigned = new HashSet<Order>();
 
-		Iterator<Tile> antsItr = s.getAnts().iterator();
+		Iterator<Tile> antsItr = currAssignment.getAnts().iterator();//TODO
 		while(antsItr.hasNext()) {
-
 			Tile ant = antsItr.next();
 
-			Iterator<Tile> targetsItr = s.getOpponentAnts().iterator();
+			Iterator<Tile> targetsItr = currAssignment.getOpponentAnts().iterator();
 
 			if(targetsItr.hasNext()) {
 				Tile minTarget = targetsItr.next();
@@ -223,6 +243,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 				ordersAssigned.add(moveBackOrForward(ordersAssigned, ant, minTarget, minDist, targetDistance));
 			}
 		}
+		//////LOGGER.info("~hold("+ordersAssigned+")");
 		return ordersAssigned;
 	}
 
@@ -234,81 +255,174 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		Order order;
 
 		if(distance != targetDistance) {
-			order = new Order(ant, dir);
-			/*
-			if(ordersAssigned.contains(order) || !Game.getTile(ant, dir.getOffset()).isAccessible()) {
-				order = new Order(ant,dir.getNext());
-				if(ordersAssigned.contains(order)|| !Game.getTile(ant, dir.getNext().getOffset()).isAccessible()) {
-					order = new Order(ant,dir.getOpponent().getNext());
-					if(ordersAssigned.contains(order)|| !Game.getTile(ant, dir.getOpponent().getNext().getOffset()).isAccessible())
-						order = new Order(ant,Directions.STAYSTILL); //FIXME
+			//avvicinarsi/allontanarsi
+			if(!Game.getTile(ant,dir.getOffset()).isAccessible()) {
+				//non accessibile //ordine non impartibile
+				dir = dir.getNext();
+				if(!Game.getTile(ant,dir.getOffset()).isAccessible()) {
+					dir = dir.getOpponent();
+					if(Game.getTile(ant,dir.getOffset()).isAccessible())
+						order = new Order(ant, dir, ant.getNeighbourTile(dir));
+					else 
+						order = new Order(ant, Directions.STAYSTILL, ant);
+				} else {
+					order = new Order(ant, dir, ant.getNeighbourTile(dir));
+					if(ordersAssigned.contains(order)) {
+						dir = dir.getOpponent();
+						if(Game.getTile(ant,dir.getOffset()).isAccessible())
+							order = new Order(ant, dir, ant.getNeighbourTile(dir));
+						else 
+							order = new Order(ant, Directions.STAYSTILL, ant);
+					}
+				}
+			} else {
+				//accessobile
+				order = new Order(ant, dir, ant.getNeighbourTile(dir));
+				if(ordersAssigned.contains(order)) {
+					//non accessibile //ordine non impartibile
+					dir = dir.getNext();
+					if(!Game.getTile(ant,dir.getOffset()).isAccessible()) {
+						dir = dir.getOpponent();
+						if(Game.getTile(ant,dir.getOffset()).isAccessible())
+							order = new Order(ant, dir, ant.getNeighbourTile(dir));
+						else 
+							order = new Order(ant, Directions.STAYSTILL, ant);
+
+					} else {
+						order = new Order(ant, dir, ant.getNeighbourTile(dir));
+						if(ordersAssigned.contains(order)) {
+							dir = dir.getOpponent();
+							if(Game.getTile(ant,dir.getOffset()).isAccessible())
+								order = new Order(ant, dir, ant.getNeighbourTile(dir));
+							else 
+								order = new Order(ant, Directions.STAYSTILL, ant);
+						}
+					}
+				}
+			}
+		}else {
+			order = new Order(ant, Directions.STAYSTILL, ant);
+			if(ordersAssigned.contains(order)) {
+				dir = dir.getNext();
+				if(!Game.getTile(ant,dir.getOffset()).isAccessible()) {
+					dir = dir.getOpponent();
+					if(Game.getTile(ant,dir.getOffset()).isAccessible())
+						order = new Order(ant, dir, ant.getNeighbourTile(dir));
+					else 
+						order = new Order(ant, Directions.STAYSTILL, ant);
+
+				} else {
+					order = new Order(ant, dir, ant.getNeighbourTile(dir));
+					if(ordersAssigned.contains(order)) {
+						dir = dir.getOpponent();
+						if(Game.getTile(ant,dir.getOffset()).isAccessible())
+							order = new Order(ant, dir, ant.getNeighbourTile(dir));
+						else 
+							order = new Order(ant, Directions.STAYSTILL, ant);
+					}
 				}
 			} 
-			 */
+		}
 
-		} else order = new Order(ant, Directions.STAYSTILL);
+		//////LOGGER.severe("~directional(,dir:"+dir+")");
 		return order;
 	}
 
 
-	private Set<Order> idle(Assignment s) {
-		return s.getAnts().parallelStream().map(ant -> new Order(ant,Directions.STAYSTILL)).collect(Collectors.toSet());
-	}
+	/*private Set<Order> idle(Assignment ordersAssigned) {
+		return ordersAssigned.getAnts().stream().map(ant -> new Order(ant,Directions.STAYSTILL, ant)).collect(Collectors.toSet());
+	}*/
 
-	private Set<Order> directional(Assignment s, Directions m) {
+	private Set<Order> directional(Assignment ordersAssigned, Directions tDir) {
+		//////LOGGER.severe("directional(,tDir:"+tDir+")");
 		Set<Order> orders = new HashSet<Order>();
 
-		s.getAnts().forEach(a -> {
-			Tile target = a.getNeighbour().get(m);
 
-			if(target==null) //acqua
-				orders.add(new Order(a,Directions.STAYSTILL)); //FIXME
-			else {
-				Order o = new Order(a,m);
-				/*
-				if(orders.contains(o)) 
-					o = new Order(a,m.getNext());
-				else if(orders.contains(o))
-					o = new Order(a,m.getOpponent().getNext());
-				if(orders.contains(o))
-					o = new Order(a, Directions.STAYSTILL);
-				orders.add(o);
-				 */
+		ordersAssigned.getAnts().forEach(ant -> {
+			Order order;
+			Directions dir = tDir;
+
+			if(Game.getTile(ant, dir.getOffset()).isAccessible()) {
+				Tile target = ant.getNeighbourTile(dir);
+				order = new Order(ant,dir, target);
+				if(!orders.add(order)) {
+					order = new Order(ant,Directions.STAYSTILL, ant);
+					orders.add(order);
+				}
+			} else {
+				order = new Order(ant,Directions.STAYSTILL, ant);
+				orders.add(order);
 			}
 		});
+		//////LOGGER.severe("~directional("+orders+")");
 		return orders;
 	}
 
+	/**
+	 * Dopo aver identificato una situazione di battaglia si costruisce un albero di 
+	 * ricerca per determinare la mossa migliore che dovra' performare l'agente.
+	 * In ants, tutti i giocatori muovono le loro formiche simultaneamente. Il motore
+	 * di ricerca di conseguenza tratta ogni turno del gioco come una ricerca a due
+	 * strati. Uno strato e' la mossa dell'agente, mentre l'altro e' la mossa del nemico
+	 * e la risoluzione del turno (combattimento e raccolta del cibo). Per questa 
+	 * ragione la profondita' della ricerca e' sempre pari. La ricerca e' inizializzata
+	 * con un nodo neutrale il quale contine lo stato corrente del gioco e la situazione
+	 * riconosciuta (i gruppi delle formiche). Dopo di che il generatore di mosse 
+	 * viene utizzato per generare i figli (nodi) dello strato successivo di ricerca.
+	 * Gli strati dispari riguardano le mosse dell'agente, mentre quelli pari sono le 
+	 * mosse dei nemici. Dopo ogni strato pari ha luogo una simulazione di risoluzione di
+	 * combattimento e di raccolta cibo. I nodi figli sono generati dal generatore di mosse.
+	 * Dopo che il nemico ha effettuato la mossa su tutti i figli pari, avviene la risoluzione
+	 * del combattimento e la raccolta del cibo, nel caso dovvessero esserci le condizioni per 
+	 * tali avvenimenti. In seguito ogni nodo viene valutato tramite la funzione euristica. 
+	 * Gli insiemi dei nodi figli di ogni nodo (dell'albero di gioco) sono insiemi di alberi
+	 * ordinati (ovviamente tramite il valore assegnato ad ogni nodo dalla funzione euristica).
+	 * Aggiungendo un nuovo nodo figlio (generato e valutato) si fa in modo di aggiungerlo 
+	 * nell'albero in accordo all'ordinamento naturale che si basa sulla valutazione dei nodi. 
+	 * Di conseguenza il primo elemento dell'albero contine la mossa migliore, eliminando 
+	 * la neccissita' di eseguire in seguito un ordinamento esplicito. 
+	 * La profondita' di ricerca e' dinamica ed e' limitata da una soglia superiore di tempo
+	 * proprio come accade per il tempo assegnato alla simulazione del combattimento.
+	 * La simulazione e' interrotta alla massima profondita' o quando il tempo a disposizione
+	 * e' stato esaurito. 
+	 * 
+	 * 
+	 * @param state
+	 * @param deadLine
+	 * @param depth
+	 * @return
+	 */
+	private void MinMax(Assignment state, long deadLine, int depth) {
+		//////LOGGER.severe("MINMAX-> depth:"+depth+" MT:"+state.getMoveType()+" state:"+ state.isEnemyMove()+" deadline"+deadLine+" ct:"+Timing.getCurTime());
+		//////LOGGER.severe("\t(MINMAX) - ["+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+" ants:"+state.getAnts() +" enemy:"+state.getOpponentAnts() + "]");
+		if(depth!=0 && !(depth < Configuration.getCombatModuleMinMaxMaxDepth() && deadLine > state.GetExtensionEstimate())) {
+			//////LOGGER.severe("\t[(if)"+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+"]");
+			state.evaluate();
+			return;
+		}
 
+		Map<MovesModels,Set<Order>> movesSet = movesGenerator(state);
 
+		movesSet.entrySet().parallelStream().forEachOrdered( movesEntry -> {
+			MovesModels moveType = movesEntry.getKey();
+			Set<Order> moves = movesEntry.getValue();
 
-	private double MinMax(Assignment state, long deadLine, int depth) {
-		if(AllowExtension(state,deadLine, depth)) {
+			Assignment childState = state.performMove(moves, moveType);
+			long curTime = Timing.getCurTime();
+			long childDeadline = curTime + (deadLine-curTime)/(movesSet.size()-moveType.ordinal());
 
-			Map<MovesModels,Set<Order>> movesSet = movesGenerator(state);
+			if(!childState.isEnemyMove()) {
+				childState.resolveCombatAndFoodCollection();
+				state.evaluate();
+			}
 
-			movesSet.entrySet().parallelStream().forEachOrdered( movesEntry -> {
-				MovesModels moveType = movesEntry.getKey();
-				Set<Order> moves = movesEntry.getValue();
+			MinMax(childState, childDeadline, depth+1);
+			//////LOGGER.severe("\t["+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+"]");
+			state.addChild(childState);
 
-				Assignment childState = state.performMove(moves);
-				long curTime = Timing.getCurTime();
-				long childDeadline = curTime + (deadLine-curTime)/(movesSet.size()-moveType.ordinal());//FIXME getNumber of Moves forse è il numero di mosse in questo calcolo
-
-				if(childState.isEnemyMove())
-					childState.resolveCombatAndFoodCollection();
-
-				MinMax(childState, childDeadline, depth+1);
-
-				state.addChild(childState);
-			});}
-		return state.evaluate();
+		});
 	}
 
-	boolean AllowExtension(Assignment state, long deadline, int depth){
-		return (depth%2 == 0) || (depth < Configuration.getCombatModuleMinMaxMaxDepth() && deadline > state.GetExtensionEstimate()); //FIXME GetExtensionEstimate
-	}
-	
 	private int antInvolved() {
 		return myAntSet.size() + enemyAntSet.entrySet().parallelStream().mapToInt(eASet -> eASet.getValue().size()).sum(); //TODO check deve contare il numero di formiche coinvolte
 	}
@@ -321,10 +435,25 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	}
 
 	public void combatResolution() {
-		root = new Assignment(0, myAntSet, Game.getMyHills(), enemyAntSet, enemyHills, Game.getFoodTiles(), false);
+		//////LOGGER.severe("\tcombatResolution()");
+		List<Integer> enemyLosses = new ArrayList<Integer>(enemyAntSet.size());
+		IntStream.range(0, enemyAntSet.size()).parallel().forEachOrdered(i -> enemyLosses.add(0));
+		
+		List<Integer> enemyHillsDestroyed = new ArrayList<Integer>(enemyAntSet.size());
+		IntStream.range(0, enemyAntSet.size()).parallel().forEachOrdered(i -> enemyHillsDestroyed.add(0));
+		
+		List<Integer> enemyFoodCollected = new ArrayList<Integer>(enemyAntSet.size());
+		IntStream.range(0, enemyAntSet.size()).parallel().forEachOrdered(i -> enemyFoodCollected.add(0));
+		
+		root = new Assignment(0, myAntSet, Game.getMyHills(), 0, 0, 0, enemyAntSet, enemyHills, enemyLosses, enemyHillsDestroyed, enemyFoodCollected, Game.getFoodTiles(), false, null, new HashSet<Order>());
+
 		MinMax(root, Timing.getCurTime() + deadLine, 0);	
+
 		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(false));
 
+		//////LOGGER.severe("\t\t->->->child: " + root.getChildren());
+
+		//////LOGGER.severe("\t~combatResolution()");
 	}
 
 	@Override
@@ -332,5 +461,5 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		return "CombatSimulation [root=" + root + "]";
 	}
 
-	
+
 }
