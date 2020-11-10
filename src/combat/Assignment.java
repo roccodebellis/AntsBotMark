@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -306,10 +307,16 @@ public class Assignment implements Comparable<Assignment> {
 				Set<Tile> ienemySet = enemyAnts.get(i + 1);
 
 				Set<Tile> iOpponent = new HashSet<Tile>();
-				// iEnemySet
-
+				Map<Tile,Integer> gimmeID = new HashMap<Tile,Integer>();
 				if (i > 0)
-					IntStream.range(0, i + 1).parallel().forEachOrdered(j -> iOpponent.addAll(enemyAnts.get(j + 1)));
+					IntStream.range(0, i + 1).parallel().forEachOrdered(
+						j -> {
+							Set<Tile> jEnemy = enemyAnts.get(j + 1);
+							iOpponent.addAll(jEnemy);
+							gimmeID.putAll(jEnemy.stream().collect(HashMap<Tile,Integer>::new,(m,c)->m.put(c ,j),(m,u)->{}));
+						}
+					);
+				
 
 				// per ogni nemico
 				ienemySet.parallelStream().forEachOrdered(enemyAnt -> {
@@ -342,7 +349,7 @@ public class Assignment implements Comparable<Assignment> {
 					}
 					// losses di enemy contro gli altri opponents
 					iOpponent.parallelStream().forEachOrdered(opponentAnt -> {
-						int idOpponent = opponentAnt.getOwner();
+						int idOpponent = gimmeID.get(opponentAnt);
 						int opponentLossesNumber = enemyLosses.get(idOpponent-1);
 						//int enemyLossesNumber = enemyLosses.get(i);
 						// Si ottiene il focus attack del nemico corrente
@@ -446,25 +453,32 @@ public class Assignment implements Comparable<Assignment> {
 	 * durante la simulazione del turno in uno dei livelli di MinMax (Assignment Corrente).
 	 */
 	private void hillRazing() { //TODO fare una sola funzione
-		//FIXME TENERE IN CONSIDERAZIONE L'AVER MANGIATO CIBO NEL TURNO PRECEDENTE
+		
 		Set<Tile> antHillDestroyed = new TreeSet<Tile>();
 
 		antsHills.parallelStream().forEachOrdered(aHill -> {
 			IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> { 
+				
+				Set<Tile> iOpponent = new HashSet<Tile>();
+				if (i > 0)
+					IntStream.range(0, i + 1).parallel().forEachOrdered(j -> iOpponent.addAll(enemyAnts.get(j + 1)));
+				
 				if(enemyAnts.get(i+1).contains(aHill)) {
 					antsHillsDestroyed++;
 					antHillDestroyed.add(aHill);
 				}
 
 				Set<Tile> hillDestroyed = new TreeSet<Tile>();
-				Set<Tile> curEnemyHills = enemyHills.get(i+1);
+				Set<Tile> curEnemyHills = enemyHills.get(i);
 				curEnemyHills.parallelStream().forEachOrdered(eHill -> {
 					if(ants.contains(eHill)) {
 						enemyHillsDestroyed.set(i, enemyHillsDestroyed.get(i)+1);
 						hillDestroyed.add(eHill);
+					} else if(iOpponent.contains(eHill)) {
+						enemyHillsDestroyed.set(i, enemyHillsDestroyed.get(i)+1);
 					}
 				});
-				enemyHills.get(i+1).removeAll(hillDestroyed);	
+				enemyHills.get(i).removeAll(hillDestroyed);	
 			});
 
 		});
@@ -481,46 +495,37 @@ public class Assignment implements Comparable<Assignment> {
 	 */
 	private void foodResolution() {
 		Set<Tile> foodGathered = new TreeSet<Tile>();
-		List<Integer> enemyCount = new ArrayList<Integer>(enemyAnts.size());
-		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> enemyCount.add(0));
-		int antCount = 0;
 
 		foodTiles.parallelStream().forEachOrdered(food -> {	
-
-			Set<Tile> neighbours = food.getNeighbours().parallelStream().map(nDir -> food.getNeighbourTile(nDir))
-					.collect(Collectors.toSet());
+			Set<Integer> opponentID = new HashSet<Integer>();
+			
+			Set<Tile> neighbours = food.getNeighbours().parallelStream().map(nDir -> food.getNeighbourTile(nDir)).collect(Collectors.toSet());
 			Iterator<Tile> neItr = neighbours.iterator();
 			while (neItr.hasNext()) {
 				Tile neighbour = neItr.next();
-				boolean antsNeigh = ants.contains(neighbour);
-				int enemyNeigh=0;
+				
+				if(ants.contains(neighbour))
+					opponentID.add(0);
+				
 
-				enemyAnts.entrySet().parallelStream().forEachOrdered(e -> {enemyNeigh += e.getValue().contains(neighbour) ? 1 :0;		
-
-				if(!(enemyNeigh==1 && antsNeigh)|| enemyNeigh==1) {
-					if(antsNeigh)
-						antCount++;
-					else
-						enemyCount.set(e.getKey()-1, enemyCount.get(e.getKey()-1) +1);
-					foodGathered.add(food);
-				}
-				});
+				int fakeID=-1;
+				while(++fakeID<enemyAnts.size()) 
+					if(enemyAnts.get(fakeID).contains(neighbour))
+						opponentID.add(fakeID+1);				
 			}
-
+			
+			if(opponentID.size()==1) {
+				if(opponentID.contains(0))
+					this.antsFoodCollected++;
+				else {
+					int enemyID = opponentID.iterator().next()-1;
+					enemyFoodCollected.set(enemyID, enemyFoodCollected.get(enemyID) +1);
+				}
+				foodGathered.add(food);
+			} else if (opponentID.size()>1)
+				foodGathered.add(food);
 		});
-		int count = enemyCount.parallelStream().mapToInt(Integer::intValue).sum();
-
-		if(antCount>0 && count==0) 
-			antsFoodCollected++;
-		else if(antCount==0 && count>0)
-			IntStream.range(0, enemyCount.size()).parallel().forEachOrdered(i -> { 
-				if(enemyCount.get(i) == count) 
-					enemyFoodCollected.set(i,enemyFoodCollected.get(i)+1); 
-			});
-
-		if(antCount>0 || count>0)
-			foodGathered.add(food);
-
+		
 		foodTiles.removeAll(foodGathered);
 	}
 
