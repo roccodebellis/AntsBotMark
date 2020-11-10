@@ -1,7 +1,9 @@
 package combat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -424,8 +426,16 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 	public void combatResolution() {
 		//LOGGER.severe("\tcombatResolution()");
-
-		root = new Assignment(0, myAntSet, Game.getMyHills(), enemyAntSet, enemyHills, Game.getFoodTiles(), false, null, new HashSet<Order>());
+		List<Integer> enemyLosses = new ArrayList<Integer>(enemyAntSet.size());
+		IntStream.range(0, enemyAntSet.size()).parallel().forEachOrdered(i -> enemyLosses.add(0));
+		
+		List<Integer> enemyHillsDestroyed = new ArrayList<Integer>(enemyAntSet.size());
+		IntStream.range(0, enemyAntSet.size()).parallel().forEachOrdered(i -> enemyHillsDestroyed.add(0));
+		
+		List<Integer> enemyFoodCollected = new ArrayList<Integer>(enemyAntSet.size());
+		IntStream.range(0, enemyAntSet.size()).parallel().forEachOrdered(i -> enemyFoodCollected.add(0));
+		
+		root = new Assignment(0, myAntSet, Game.getMyHills(), 0, 0, 0, enemyAntSet, enemyHills, enemyLosses, enemyHillsDestroyed, enemyFoodCollected, Game.getFoodTiles(), false, null, new HashSet<Order>());
 
 		MinMax(root, Timing.getCurTime() + deadLine, 0);	
 
