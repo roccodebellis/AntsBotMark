@@ -1,6 +1,5 @@
 package combat;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,13 +7,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import defaultpackage.Configuration;
 import game.Game;
 import game.Order;
@@ -607,20 +603,20 @@ class Assignment implements Comparable<Assignment> {
 
 		double value;
 
-		// TODO MassRatioThreshold impostare mass radio in base al numero di formiche
-		if (getAnts_number() > 3) // FIXME MassRatioThreshold
-			OpponentMultiplier *= Math.max(1, Math.pow((getAnts_number() + 1) / (getOpponentAnts_number() + 1), 2));
+		OpponentMultiplier *= Math.pow(getTurnsLeft(), 2);// 1.5D;
+		AntsMultiplier *= Math.pow(2, getTurnsLeft());
 
-		// TODO crescita logaritmica col passare dei turni a partire da una certa soglia
-		if (getTurnsLeft() < 50)
-			OpponentMultiplier *= 1.5D;
+		// if (getAnts_number() > 3) //
+		// OpponentMultiplier *= Math.max(1, Math.pow((getAnts_number() + 1) /
+		// (getOpponentAnts_number() + 1), 2));
 
-		value = OpponentMultiplier * getOpponentLosses_number() - AntsMultiplier * getAntsLosses_number();
 
-		if (getAntsLosses_number() == getAnts_number())
-			value -= 0.5;
-		else if (getOpponentLosses_number() == getOpponentAnts_number())
-			value += 0.4;
+		value = -OpponentMultiplier * getOpponentLosses_number() + AntsMultiplier * getAntsLosses_number();
+
+		if  (getAnts_number()==0)
+			value -= 0.5 * getAntsLosses_number();
+		else if (getOpponentAnts_number()==0)
+			value += 0.7 * getAntsLosses_number();
 
 		// TODO RISCRIVERE FUNZIONE
 		// considerando un pareggio
@@ -628,11 +624,11 @@ class Assignment implements Comparable<Assignment> {
 		// maggiore
 		// del numero di formiche perse
 
-		value += getOpponentHillDestroyed_number();
-		value -= getAntsHillDestroyed_number() * 5;
+		value += getOpponentHillDestroyed_number() * 7;
+		value -= getAntsHillDestroyed_number() * 10;
 
-		value += getAntsFoodCollected_number() / 2;
-		value -= getOpponentFoodCollected_number();
+		value += getAntsFoodCollected_number() * 3;
+		value -= getOpponentFoodCollected_number() * 2;
 		// LOGGER.severe("\t\tvalue before: " + value);
 		/*
 		 * value -= enemyAnts.values().parallelStream().mapToDouble(es ->

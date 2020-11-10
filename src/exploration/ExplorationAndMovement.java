@@ -6,8 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
+//import java.util.logging.Logger;
 import game.Directions;
 import game.Game;
 import game.Order;
@@ -53,35 +52,33 @@ public class ExplorationAndMovement {
 
 		if (unexplored!=null && !unexplored.isEmpty() && !Game.getMyAnts().isEmpty()) {
 			//LOGGER.info( " MyAnts: " +  Game.getMyAnts());
-			// Search s = new Search(unexplored, Game.getMyAnts(), null, false, false,
-			// true); //non utilizzare perche manda le formiche tutte ad uno stesso tile
-			// inexplorato
-
-			//Search s = new Search(Game.getMyAnts(), unexplored, null, false, false, false);
-			//da valutare, il problema e' che all'inizio le tile inesplorate sono tantissime
-			//ma sarebbe meglio mandare solo una formica ad un'unica tile inesplorata
-
-			//BFS
-			//Search s = new Search( unexplored, Game.getMyAnts(), null, false, true, false);
-			//Set<Tile> results =  s.adaptiveSearch(); 
-			Search s;
-			Set<Tile> results;
-			/*
-			if(unexplored.size()<15) {
-				s = new Search( unexplored, Game.getMyAnts(), null, true, false, true);
-				results = s.EAStarSearch();
-			} else { */
-			s = new Search(  Game.getMyAnts(), unexplored, null, false, false, false);
-			//s = new Search( Game.getMyAnts(),unexplored, null, false, false, false);
-			results =  s.adaptiveSearch();
-			//}
-
-
-			Set<Order> orders = s.getOrders();
-			//issueAndRemoveOrders(orders, unexplored);
-			//LOGGER.info("results: " + results); 
-			Game.issueOrders(orders);
-			//unexplored.removeAll(results);
+			
+			/*//A*
+			   Set<Order> o = new HashSet<Order>();
+			   Game.getMyAnts().parallelStream().forEachOrdered(a -> {
+				Set<Tile> ant = new HashSet<Tile>();
+				ant.add(a);
+				Search s = new Search(ant, unexplored, null, true, false, false);
+				s.AStarSearch();
+				o.addAll(s.getOrders());			
+			});*/
+			
+			//EXTENDED A*
+			/*Search s = new Search( unexplored, Game.getMyAnts(), null, true, false, true);
+			s.EAStarSearch();
+			Game.issueOrders(s.getOrders());
+			 */
+			
+			
+			
+			//BFS reverse
+			Search s = new Search(unexplored, Game.getMyAnts(), null, false, false, true);
+		
+			//BFS OTPS
+			//Search s = new Search(unexplored, Game.getMyAnts(), null, false, true, false);
+			s.adaptiveSearch();
+			Game.issueOrders(s.getOrders());
+			
 		}
 		return Game.getMyAnts().isEmpty();
 	}
@@ -279,7 +276,7 @@ public class ExplorationAndMovement {
 
 		//BFS normale
 		/**/Search s = new Search(Game.getMyAnts(), targets, null, false, false, false);//questo funziona bene
-		Set<Tile> results = s.adaptiveSearch();
+		s.adaptiveSearch();
 
 
 		Set<Order> orders = s.getOrders();

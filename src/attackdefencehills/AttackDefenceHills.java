@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Logger;
+//import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import game.Game;
 import game.Tile;
@@ -16,7 +16,6 @@ import vision.Offsets;
 import vision.Vision;
 
 public class AttackDefenceHills {
-
 	//private static Logger LOGGER = Logger.getLogger( AttackDefenceHills.class.getName() );
 
 	public static void defence() {

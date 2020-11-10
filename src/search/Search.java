@@ -4,9 +4,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.logging.Logger;
-
+//import java.util.logging.Logger;
 import vision.Offsets;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -14,24 +12,20 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-
-import defaultpackage.MyBot;
 import game.Directions;
 import game.Game;
 import game.Order;
 import game.Tile;
-
-import java.nio.file.Path;
 import java.util.HashMap;
 
 /**
- * 
+ * Modulo che implementa gli algoritmi di ricerca.
  * @author Debellis, Lorusso
  *
  */
 public class Search {
 	
-	private static Logger LOGGER = Logger.getLogger( Search.class.getName() );
+	//private static Logger LOGGER = Logger.getLogger( Search.class.getName() );
 
 	/**
 	 * Una o piu' posizioni di partenza da cui far partire la ricerca
@@ -728,9 +722,9 @@ public class Search {
 		return this.results;
 	}
 
-	private HashSet<Tile> getOrderTile() {
+	/*private HashSet<Tile> getOrderTile() {
 		return orderTile;
-	}
+	}*/
 
 	public Map<Tile, Directions> getDirectionFromSource() {
 		return directionFromSource;
