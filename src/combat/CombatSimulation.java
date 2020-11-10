@@ -1,4 +1,6 @@
 package combat;
+import static org.junit.Assume.assumeFalse;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import defaultpackage.Configuration;
 import game.Directions;
@@ -62,20 +65,31 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 		situationRecognition(myAnt,enemyAnt);
 		this.deadLine = deadLine;
-		enemyHills = new TreeMap<Integer, Set<Tile>>();
-		IntStream.range(0, Game.getNumberEnemy()).forEach(id -> enemyHills.put(id+1, new HashSet<Tile>()));
+		enemyHills = new HashMap<Integer, Set<Tile>>();
+		/*
+		IntStream.range(0, Game.getNumberEnemy()).forEach(i -> enemyHills.put(i, new HashSet<Tile>()));
 		Set<Tile> gameEnemyHills = Game.getEnemyHills();
-		if(!gameEnemyHills.isEmpty())
-			gameEnemyHills.forEach(eHill -> enemyHills.get(eHill.getOwner()).add(eHill));
+		if(!gameEnemyHills.isEmpty()) {
+			LOGGER.severe("enemyHills" + enemyHills);
+			
+			gameEnemyHills.forEach(eHill -> {
+				enemyHills.get(eHill.getOwner()-1).add(eHill);
+				
+				LOGGER.severe("eHill.getOwner()-1" + (eHill.getOwner()-1));
+				LOGGER.severe("eHill" + eHill);});
+		}*/
+		IntStream.range(0, Game.getNumberEnemy()).forEach(i -> enemyHills.put(i, Game.getEnemyHills().stream().filter(x -> x.getOwner() == i).collect(Collectors.toSet())));
+		LOGGER.severe("\t------------------\n\tGame Enemy Hills size: "+Game.getEnemyHills().size()+ "enemyHills size:"+ enemyHills.values().stream().mapToInt(x->x.size()).sum() +"\t\n-------------------------");
+		
 	}
 
 	public Set<Order> getMoves(){
-		LOGGER.severe("\tSE MI CERCHI SONO QUI");
-		LOGGER.severe("\tgetMoves("+ root +" moves"+root.getMoves()+")++++++++++++");
+		////LOGGER.severe("\tSE MI CERCHI SONO QUI");
+		////LOGGER.severe("\tgetMoves("+ root +" moves"+root.getMoves()+")++++++++++++");
 		
-		root.getChildren().forEach(c -> LOGGER.severe("\tAssignment: " + c+"["+c.getMoves()+"]"));
+		//root.getChildren().forEach(c -> ////LOGGER.severe("\tAssignment: " + c+"["+c.getMoves()+"]"));
 		
-		LOGGER.severe("\t\t~getMoves()++++++++++++");
+		////LOGGER.severe("\t\t~getMoves()++++++++++++");
 		return root.getFirstChild();
 	}
 
@@ -110,8 +124,8 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 		myAntSet.add(myAnt);
 
-		IntStream.range(0, Game.getNumberEnemy()).forEach(id -> enemyAntSet.put(id+1, new HashSet<Tile>()));
-		enemyAntSet.get(enemyAnt.getOwner()).add(enemyAnt);
+		IntStream.range(0, Game.getNumberEnemy()).forEach(id -> enemyAntSet.put(id, new HashSet<Tile>()));
+		enemyAntSet.get(enemyAnt.getOwner()-1).add(enemyAnt);
 
 		int combatSearchRadius = Configuration.getCombatModuleSearchRadius();
 
@@ -128,7 +142,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 			if(newEnemyFound.size() > enemyAntSet.entrySet().parallelStream().mapToInt(eASet -> eASet.getValue().size()).sum()) {
 
 				addedAnts = true;
-				newEnemyFound.parallelStream().forEachOrdered(eA -> enemyAntSet.get(eA.getOwner()).add(eA));
+				newEnemyFound.parallelStream().forEachOrdered(eA -> enemyAntSet.get(eA.getOwner()-1).add(eA));
 				//newEnemyFound.parallelStream().forEachOrdered(enemyAntSet::add);
 			}
 
@@ -168,7 +182,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	 * </p>
 	 */
 	private Map<MovesModels,Set<Order>> movesGenerator(Assignment s) {
-		//LOGGER.severe("\tmovesGenerator()");
+		//////LOGGER.severe("\tmovesGenerator()");
 		Map<MovesModels,Set<Order>> output = new HashMap<MovesModels,Set<Order>>();
 
 		output.put(MovesModels.ATTACK, attack(s));
@@ -180,15 +194,15 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		output.put(MovesModels.WEST, directional(s,Directions.WEST));
 
 
-		//LOGGER.severe("\t"+output);
-		//LOGGER.severe("\t\tants"+s.getAnts());
-		//LOGGER.severe("\t\tenemy"+s.getOpponentAnts());
-		//LOGGER.severe("\t~movesGenerator()");
+		//////LOGGER.severe("\t"+output);
+		//////LOGGER.severe("\t\tants"+s.getAnts());
+		//////LOGGER.severe("\t\tenemy"+s.getOpponentAnts());
+		//////LOGGER.severe("\t~movesGenerator()");
 		return output;
 	}
 
 	private Set<Order> attack(Assignment currAssignment) {
-		//LOGGER.info("attack()");
+		//////LOGGER.info("attack()");
 		Set<Tile> targets = new HashSet<Tile>();
 		targets.addAll(currAssignment.getOpponentAnts());
 		targets.addAll(currAssignment.getOpponentHills());
@@ -198,15 +212,15 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 			Search search = new Search(currAssignment.getAnts(),targets, null, false, false, false); //bfs classica
 			//Search search = new Search(targets, currAssignment.getAnts(), null, false, false, true); //bfs reverse
 			search.adaptiveSearch();
-			//LOGGER.info("~attack("+search.getOrders()+")");
+			//////LOGGER.info("~attack("+search.getOrders()+")");
 			return search.getOrders();
 		}
-		//LOGGER.info("~attack()");
+		//////LOGGER.info("~attack()");
 		return new HashSet<Order>();
 	}
 
 	private Set<Order> hold(Assignment currAssignment) {
-		//LOGGER.info("hold()");
+		//////LOGGER.info("hold()");
 		double targetDistance = Math.sqrt(Game.getAttackRadius2()) + (currAssignment.isEnemyMove() ? 1 : 2);
 		Set<Order> ordersAssigned = new HashSet<Order>();
 
@@ -231,7 +245,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 				ordersAssigned.add(moveBackOrForward(ordersAssigned, ant, minTarget, minDist, targetDistance));
 			}
 		}
-		//LOGGER.info("~hold("+ordersAssigned+")");
+		//////LOGGER.info("~hold("+ordersAssigned+")");
 		return ordersAssigned;
 	}
 
@@ -312,7 +326,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 			} 
 		}
 
-		//LOGGER.severe("~directional(,dir:"+dir+")");
+		//////LOGGER.severe("~directional(,dir:"+dir+")");
 		return order;
 	}
 
@@ -322,7 +336,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	}*/
 
 	private Set<Order> directional(Assignment ordersAssigned, Directions tDir) {
-		//LOGGER.severe("directional(,tDir:"+tDir+")");
+		//////LOGGER.severe("directional(,tDir:"+tDir+")");
 		Set<Order> orders = new HashSet<Order>();
 
 
@@ -342,7 +356,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 				orders.add(order);
 			}
 		});
-		//LOGGER.severe("~directional("+orders+")");
+		//////LOGGER.severe("~directional("+orders+")");
 		return orders;
 	}
 
@@ -381,10 +395,10 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	 * @return
 	 */
 	private void MinMax(Assignment state, long deadLine, int depth) {
-		//LOGGER.severe("MINMAX-> depth:"+depth+" MT:"+state.getMoveType()+" state:"+ state.isEnemyMove()+" deadline"+deadLine+" ct:"+Timing.getCurTime());
-		//LOGGER.severe("\t(MINMAX) - ["+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+" ants:"+state.getAnts() +" enemy:"+state.getOpponentAnts() + "]");
+		//////LOGGER.severe("MINMAX-> depth:"+depth+" MT:"+state.getMoveType()+" state:"+ state.isEnemyMove()+" deadline"+deadLine+" ct:"+Timing.getCurTime());
+		//////LOGGER.severe("\t(MINMAX) - ["+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+" ants:"+state.getAnts() +" enemy:"+state.getOpponentAnts() + "]");
 		if(depth!=0 && !(depth < Configuration.getCombatModuleMinMaxMaxDepth() && deadLine > state.GetExtensionEstimate())) {
-			//LOGGER.severe("\t[(if)"+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+"]");
+			//////LOGGER.severe("\t[(if)"+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+"]");
 			state.evaluate();
 			return;
 		}
@@ -405,7 +419,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 			}
 
 			MinMax(childState, childDeadline, depth+1);
-			//LOGGER.severe("\t["+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+"]");
+			//////LOGGER.severe("\t["+depth+" MT:"+state.getMoveType()+" v:"+state.getValue()+"]");
 			state.addChild(childState);
 
 		});
@@ -423,7 +437,7 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 	}
 
 	public void combatResolution() {
-		//LOGGER.severe("\tcombatResolution()");
+		//////LOGGER.severe("\tcombatResolution()");
 		List<Integer> enemyLosses = new ArrayList<Integer>(enemyAntSet.size());
 		IntStream.range(0, enemyAntSet.size()).parallel().forEachOrdered(i -> enemyLosses.add(0));
 		
@@ -439,9 +453,9 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 
 		Game.getMyHills().parallelStream().forEachOrdered(hill -> hill.setSuitable(false));
 
-		//LOGGER.severe("\t\t->->->child: " + root.getChildren());
+		//////LOGGER.severe("\t\t->->->child: " + root.getChildren());
 
-		//LOGGER.severe("\t~combatResolution()");
+		//////LOGGER.severe("\t~combatResolution()");
 	}
 
 	@Override

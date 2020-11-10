@@ -80,9 +80,9 @@ public class MyBot extends Bot {
 		//1 VISION MODULE
 		//2 COMBAT SIMULATION
 			//time.start(Modules.Combat);
-			LOGGER.info("state.doCombat()");
+			//LOGGER.info("state.doCombat()");
 		state.doCombat();
-			LOGGER.info("~state.doCombat()");
+			//LOGGER.info("~state.doCombat()");
 			//time.end(Modules.Combat);
 		
 		//2.5 HILL DEFENSE

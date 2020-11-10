@@ -1,6 +1,5 @@
 package combat;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,13 +7,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import defaultpackage.Configuration;
 import game.Game;
 import game.Order;
@@ -22,7 +18,7 @@ import game.Tile;
 import timing.Timing;
 import vision.Offsets;
 
-public class Assignment implements Comparable<Assignment> {
+class Assignment implements Comparable<Assignment> {
 
 	private MovesModels moveType;
 	private static Logger LOGGER = Logger.getLogger(Assignment.class.getName());
@@ -37,7 +33,6 @@ public class Assignment implements Comparable<Assignment> {
 	 * non mettere +1 pd
 	 */
 	private List<Integer> enemyLosses;
-	
 
 	private Map<Integer, Set<Tile>> enemyHills;
 	private List<Integer> enemyHillsDestroyed;
@@ -184,17 +179,18 @@ public class Assignment implements Comparable<Assignment> {
 	}
 
 	public Assignment performMove(Set<Order> moves, MovesModels moveType) {
-		// LOGGER.info("\tperformMove("+moves+",
+		LOGGER.info("\tperformMove()");// +moves+",
 		// "+moveType+")["+ants+"]["+enemyAnts+"]**********");
 		Set<Tile> newAnts = new HashSet<Tile>(ants);
 		Map<Integer, Set<Tile>> newEnemyAnts = new HashMap<Integer, Set<Tile>>();
 		enemyAnts.forEach((key, set) -> newEnemyAnts.put(key, new HashSet<Tile>(set)));
-
+		LOGGER.severe("enemy: " + enemyAnts);
+		LOGGER.severe("NEW enemyANTS: " + newEnemyAnts);
 		if (isEnemyMoves) {
 			moves.parallelStream().forEachOrdered(move -> {
 				IntStream.range(0, newEnemyAnts.size()).parallel().forEachOrdered(i -> {
-					if (newEnemyAnts.get(i + 1).remove(move.getOrigin()))
-						newEnemyAnts.get(i + 1).add(move.getOrderedTile());
+					if (newEnemyAnts.get(i).remove(move.getOrigin()))
+						newEnemyAnts.get(i).add(move.getOrderedTile());
 				});
 			});
 			/*
@@ -211,19 +207,21 @@ public class Assignment implements Comparable<Assignment> {
 			});
 			// antsMove = moves;
 		}
-		// LOGGER.info("\t~performMove() - end**************");
+		LOGGER.info("\t~performMove() - end**************");
 		return new Assignment(currentTurn + 1, newAnts, antsHills, antsLosses, antsHillsDestroyed, antsFoodCollected,
 				newEnemyAnts, enemyHills, enemyLosses, enemyHillsDestroyed, enemyFoodCollected, foodTiles,
 				!isEnemyMoves, moveType, moves);
 	}
 
 	public void resolveCombatAndFoodCollection() {
-		// LOGGER.info("resolveCombatAndFoodCollection("+currentTurn+"°
-		// isEM:"+isEnemyMoves+" a:"+ants+" e:"+enemyAnts+")");
-		istantKill();
-		battle();
-		hillRazing();
-		foodResolution();
+		if (!ants.equals(null) && !enemyAnts.equals(null)) {
+			// LOGGER.info("resolveCombatAndFoodCollection("+currentTurn+"°
+			// isEM:"+isEnemyMoves+" a:"+ants+" e:"+enemyAnts+")");
+			// istantKill();
+			battle();
+			hillRazing();
+			foodResolution();
+		}
 		// LOGGER.info("~resolveCombatAndFoodCollection()");
 	}
 
@@ -268,7 +266,7 @@ public class Assignment implements Comparable<Assignment> {
 	 * 
 	 */
 	private void battle() {
-		LOGGER.info("\tbattle()");
+		// LOGGER.info("\tbattle()");
 		HashMap<Tile, Integer> focusAttack = new HashMap<Tile, Integer>();
 
 		Set<Tile> enemy = new HashSet<Tile>();
@@ -278,14 +276,15 @@ public class Assignment implements Comparable<Assignment> {
 
 		focusAttack.putAll(computeFocusAttack(ants, enemy));
 		IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> {
-			Set<Tile> ienemySet = enemyAnts.get(i + 1);
+			LOGGER.severe("-------------enemyAnts" + enemyAnts);
+			Set<Tile> ienemySet = enemyAnts.get(i);
 			Set<Tile> tempEenemy = new HashSet<Tile>();
 			tempEenemy.addAll(ants);
 			if (i > 0)
-				IntStream.range(0, i + 1).parallel().forEachOrdered(j -> tempEenemy.addAll(enemyAnts.get(j + 1)));
+				IntStream.range(0, i + 1).parallel().forEachOrdered(j -> tempEenemy.addAll(enemyAnts.get(j)));
 			if (i + 2 < enemyAnts.size())
 				IntStream.range(i + 2, enemyAnts.size()).parallel()
-						.forEachOrdered(j -> tempEenemy.addAll(enemyAnts.get(j + 1)));
+						.forEachOrdered(j -> tempEenemy.addAll(enemyAnts.get(j )));
 
 			// System.out.println("* ienemySet"+ ienemySet);
 			// System.out.println("* enemy"+ enemy);
@@ -303,22 +302,22 @@ public class Assignment implements Comparable<Assignment> {
 
 			Map<Integer, Set<Tile>> deadEnemyAnts = new HashMap<Integer, Set<Tile>>();//
 			enemyAnts.forEach((k, v) -> deadEnemyAnts.put(k, new HashSet<Tile>()));
-			
-			LOGGER.info("\tenemyAnts: " + enemyAnts);
-			LOGGER.info("\tdeadEnemyAnts: " + deadEnemyAnts);
-			
+
+			// LOGGER.info("\tenemyAnts: " + enemyAnts);
+			// LOGGER.info("\tdeadEnemyAnts: " + deadEnemyAnts);
+
 			// Per ogni nemico
 			IntStream.range(0, enemyAnts.size()).parallel().forEachOrdered(i -> {
 				// si ottiene il numero di formiche nemiche morte nel livello MinMax precedente
 				int enemyLossesNumber = enemyLosses.get(i);
 				// si salva in un set temporaneo le formiche del nemico corrente
-				Set<Tile> ienemySet = enemyAnts.get(i + 1);
+				Set<Tile> ienemySet = enemyAnts.get(i);
 
 				Set<Tile> iOpponent = new HashSet<Tile>();
 				Map<Tile, Integer> gimmeID = new HashMap<Tile, Integer>();
 				if (i > 0)
 					IntStream.range(0, i + 1).parallel().forEachOrdered(j -> {
-						Set<Tile> jEnemy = enemyAnts.get(j + 1);
+						Set<Tile> jEnemy = enemyAnts.get(j);
 						iOpponent.addAll(jEnemy);
 						gimmeID.putAll(
 								jEnemy.stream().collect(HashMap<Tile, Integer>::new, (m, c) -> m.put(c, j), (m, u) -> {
@@ -345,12 +344,12 @@ public class Assignment implements Comparable<Assignment> {
 							antsLosses++;
 							deadAnts.add(ant);
 						} else if (curAntFA < curEnemyFA) {
-							deadEnemyAnts.get(i+1).add(enemyAnt);
+							deadEnemyAnts.get(i).add(enemyAnt);
 							enemyLosses.set(i, enemyLossesNumber + 1);
 						} else {
 							antsLosses++;
 							deadAnts.add(ant);
-							deadEnemyAnts.get(i+1).add(enemyAnt);
+							deadEnemyAnts.get(i).add(enemyAnt);
 							enemyLosses.set(i, enemyLossesNumber + 1);
 						}
 					}
@@ -375,14 +374,14 @@ public class Assignment implements Comparable<Assignment> {
 							  le fazioni) e si incrementa il numero dei morti
 							 */
 							if (curEnemyFA > curOpponentFA) {
-								deadEnemyAnts.get(i+1).add(enemyAnt);
+								deadEnemyAnts.get(i).add(enemyAnt);
 								enemyLosses.set(i, enemyLossesNumber + 1);
 							} else if (curEnemyFA < curOpponentFA) {
-								deadEnemyAnts.get(idOpponent+1).add(opponentAnt);
+								deadEnemyAnts.get(idOpponent).add(opponentAnt);
 								enemyLosses.set(idOpponent, enemyLossesNumber + 1);
 							} else {
-								deadEnemyAnts.get(idOpponent+1).add(opponentAnt);
-								deadEnemyAnts.get(i+1).add(enemyAnt);
+								deadEnemyAnts.get(idOpponent).add(opponentAnt);
+								deadEnemyAnts.get(i).add(enemyAnt);
 								enemyLosses.set(i, enemyLossesNumber + 1);
 								enemyLosses.set(idOpponent, opponentLossesNumber + 1);
 							}
@@ -391,20 +390,21 @@ public class Assignment implements Comparable<Assignment> {
 				});
 			});
 			// remove enemy
-
+			LOGGER.severe("-------------deadEnemyAnts" + deadEnemyAnts);
 			deadEnemyAnts.forEach((i, v) -> {
 				if (!v.isEmpty() && enemyAnts.containsKey(i) && !enemyAnts.get(i).isEmpty()) {
-					String out = "Enemy " + i + 1 + " before: " + enemyAnts.get(i).size();
+					// String out = "Enemy " + i + 1 + " before: " + enemyAnts.get(i).size();
 					enemyAnts.get(i).removeAll(v);
-					LOGGER.info("\t\t" + out + " after: " + enemyAnts.get(i).size() + ", losses: "
-							+ deadEnemyAnts.get(i).size());
+					// LOGGER.info("\t\t" + out + " after: " + enemyAnts.get(i).size() + ", losses:
+					// "
+					// + deadEnemyAnts.get(i).size());
 				}
 			});
 
 		});
 
 		ants.removeAll(deadAnts);
-		LOGGER.info("\t~battle()");
+		// LOGGER.info("\t~battle()");
 	}
 
 	/**
@@ -470,14 +470,16 @@ public class Assignment implements Comparable<Assignment> {
 
 				Set<Tile> iOpponent = new HashSet<Tile>();
 				if (i > 0)
-					IntStream.range(0, i + 1).parallel().forEachOrdered(j -> iOpponent.addAll(enemyAnts.get(j + 1)));
+					IntStream.range(0, i + 1).parallel().forEachOrdered(j -> iOpponent.addAll(enemyAnts.get(j)));
 
-				if (enemyAnts.get(i + 1).contains(aHill)) {
+				if (enemyAnts.get(i).contains(aHill)) {
 					antsHillsDestroyed++;
 					antHillDestroyed.add(aHill);
 				}
-				
-				Set<Tile> curEnemyHills = enemyHills.get(i+1);
+
+				LOGGER.severe("enemy hills: " + enemyHills);
+				//LOGGER.severe("enemy hills destroyed: " + enemyHillsDestroyed);
+				Set<Tile> curEnemyHills = enemyHills.get(i);//////////////////////////////
 				if (!curEnemyHills.isEmpty()) {
 					Set<Tile> hillDestroyed = new TreeSet<Tile>();
 					curEnemyHills.parallelStream().forEachOrdered(eHill -> {
@@ -488,7 +490,7 @@ public class Assignment implements Comparable<Assignment> {
 							enemyHillsDestroyed.set(i, enemyHillsDestroyed.get(i) + 1);
 						}
 					});
-					enemyHills.get(i+1).removeAll(hillDestroyed);
+					enemyHills.get(i).removeAll(hillDestroyed);
 				}
 			});
 
@@ -523,7 +525,7 @@ public class Assignment implements Comparable<Assignment> {
 
 				int fakeID = -1;
 				while (++fakeID < enemyAnts.size())
-					if (enemyAnts.get(fakeID+1).contains(neighbour))
+					if (enemyAnts.get(fakeID).contains(neighbour))///////////////////////////////////
 						opponentID.add(fakeID + 1);
 			}
 
@@ -604,8 +606,8 @@ public class Assignment implements Comparable<Assignment> {
 			OpponentMultiplier *= Math.max(1, Math.pow((getAnts_number() + 1) / (getOpponentAnts_number() + 1), 2));
 
 		// TODO crescita logaritmica col passare dei turni a partire da una certa soglia
-		//if (getTurnsLeft() < 50)
-			OpponentMultiplier *= Math.pow(getTurnsLeft(),1.5D);
+		// if (getTurnsLeft() < 50)
+		OpponentMultiplier *= Math.pow(getTurnsLeft(), 1.5D);
 
 		value = OpponentMultiplier * getOpponentLosses_number() - AntsMultiplier * getAntsLosses_number();
 
@@ -624,7 +626,7 @@ public class Assignment implements Comparable<Assignment> {
 		value -= getAntsHillDestroyed_number() * 9;
 
 		value += getAntsFoodCollected_number() * 7;
-		value -= getOpponentFoodCollected_number() *5;
+		value -= getOpponentFoodCollected_number() * 5;
 		// LOGGER.severe("\t\tvalue before: " + value);
 		/*
 		 * value -= enemyAnts.values().parallelStream().mapToDouble(es ->

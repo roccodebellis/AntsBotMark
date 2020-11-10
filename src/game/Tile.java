@@ -469,7 +469,7 @@ public class Tile implements Comparable<Tile> {
 	 */
 	public int getOwner() {// TODO non lo utilizziamo?!
 		//if (occupiedByAnt || type.equals(TileTypes.HILL)) FIXME
-		return idOwner;
+		return this.idOwner;
 		//else
 		//throw new TileTypeException("Pensavi ci fosse una formica/un HILL invece era " + type);
 	}

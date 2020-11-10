@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Logger;
+//import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import attackdefencehills.AttackDefenceHills;
 import combat.CombatSimulation;
@@ -29,7 +29,7 @@ import vision.Vision;
  */
 public class Game {
 
-	private static Logger LOGGER = Logger.getLogger( Game.class.getName() );
+	//private static Logger LOGGER = Logger.getLogger( Game.class.getName() );
 
 	/**
 	 * Numero di righe della mappa del gioco.
@@ -678,13 +678,13 @@ public class Game {
 	 * 
 	 */
 	public void doCombat() {
-		LOGGER.severe("\tdoCombat");
+		//LOGGER.severe("\tdoCombat");
 		Map<Tile, Tile> ongoingBattlesSituation = getOngoingBattlesSituation();
-		LOGGER.severe("\t\t****OngoingBattles number:" + ongoingBattlesSituation.size() + "\nOngoing Battles: " + ongoingBattlesSituation);
+		//LOGGER.severe("\t\t****OngoingBattles number:" + ongoingBattlesSituation.size() + "\nOngoing Battles: " + ongoingBattlesSituation);
 		
 		if (ongoingBattlesSituation.size() != 0) 
 			fight(ongoingBattlesSituation);
-		LOGGER.severe("\t~doCombat");
+		//LOGGER.severe("\t~doCombat");
 	}
 
 	/**
@@ -765,9 +765,9 @@ public class Game {
 		/*Set<Order> movesToPerform = new HashSet<Order>();
 		battles.parallelStream().forEachOrdered(battle -> movesToPerform.addAll(battle.getMoves()));
 		*/
-		LOGGER.severe("\t\t_______*_*_*_*_*COMBAT ORDER*_*_*_*_*_______");
-		LOGGER.severe("\t\t"+movesToPerform);
-		LOGGER.severe("\t\t___________________");
+		//LOGGER.severe("\t\t_______*_*_*_*_*COMBAT ORDER*_*_*_*_*_______");
+		//LOGGER.severe("\t\t"+movesToPerform);
+		//LOGGER.severe("\t\t___________________");
 		Game.issueOrders(movesToPerform);
 		
 		//LOGGER.severe("\t~fight");
