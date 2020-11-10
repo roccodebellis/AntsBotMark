@@ -107,10 +107,10 @@ public class ExplorationAndMovement {
 	private boolean toPriorityTarget() {
 		ArrayList<Set<Tile>> targets = new ArrayList<Set<Tile>>();
 		//FIXME ordinare come vuoi con l'ordine che porta alla vittoria di  più partite 
-		if (!Game.getEnemyAnts().isEmpty())
-			targets.add(Game.getEnemyAnts());
 		if (!Game.getEnemyHills().isEmpty())
 			targets.add(Game.getEnemyHills());
+		if (!Game.getEnemyAnts().isEmpty())
+			targets.add(Game.getEnemyAnts());
 		if (!Game.getUnexplored().isEmpty())
 			targets.add(Game.getUnexplored());
 
