@@ -1,16 +1,171 @@
 #AntsBotMark
 
-Andare nella cartella tools
+###PREREQUISITI:
 
-###bot
-###mappe
+	E' necessario installare un interprete Python 2.6+ in modo da far funzionare il tool
+	poiché l’architettura del gioco è scritta in questo linguaggio.
+	È possibile scaricare l’interprete al seguente link:
+	`<link>` : <https://www.python.org/ftp/python/3.8.2/python-3.8.2.exe>
+	Dopo aver effettuato questo passaggio, è necessario installare il tool sulla propria macchina.
 
-####Code Blocks (Indented style)
-
-Indented 4 spaces, like `<pre>` (Preformatted Text).
-
-    <?php
-        echo "Hello world!";
-    ?>
+###COME AVVIARE IL SOFTWARE - Metodo Dummies:
 	
-###Visualizzare un replay
+	Se si dispone di un sistema operativo Windows e' possibile accedere alla sottocartella
+	'/tools' e fare doppo click sul file '.batch' denominato 'play_one_batch.bat'.
+	Le impostazioni che verranno avviate sono quelle scelte da noi ed indicate di seguito:
+	
+	AVVERSARI: MarksHive, speedyconsole, XATHIS,  zacharydenton
+	MAPPA: maze_04p_01.map
+	--turns 150
+	--end_wait=0.50
+	--player_seed 42
+	--viewradius 55
+	--turntime 50000
+	
+	Se si desidera avviare il software utilizzando ulteriori opzioni, si prosegua nella lettura.
+	
+###COME AVVIARE IL SOFTWARE - Metodo Pro:
+
+	Nel caso in cui si desiderasse avviare il software utilizzando opzioni differenti rispetto
+	a quelle da noi prescelte, e' necessario avviare il file 'playgame.py' scegliendo tra le
+	varie opzioni, 'options', come mostrato nell'istruzione che segue:
+			
+			<?php
+				playgame.py [options] map bot1 bot2
+			?>
+	
+	E' sempre necessario specificare un '.map' che specifica un file contenente una mappa.
+	Le mappe si trovano nella sottocartella '\tools\maps'.
+	E' possibile selezionare i bot accedendo alla sottocartella '\tools\bot'.
+	Le opzioni, "[options]", sono elencate di seguito.
+
+###OPTIONS:
+
+	E' possibile selezionare e modificare le opzioni che caratterizzano ogni partita,
+	come ad esempio il numero di turni oppure il tempo a disposizione per ogni bot per
+	computare la propria mossa.
+	Per farlo, bastera' aggiungere al termine dell'istruzione, mostrata nella sezione precedente,
+	una tra le seguenti opzioni:
+	
+	Options:
+	  -h, --help            show this help message and exit
+	  -m MAP, --map_file=MAP
+							Name of the map file
+	  -t TURNS, --turns=TURNS
+							Number of turns in the game
+	  --serial              Run bots in serial, instead of parallel.
+	  --turntime=TURNTIME   Amount of time to give each bot, in milliseconds
+	  --loadtime=LOADTIME   Amount of time to give for load, in milliseconds
+	  -r ROUNDS, --rounds=ROUNDS
+							Number of rounds to play
+	  --player_seed=PLAYER_SEED
+							Player seed for the random number generator
+	  --engine_seed=ENGINE_SEED
+							Engine seed for the random number generator
+	  --strict              Strict mode enforces valid moves for bots
+	  --capture_errors      Capture errors and stderr in game result
+	  --end_wait=END_WAIT   Seconds to wait at end for bots to process end
+	  --secure_jail         Use the secure jail for each bot (*nix only)
+	  --fill                Fill up extra player starts with last bot specified
+	  -p POSITION, --position=POSITION
+							Player position for first bot specified
+	  --nolaunch            Prevent visualizer from launching
+
+	  Game Options:
+		Options that affect the game mechanics for ants
+
+		--attack=ATTACK     Attack method to use for engine. (closest, focus,
+							support, damage)
+		--kill_points=KILL_POINTS
+							Points awarded for killing a hill
+		--food=FOOD         Food spawning method. (none, random, sections,
+							symmetric)
+		--viewradius2=VIEWRADIUS2
+							Vision radius of ants squared
+		--spawnradius2=SPAWNRADIUS2
+							Spawn radius of ants squared
+		--attackradius2=ATTACKRADIUS2
+							Attack radius of ants squared
+		--food_rate=FOOD_RATE
+							Numerator of food per turn per player rate
+		--food_turn=FOOD_TURN
+							Denominator of food per turn per player rate
+		--food_start=FOOD_START
+							One over percentage of land area filled with food at
+							start
+		--food_visible=FOOD_VISIBLE
+							Amount of food guaranteed to be visible to starting
+							ants
+		--cutoff_turn=CUTOFF_TURN
+							Number of turns cutoff percentage is maintained to end
+							game early
+		--cutoff_percent=CUTOFF_PERCENT
+							Number of turns cutoff percentage is maintained to end
+							game early
+		--scenario
+
+	  Logging Options:
+		Options that control the logging
+
+		-g GAME_ID, --game=GAME_ID
+							game id to start at when numbering log files
+		-l LOG_DIR, --log_dir=LOG_DIR
+							Directory to dump replay files to.
+		-R, --log_replay
+		-S, --log_stream
+		-I, --log_input     Log input streams sent to bots
+		-O, --log_output    Log output streams from bots
+		-E, --log_error     log error streams from bots
+		-e, --log_stderr    additionally log bot errors to stderr
+		-o, --log_stdout    additionally log replay/stream to stdout
+		-v, --verbose       Print out status as game goes.
+		--profile           Run under the python profiler
+		--html=HTML_FILE    Output file name for an html replay
+
+###MARKSHIVE: IL NOSTRO BOT
+	Il bot da noi implementato e' denominato "MarksHive" ed e' possibile trovare il file '.jar'
+	nella sottocartella '\tools\bot', insieme agli altri bot.
+
+###XATHIS: IL VINCITORE DELLA CHALLENGE
+	A seguito di una piccola ricerca sul web, siamo riusciti a recuperare il file '.jar' del
+	vincitore della challenge: Xathis.
+	E' possibile trovare il file nella sottocartella '\tools\bot', insieme agli altri bot.
+
+###I BOT
+	Nella sottocartella '\tools\bot' sono raccolti i vari bot contro cui far fronteggiare quello
+	da noi implementato.
+	Tra i vari bot nella cartella e' possibile trovarne alcuni appartenenti a utenti
+	che hanno partecipato alla challenge del 2011.
+	Oltre al vincitore, e' possibile trovare i seguenti:
+		
+		robhinds.jar
+		speedyconsole.jar
+		grandma.jar			(bot frutto di una delle nostre prime implementazioni)
+		withoutCombat.jar	(vecchia versione di MARKSHIVE senza modulo di combattimento)
+		zacharydenton.jar
+		
+	Se si accede alla sottocartella '\tools\bot\sample_bots' e' possibile trovare altri bot in diversi
+	linguaggi di programmazione.
+	Questi erano gia' presenti nel pacchetto base che metteva a disposizione il sito per
+	permettere ad ogni partecipante di allenarsi nel corso della progettazione del proprio bot.
+
+###LE MAPPE
+	E' possibile trovare le mappe nella sottocartella '\tools\maps'.
+	Queste erano gia' presenti nel pacchetto base che metteva a disposizione il sito per
+	permettere ad ogni partecipante di allenarsi nel corso della progettazione del proprio bot.
+	E' pero' possibile creare una propria mappa, seguendo determinate linee guida esposte dal sito stesso.
+	
+	Ogni mappa ha una propria caratterizzazione. Ognuna di loro e' stata inserita all'interno di cartelle
+	differenti in base al loro fattore comune (es. assenza di hills nemiche, nessun cibo, etc.).
+	
+	E' importante sapere, nella scelta della mappa che il numero che segue il nome della mappa e che precede
+	(e talvolta antecede) una 'p' equivale al numero di giocatori.
+	Ad esempio, se si considera la mappa
+			cell_maze_p02_04.map
+	in essa potranno affrontarsi solo due nemici.
+
+###VISUALIZZAZIONE DEL REPLAY
+	A seguito dell'esecuzione di una partita, sara' possibile visionare il replay di quest'ultima.
+	Questo sara' reso disponibile nella sotto cartella '\tools\game_logs'.
+	
+HAVE FUN! ;)
