@@ -197,8 +197,8 @@ public class CombatSimulation implements Comparable<CombatSimulation>{
 		//TODO forse bisogna migliorare questa ricerca 
 		//ora abbiamo provato a mettere che piu formiche nostre attaccano un unico targhet
 		if(targets!=null && currAssignment.getAnts()!=null) {
-			//Search search = new Search(currAssignment.getAnts(),targets, null, false, false, false); //bfs classica
-			Search search = new Search(targets, currAssignment.getAnts(), null, false, false, true); //bfs reverse
+			Search search = new Search(currAssignment.getAnts(),targets, null, false, false, false); //bfs classica
+			//Search search = new Search(targets, currAssignment.getAnts(), null, false, false, true); //bfs reverse
 			search.adaptiveSearch();
 			//LOGGER.info("~attack("+search.getOrders()+")");
 			return search.getOrders();
